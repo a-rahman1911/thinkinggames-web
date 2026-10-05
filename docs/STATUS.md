@@ -51,6 +51,14 @@ Compared at a 1280px viewport. Design files rendered locally; site rendered agai
 
 Not drift: game order, game counts per moment, tag sets and thumbnails differ because the seed content is placeholder data.
 
+## Design handoff workflow
+
+- Designs are edited in Claude Design. Each round, the owner exports a designs-only zip ("the design export"): the three .dc.html files, support.js and assets/tg/. support.js must always be included or the files will not open in a browser.
+- The export is attached in the session. The files are diffed against design-handoff/designs before any code changes, the design changes are reported, then the site is updated to match.
+- One branch and one PR per handoff, carrying the updated design files and the matching code. STATUS.md records the round.
+- The games, moments and filters inside the design files are placeholder data. Changes to them do not change seed/seed.ndjson unless the owner says so.
+- Copy changes are listed by the owner at the end of each round and go straight into Studio. Code does not carry copy.
+
 ## Decisions
 
 - Design handoff lives in the repo at design-handoff/. The repo is public, so the design files are public.
