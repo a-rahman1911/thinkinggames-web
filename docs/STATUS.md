@@ -12,14 +12,18 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 
 ## Open, in order
 
-1. Fix visual drift against the design files (list below). Not started; waiting on go-ahead for the two judgment calls.
+1. Fix visual drift against the design files: done, see below.
 2. Walk through opening /studio locally (sign-in, localhost:3000 CORS origin).
 3. Vercel import with env vars set before the first deploy.
 4. Sanity webhook to /api/revalidate plus CORS for the Vercel URL. Verify publish updates the live page.
 5. Port analytics: PostHog, Meta Pixel, Google tag AW-18247964071, gated on CookieYes consent, suppressed on Kids URLs, no identify, no session recording.
 6. Stop before staging domain, content migration and DNS cutover.
 
+- Design drift fixes (step 1) and the favicon (app/icon.svg from the TGI mascot). See the list below for what changed.
+
 ## Design drift found (step 1)
+
+Fixed in the "Fix design drift" PR, except the items marked as decided otherwise.
 
 Compared at a 1280px viewport. Design files rendered locally; site rendered against the seed content.
 
@@ -31,16 +35,16 @@ Compared at a 1280px viewport. Design files rendered locally; site rendered agai
 - Header nav gap is 10px; design is 12px on Home only.
 - Door eyebrow is 13px; design is 14px.
 - Mission band mascot is 100px; design is 120px on Home only (100px on Teachers and Parents).
-- Footer links: CMS content has Privacy, Terms, Contact. Design also has "Cookie settings". Content, not code. Belongs with the CookieYes work in step 5.
+- Footer links: CMS content has Privacy, Terms, Contact. Design also has "Cookie settings". Content, not code. Still open; belongs with the CookieYes work in step 5.
 
 ### Teachers (Teachers Page v2.dc.html)
 
 - Moment blurbs render bold. The header button sits inside an h3 and inherits its weight. Design is weight 400.
-- The moments heading row is missing the right-aligned total label ("6 moments · 6 games", 15px, weight 700, bottom-aligned). Judgment call: it is a count computed from CMS data, not invented, but the brief says no game counts in copy.
+- The moments heading row is missing the right-aligned total label ("6 moments · 6 games"). Decided: leave it out. The rule against game counts wins over the design.
 - Game row: name and tagline have no gap; design has 2px.
 - Search empty state padding is 40px 32px; design is 40px all round.
 - Moment empty state padding is 40px 32px; design is 32px.
-- Challenge text in CMS reads "Five puzzles, five minutes, no score." Design reads "Five-question quiz, five minutes, no score." Content, not code. Judgment call: the Parents design uses "Five puzzles", so the two designs disagree.
+- Challenge text in CMS reads "Five puzzles, five minutes, no score." Design reads "Five-question quiz, five minutes, no score." Decided: "Five puzzles" stays on both pages. No change.
 
 ### Parents (Parents Library.dc.html)
 
@@ -48,7 +52,7 @@ Compared at a 1280px viewport. Design files rendered locally; site rendered agai
 - Search box left padding is 20px and gap 10px; design is 22px and 12px.
 - No-results panel padding is 40px 32px with 16px radius; design is 56px 32px with 20px radius.
 - "Clear filters" button in the no-results panel is 14px with 9px 16px padding; design is 15px with 11px 20px padding.
-- Footer links: same "Cookie settings" gap as Home.
+- Footer links: same "Cookie settings" gap as Home. Still open.
 
 Not drift: game order, game counts per moment, tag sets and thumbnails differ because the seed content is placeholder data.
 
@@ -64,6 +68,10 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 
 - Design handoff lives in the repo at design-handoff/. The repo is public, so the design files are public.
 - Filter group names live in code (sanity/groups.ts); options are CMS documents.
+- No "N moments · N games" label on Teachers, even though the design shows one. No counts in copy.
+- Challenge text is "Five puzzles, five minutes, no score." on both pages.
+- Never run npm run seed against the live dataset. It uses --replace and would overwrite real content.
+- The Home mission band shows the mascot at 120px (Home design) and the persona pages at 100px. Done in CSS with body:has(.home-hero) so the shared footer needs no prop.
 
 ## Environment notes
 

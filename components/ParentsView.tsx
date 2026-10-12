@@ -97,6 +97,9 @@ export function ParentsView({ data }: { data: ParentsData }) {
 
         <div className="results">
           <label className="search lg">
+            <span className="search-icon" aria-hidden="true">
+              <span />
+            </span>
             <span className="sr-only">Search games by name</span>
             <input
               type="search"
@@ -139,10 +142,10 @@ export function ParentsView({ data }: { data: ParentsData }) {
               ))}
             </div>
           ) : (
-            <div className="empty">
+            <div className="empty panel">
               <img src="/brand/mascot-parent.svg" alt="" width={72} style={{ transform: 'rotate(-8deg)' }} />
               <p style={{ fontSize: 19, fontWeight: 800 }}>{page?.emptyText || 'Nothing matches all of those.'}</p>
-              <button className="btn-outline" style={{ background: '#fff', cursor: 'pointer' }} onClick={clearAll}>
+              <button className="btn-clear" onClick={clearAll}>
                 Clear filters
               </button>
             </div>

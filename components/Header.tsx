@@ -10,7 +10,7 @@ type Props = {
 
 export function Header({ current, wordmark, children }: Props) {
   return (
-    <header className="hdr">
+    <header className={`hdr${wordmark ? ' home' : ''}`}>
       <div className="wrap">
         <Link href="/" className={`hdr-logo${wordmark ? ' word' : ''}`}>
           <img

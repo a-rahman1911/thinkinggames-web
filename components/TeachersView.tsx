@@ -168,9 +168,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                             ))}
                           </div>
                         ) : (
-                          <p className="empty" style={{ fontSize: 16 }}>
-                            No games match those filters for this moment.
-                          </p>
+                          <p className="empty sm">No games match those filters for this moment.</p>
                         )}
                       </div>
                     )}
