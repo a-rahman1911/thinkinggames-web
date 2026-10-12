@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { ParentsView } from '@/components/ParentsView'
 import { sanityFetch } from '@/sanity/client'
-import { parentGroupKeys, parentsQuery } from '@/sanity/queries'
+import { parentsQuery } from '@/sanity/queries'
 import type { ParentsData } from '@/sanity/types'
 
-const load = () => sanityFetch<ParentsData>(parentsQuery, { groups: parentGroupKeys })
+const load = () => sanityFetch<ParentsData>(parentsQuery)
 
 export async function generateMetadata(): Promise<Metadata> {
   const { page } = await load()
@@ -13,5 +13,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ParentsPage() {
   const data = await load()
-  return <ParentsView data={{ ...data, games: data.games || [], options: data.options || [] }} />
+  return <ParentsView data={data} />
 }

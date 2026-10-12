@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { TeachersView } from '@/components/TeachersView'
 import { sanityFetch } from '@/sanity/client'
-import { teacherGroupKeys, teachersQuery } from '@/sanity/queries'
+import { teachersQuery } from '@/sanity/queries'
 import type { TeachersData } from '@/sanity/types'
 
-const load = () => sanityFetch<TeachersData>(teachersQuery, { groups: teacherGroupKeys })
+const load = () => sanityFetch<TeachersData>(teachersQuery)
 
 export async function generateMetadata(): Promise<Metadata> {
   const { page } = await load()
@@ -13,5 +13,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TeachersPage() {
   const data = await load()
-  return <TeachersView data={{ ...data, moments: data.moments || [], options: data.options || [] }} />
+  return <TeachersView data={data} />
 }

@@ -26,12 +26,14 @@
         "./*"
       ]
     },
-    "allowJs": true
+    "allowJs": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.mts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

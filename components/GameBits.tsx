@@ -17,6 +17,7 @@ export function GameImage({ game, w, h }: { game: Game; w: number; h: number }) 
   )
 }
 
+/** Small tags on a card. The first one is highlighted. */
 export function Badges({ badges }: { badges?: string[] }) {
   if (!badges?.length) return null
   return (

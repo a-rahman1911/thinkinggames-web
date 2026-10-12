@@ -1,22 +1,29 @@
 import { groq } from 'next-sanity'
-import { PARENT_GROUPS, TEACHER_GROUPS } from './groups'
 
-const gameFields = groq`_id, name, tagline, builds, badges, url, image, "filters": filters[]->{_id, group, label}`
+// Games carry facts only. Filters, badges and the "Builds" line are derived in lib/derive.ts.
+const gameFields = groq`
+  _id, name, subtitle, url, image, icon,
+  ageFrom, ageTo, minutes, players, cost, offline, noReading, platforms, feelsLike,
+  featured, hidden,
+  "skills": skills[]->{ _id, title, order },
+  "when": when[]->{ _id, title, order }
+`
 
 export const settingsQuery = groq`*[_type == "siteSettings"][0]{ mission, footerLinks[]{label, url} }`
 
 export const homeQuery = groq`*[_type == "homePage"][0]{ headline, highlight, subline, panels[]{persona, eyebrow, title, text, cta}, seo }`
 
+// A game sits under every moment it references.
 export const teachersQuery = groq`{
   "page": *[_type == "teachersPage"][0],
-  "moments": *[_type == "moment"] | order(order asc){ _id, title, blurb, "games": games[]->{${gameFields}} },
-  "options": *[_type == "filterOption" && group in $groups] | order(order asc){ _id, group, label }
+  "moments": *[_type == "moment"] | order(order asc){
+    _id, title, blurb,
+    "games": *[_type == "game" && references(^._id) && "teachers" in showOn && hidden != true]{${gameFields}}
+  }
 }`
-export const teacherGroupKeys = TEACHER_GROUPS.map((g) => g.key)
 
 export const parentsQuery = groq`{
   "page": *[_type == "parentsPage"][0],
-  "games": *[_type == "game" && "parents" in audience] | order(name asc){${gameFields}},
-  "options": *[_type == "filterOption" && group in $groups] | order(order asc){ _id, group, label }
+  "games": *[_type == "game" && "parents" in showOn && hidden != true]{${gameFields}},
+  "whenOptions": *[_type == "whenOption"] | order(order asc, title asc){ _id, title }
 }`
-export const parentGroupKeys = PARENT_GROUPS.map((g) => g.key)

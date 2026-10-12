@@ -1,18 +1,21 @@
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { GameFacts } from '@/lib/derive'
 
 export type Link = { label: string; url: string }
 export type Seo = { title?: string; description?: string }
-export type FilterOption = { _id: string; group: string; label: string }
+export type Titled = { _id: string; title: string; order?: number }
+export type SanityImage = SanityImageSource & { alt?: string }
 
-export type Game = {
+/** A game as the queries return it: facts plus resolved skill and when references. */
+export type Game = GameFacts & {
   _id: string
-  name: string
-  tagline?: string
-  builds?: string
-  badges?: string[]
+  subtitle?: string
   url?: string
-  image?: SanityImageSource & { alt?: string }
-  filters?: FilterOption[] | null
+  image?: SanityImage
+  icon?: SanityImage
+  platforms?: string[] | null
+  skills?: Titled[] | null
+  when?: Titled[] | null
 }
 
 export type Challenge = {
@@ -46,7 +49,7 @@ export type TeachersPage =
 
 export type ParentsPage = (Hero & { challenge?: Challenge; searchPlaceholder?: string; emptyText?: string }) | null
 
-export type Moment = { _id: string; title: string; blurb?: string; games?: (Game | null)[] | null }
+export type Moment = { _id: string; title: string; blurb?: string; games?: Game[] | null }
 
-export type TeachersData = { page: TeachersPage; moments: Moment[]; options: FilterOption[] }
-export type ParentsData = { page: ParentsPage; games: Game[]; options: FilterOption[] }
+export type TeachersData = { page: TeachersPage; moments: Moment[] | null }
+export type ParentsData = { page: ParentsPage; games: Game[] | null; whenOptions: Titled[] | null }

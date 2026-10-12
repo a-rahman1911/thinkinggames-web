@@ -20,6 +20,7 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 6. Stop before staging domain, content migration and DNS cutover.
 
 - Design drift fixes (step 1) and the favicon (app/icon.svg from the TGI mascot). See the list below for what changed.
+- Task B, games backend: games now carry facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, moments, show on) and lib/derive.ts turns them into filters, badges, the "Builds" line and sort order. filterOption documents and sanity/groups.ts are gone. New skill and whenOption documents. Spreadsheet import at scripts/import-games.mts. Seed rewritten to the new model. Studio lists Games, Teacher moments, Skills, When options.
 
 ## Design drift found (step 1)
 
@@ -63,6 +64,13 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 - One branch and one PR per handoff, carrying the updated design files and the matching code. STATUS.md records the round.
 - The games, moments and filters inside the design files are placeholder data. Changes to them do not change seed/seed.ndjson unless the owner says so.
 - Copy changes are listed by the owner at the end of each round and go straight into Studio. Code does not carry copy.
+
+## Task B notes
+
+- Seed ages were chosen so the derived Grade and Age bands reproduce the old hand-linked filters exactly. Two visible differences from the old seed, both because the derivation rules now apply: Star Stuff (Pairs) counts as "Together" (Together count 3 → 4), and Set Daily Puzzle gains a "No reading needed" badge because its flag was already set. Badge order follows the new rule (cost, players, minutes, Offline, No reading needed) and skill titles are capitalized as in the Lists tab.
+- The seed has no images, as before, so Studio shows the required-image validation on seed games until real images are imported.
+- Required columns in the import follow the " *" markers on the sheet's own headers, so the Guide tab stays the single source of truth for editors. Platforms is therefore required in the import (the sheet marks it) but optional in the schema.
+- The import carries over a "hidden" flag set in Studio; everything else on the game document is replaced.
 
 ## Decisions
 
