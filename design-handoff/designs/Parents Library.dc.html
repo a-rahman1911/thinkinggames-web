@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0;background:#fff;font-family:'Inter',system-ui,sans-serif;color:#1e1e4e;-webkit-font-smoothing:antialiased}a{color:#1e1e4e}a:hover{color:#f27332}button,input{font:inherit;color:inherit}</style>
+</helmet>
+
+<header style="border-bottom:3px solid #a8ed62;background:#fff">
+  <div style="max-width:1280px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px clamp(20px,5vw,64px)">
+    <a href="Homepage.dc.html" style="display:block"><img src="assets/tg/logo-horizontal.svg" alt="Thinking Games Initiative" style="height:clamp(32px,3.5vw,40px);display:block"></a>
+    <nav style="display:flex;gap:10px">
+      <a href="Teachers Page.hifi.dc.html" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #5d96ff;border-radius:999px" style-hover="background:#5d96ff">Teachers</a>
+      <a href="#" aria-current="page" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #a8ed62;background:#a8ed62;border-radius:999px">Parents</a>
+    </nav>
+  </div>
+</header>
+
+<section data-screen-label="Parents hero" style="max-width:1280px;margin-inline:auto;padding:clamp(32px,4vw,48px) clamp(20px,5vw,64px) 0;display:flex;flex-direction:column;gap:12px">
+  <h1 style="margin:0;font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:800;letter-spacing:-.025em;text-wrap:balance">Every game, one shelf, sorted for your <span style="background:#a8ed62;padding:0 .14em;border-radius:8px">kid.</span></h1>
+  <p style="margin:0;font-size:clamp(16px,1.4vw,18px);line-height:1.5;max-width:640px;text-wrap:pretty">Browse everything. Stack the filters if you like.</p>
+</section>
+
+<div data-screen-label="Thinking Challenge" style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) 0">
+  <div style="background:#1e1e4e;color:#fff;border-radius:20px;padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,44px);display:flex;flex-wrap:wrap;gap:28px 40px;align-items:center">
+    <div style="flex:1 1 380px;display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div style="font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f27332">Opens on the Challenge site</div>
+      <div style="font-size:clamp(26px,2.8vw,34px);font-weight:800;line-height:1.1;letter-spacing:-.015em">The Thinking Challenge</div>
+      <p style="margin:0;font-size:17px;line-height:1.5;max-width:560px;text-wrap:pretty">Five puzzles, five minutes, no score. Wrong answers get explained. Kids who like it get pointed to what's next.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 4-5</a>
+      <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 6-8</a>
+      <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 9-11</a>
+      <span aria-hidden="true" style="width:2px;height:40px;background:#34346a;margin:0 6px"></span>
+      <button onClick="{{ copyChallenge }}" style="background:transparent;color:#fff;border:2px solid #fff;font-size:15px;font-weight:700;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:#fff;color:#1e1e4e">{{ challengeCopyLabel }}</button>
+    </div>
+  </div>
+</div>
+
+<main data-screen-label="Library" style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) clamp(64px,8vw,112px);display:flex;flex-wrap:wrap;gap:clamp(24px,3vw,40px);align-items:flex-start">
+
+  <aside aria-label="Filters" style="flex:1 1 240px;max-width:300px;display:flex;flex-direction:column;gap:28px;position:sticky;top:24px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <h2 style="margin:0;font-size:22px;font-weight:800">Filters</h2>
+      <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ clearAll }}" style="background:none;border:none;padding:0;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer">Clear all</button>
+      </sc-if>
+    </div>
+    <sc-for list="{{ groups }}" as="grp" hint-placeholder-count="4">
+      <fieldset style="border:none;margin:0;padding:0 0 24px;border-bottom:1px solid #E2E4EC;display:flex;flex-direction:column;gap:6px">
+        <legend style="padding:0;margin-bottom:10px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">{{ grp.label }}</legend>
+        <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
+          <button onClick="{{ it.onClick }}" aria-pressed="{{ it.on }}" disabled="{{ it.disabled }}" style="display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:8px 10px;margin-inline:-10px;border:none;border-radius:10px;background:transparent;text-align:left;cursor:pointer;opacity:{{ it.opacity }}" style-hover="background:#f8f8fa">
+            <span aria-hidden="true" style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid #1e1e4e;background:{{ it.box }};display:flex;align-items:center;justify-content:center">
+              <span style="width:10px;height:5px;border-left:2.5px solid #1e1e4e;border-bottom:2.5px solid #1e1e4e;transform:rotate(-45deg) translateY(-1px);opacity:{{ it.tick }}"></span>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:{{ it.weight }}">{{ it.name }}</span>
+            <span style="font-size:13px;color:#4a4d6e">{{ it.count }}</span>
+          </button>
+        </sc-for>
+      </fieldset>
+    </sc-for>
+  </aside>
+
+  <div style="flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:20px">
+    <label style="display:flex;align-items:center;border:2px solid #1e1e4e;border-radius:999px;background:#fff;padding:4px 4px 4px 22px;gap:12px" style-focus-within="outline:3px solid #a8ed62">
+      <span aria-hidden="true" style="width:16px;height:16px;border:2.5px solid #1e1e4e;border-radius:999px;position:relative;flex-shrink:0"><span style="position:absolute;width:8px;height:2.5px;background:#1e1e4e;right:-7px;bottom:-4px;transform:rotate(45deg)"></span></span>
+      <input type="search" value="{{ query }}" onInput="{{ onQuery }}" placeholder="Search games by name" aria-label="Search games by name" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:17px;padding:12px 0">
+    </label>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:36px">
+      <span style="font-size:16px;font-weight:800;margin-right:6px">{{ resultLabel }}</span>
+      <sc-for list="{{ activeChips }}" as="c" hint-placeholder-count="0">
+        <button onClick="{{ c.onRemove }}" aria-label="Remove {{ c.name }}" style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:7px 12px 7px 14px;border-radius:999px;border:none;background:#dcf8c0;cursor:pointer" style-hover="background:#a8ed62">{{ c.name }} <span aria-hidden="true" style="font-size:16px;line-height:1">×</span></button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:20px">
+        <sc-for list="{{ results }}" as="g" hint-placeholder-count="6">
+          <article style="display:flex;flex-direction:column;border:2px solid #E2E4EC;border-radius:20px;overflow:hidden;background:#fff;transition:border-color 150ms" style-hover="border-color:#a8ed62">
+            <div style="aspect-ratio:16 / 10;background:repeating-linear-gradient(135deg,#E2E4EC 0 10px,#eceef4 10px 20px);display:flex;align-items:center;justify-content:center;font:500 12px/1 ui-monospace,Menlo,monospace;color:#6b7194">game image</div>
+            <div style="padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1">
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <h3 style="margin:0;font-size:19px;font-weight:800;line-height:1.2">{{ g.name }}</h3>
+                <p style="margin:0;font-size:15px;line-height:1.45">{{ g.tagline }}</p>
+              </div>
+              <span style="font-size:13px;line-height:1.4;color:#4a4d6e">Builds {{ g.builds }}</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ g.tags }}" as="t" hint-placeholder-count="3">
+                  <span style="font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ t.bg }}">{{ t.name }}</span>
+                </sc-for>
+              </div>
+              <a href="#" style="margin-top:auto;align-self:flex-start;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:#a8ed62" style-hover="background:#1e1e4e;color:#fff">Play ↗</a>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:56px 32px;border-radius:20px;background:#f8f8fa;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+        <img src="assets/tg/mascot-parent.svg" alt="" style="width:72px;transform:rotate(-8deg)">
+        <p style="margin:0;font-size:19px;font-weight:800">Nothing matches all of those.</p>
+        <button onClick="{{ clearAll }}" style="font-size:15px;font-weight:700;padding:11px 20px;border-radius:999px;border:2px solid #1e1e4e;background:#fff;cursor:pointer">Clear filters</button>
+      </div>
+    </sc-if>
+  </div>
+</main>
+
+<div style="background:#1e1e4e;color:#fff">
+  <div style="max-width:1280px;margin-inline:auto;padding:56px clamp(20px,5vw,64px);display:grid;grid-template-columns:100px minmax(0,1fr);gap:clamp(24px,4vw,40px);align-items:center">
+    <img src="assets/tg/mascot-tgi.svg" alt="" style="width:100px;display:block">
+    <p style="margin:0;font-size:clamp(18px,2vw,24px);line-height:1.45;font-weight:500;max-width:760px;text-wrap:pretty">The Thinking Games Initiative is part of the Carina project. We invest in what we believe builds the mathematical mind.</p>
+  </div>
+  <footer style="border-top:1px solid #34346a">
+    <div style="max-width:1280px;margin-inline:auto;padding:24px clamp(20px,5vw,64px);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;font-size:14px">
+      <img src="assets/tg/logo-footer.svg" alt="Thinking Games Initiative" style="height:100px;display:block">
+      <nav style="display:flex;flex-wrap:wrap;gap:24px;white-space:nowrap"><a href="#" style="color:#fff;text-decoration:none">Privacy</a><a href="#" style="color:#fff;text-decoration:none">Terms</a><a href="#" style="color:#fff;text-decoration:none">Cookie settings</a><a href="#" style="color:#fff;text-decoration:none">Contact</a></nav>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+// Placeholder catalog — becomes `initiative` documents in the CMS; filter
+// options become `tag` documents with persona = parent.
+const GROUPS = [
+  { key: "age",  label: "Age",        options: ["Ages 4-5", "Ages 6-8", "Ages 9-11"] },
+  { key: "when", label: "When",       options: ["Car or waiting", "Free time", "Weekend"] },
+  { key: "feel", label: "Feels like", options: ["A game", "Math"] },
+  { key: "also", label: "Also",       options: ["No reading needed", "Together"] }
+];
+
+const GAMES = [
+  { name: "Beast Academy Puzzles", tagline: "A fresh puzzle every day, free", builds: "number sense · logical deduction",
+    tags: ["Free", "Solo", "5 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["Math"], also: [] },
+  { name: "Inkwell Games", tagline: "Grid puzzles, no reading needed", builds: "logical deduction · pattern recognition",
+    tags: ["Free", "Solo", "Offline", "10 min"], age: ["Ages 4-5", "Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed"] },
+  { name: "Star Stuff", tagline: "Command cute robots, quietly", builds: "sequencing · spatial reasoning",
+    tags: ["Free with account", "Solo", "20 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Free time", "Weekend"], feel: ["A game"], also: [] },
+  { name: "SuperWeird", tagline: "Silly problems, real reasoning", builds: "systems thinking · creative thinking",
+    tags: ["Subscription", "Together", "20 min"], age: ["Ages 9-11"], when: ["Weekend"], feel: ["A game"], also: ["Together"] },
+  { name: "Set Daily Puzzle", tagline: "Spot the pattern, beat the clock", builds: "pattern recognition · working memory",
+    tags: ["Free", "Together", "5 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed", "Together"] },
+  { name: "Math Makers", tagline: "Build it, then prove it works", builds: "arithmetic · strategic planning",
+    tags: ["Free", "Together", "Offline", "15 min"], age: ["Ages 4-5", "Ages 6-8"], when: ["Weekend"], feel: ["Math"], also: ["Together"] }
+];
+
+class Component extends DCLogic {
+  state = { sel: { age: [], when: [], feel: [], also: [] }, query: "", copied: false };
+
+  // OR within a group, AND across groups; `skip` lets a group count its own options.
+  matches(g, sel, q, skip) {
+    if (q && g.name.toLowerCase().indexOf(q) === -1) return false;
+    return GROUPS.every(gr => gr.key === skip || !sel[gr.key].length ||
+      sel[gr.key].some(v => g[gr.key].indexOf(v) !== -1));
+  }
+
+  toggle(key, v) {
+    this.setState(s => {
+      const cur = s.sel[key];
+      const next = cur.indexOf(v) !== -1 ? cur.filter(x => x !== v) : cur.concat([v]);
+      return { sel: Object.assign({}, s.sel, { [key]: next }) };
+    });
+  }
+
+  renderVals() {
+    const { sel, query } = this.state;
+    const q = query.trim().toLowerCase();
+    const results = GAMES.filter(g => this.matches(g, sel, q));
+    const active = [];
+    GROUPS.forEach(gr => sel[gr.key].forEach(v => active.push({ name: v, onRemove: () => this.toggle(gr.key, v) })));
+    const clearAll = () => this.setState({ sel: { age: [], when: [], feel: [], also: [] }, query: "" });
+
+    return {
+      copyChallenge: () => { this.setState({ copied: true }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ copied: false }), 1600); },
+      challengeCopyLabel: this.state.copied ? "Link copied ✓" : "Copy link",
+      query,
+      onQuery: e => this.setState({ query: e.target.value }),
+      hasFilters: active.length > 0 || !!q,
+      clearAll,
+      activeChips: active,
+      resultLabel: results.length === 1 ? "1 game" : results.length + " games",
+      hasResults: results.length > 0,
+      noResults: results.length === 0,
+      groups: GROUPS.map(gr => ({
+        label: gr.label,
+        items: gr.options.map(v => {
+          const on = sel[gr.key].indexOf(v) !== -1;
+          const count = GAMES.filter(g => g[gr.key].indexOf(v) !== -1 && this.matches(g, sel, q, gr.key)).length;
+          return {
+            name: v, on, count,
+            disabled: !on && count === 0,
+            opacity: !on && count === 0 ? 0.4 : 1,
+            box: on ? "#a8ed62" : "#fff",
+            tick: on ? 1 : 0,
+            weight: on ? 700 : 400,
+            onClick: () => this.toggle(gr.key, v)
+          };
+        })
+      })),
+      results: results.map(g => ({
+        name: g.name, tagline: g.tagline, builds: g.builds,
+        tags: g.tags.map((t, i) => ({ name: t, bg: i === 0 ? "#dcf8c0" : "#f8f8fa" }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

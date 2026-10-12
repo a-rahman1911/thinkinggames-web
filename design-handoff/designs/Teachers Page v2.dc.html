@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0;background:#fff;font-family:'Inter',system-ui,sans-serif;color:#1e1e4e;-webkit-font-smoothing:antialiased}a{color:#1e1e4e}a:hover{color:#f27332}button,input{font:inherit;color:inherit}</style>
+</helmet>
+
+<header style="border-bottom:3px solid #5d96ff;background:#fff">
+  <div style="max-width:1280px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px clamp(20px,5vw,64px)">
+    <a href="Homepage.dc.html" style="display:block;flex-shrink:0"><img src="assets/tg/logo-horizontal.svg" alt="Thinking Games Initiative" style="height:clamp(32px,3.5vw,40px);display:block"></a>
+    <form role="search" onSubmit="{{ onSearchSubmit }}" style="flex:1 1 280px;max-width:440px;display:flex;align-items:center;border:2px solid #1e1e4e;border-radius:999px;background:#fff;padding:4px 4px 4px 20px;gap:10px;margin:0">
+      <input type="search" value="{{ query }}" onInput="{{ onQuery }}" placeholder="Search games by name" aria-label="Search games by name" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:16px;padding:8px 0">
+      <button type="submit" style="border:none;border-radius:999px;background:#1e1e4e;color:#fff;font-size:14px;font-weight:700;padding:10px 18px;cursor:pointer">Search</button>
+    </form>
+    <nav style="display:flex;gap:10px;flex-shrink:0">
+      <a href="#" aria-current="page" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #5d96ff;background:#5d96ff;border-radius:999px">Teachers</a>
+      <a href="Parents Library.dc.html" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #a8ed62;border-radius:999px" style-hover="background:#a8ed62">Parents</a>
+    </nav>
+  </div>
+</header>
+
+<section data-screen-label="Teachers hero" style="max-width:1280px;margin-inline:auto;padding:clamp(32px,4vw,48px) clamp(20px,5vw,64px) 0;display:flex;flex-direction:column;gap:12px">
+  <h1 style="margin:0;font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:800;letter-spacing:-.025em;text-wrap:balance">Five minutes. Real <span style="background:#5d96ff;padding:0 .14em;border-radius:8px">thinking.</span></h1>
+  <p style="margin:0;font-size:clamp(16px,1.4vw,18px);line-height:1.5;max-width:640px;text-wrap:pretty">Games grouped by the moment in your lesson. Open a moment, pick a game.</p>
+</section>
+
+<main data-screen-label="Use it" style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:32px">
+  <div data-screen-label="Thinking Challenge" style="background:#1e1e4e;color:#fff;border-radius:20px;padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,44px);display:flex;flex-wrap:wrap;gap:28px 40px;align-items:center">
+    <div style="flex:1 1 380px;display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div style="font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f27332">Opens on the Challenge site</div>
+      <div style="font-size:clamp(26px,2.8vw,34px);font-weight:800;line-height:1.1;letter-spacing:-.015em">The Thinking Challenge</div>
+      <p style="margin:0;font-size:17px;line-height:1.5;max-width:560px;text-wrap:pretty">Five-question quiz, five minutes, no score. Wrong answers get explained. Kids who like it get pointed to what's next.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <a href="#" style="text-decoration:none;background:#5d96ff;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 3-5</a>
+      <a href="#" style="text-decoration:none;background:#5d96ff;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 6-8</a>
+      <a href="#" style="text-decoration:none;background:#5d96ff;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 9-11</a>
+      <span aria-hidden="true" style="width:2px;height:40px;background:#34346a;margin:0 6px"></span>
+      <button onClick="{{ copyChallenge }}" style="background:transparent;color:#fff;border:2px solid #fff;font-size:15px;font-weight:700;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:#fff;color:#1e1e4e">{{ challengeCopyLabel }}</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ searching }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+        <h2 style="margin:0;font-size:clamp(26px,3vw,36px);font-weight:800;letter-spacing:-.02em">{{ searchLabel }}</h2>
+        <button onClick="{{ clearQuery }}" style="background:none;border:none;padding:0;font-size:15px;font-weight:700;text-decoration:underline;cursor:pointer">Back to moments</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:14px">
+        <sc-for list="{{ searchResults }}" as="g" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;background:#f8f8fa">
+            <div style="aspect-ratio:4 / 3;border-radius:10px;background:repeating-linear-gradient(135deg,#E2E4EC 0 10px,#eceef4 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px/1.2 ui-monospace,Menlo,monospace;color:#6b7194;text-align:center;padding:6px">game image</div>
+            <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:18px;font-weight:800;line-height:1.2">{{ g.name }}</span>
+                <span style="font-size:15px;line-height:1.4">{{ g.tagline }}</span>
+              </div>
+              <span style="font-size:13px;line-height:1.4;color:#4a4d6e">Good for {{ g.moments }}</span>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+                <sc-for list="{{ g.tags }}" as="t" hint-placeholder-count="3">
+                  <span style="font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ t.bg }}">{{ t.name }}</span>
+                </sc-for>
+                <a href="#" style="margin-left:auto;text-decoration:none;font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;border:2px solid #1e1e4e;white-space:nowrap" style-hover="background:#1e1e4e;color:#fff">Open game ↗</a>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:40px;border-radius:16px;background:#f8f8fa;font-size:17px;font-weight:700;text-align:center">No games with that name yet.</p>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ notSearching }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 style="margin:0;font-size:clamp(30px,3.6vw,44px);line-height:1.08;font-weight:800;letter-spacing:-.02em">What's the moment?</h2>
+      <p style="margin:0;font-size:17px;line-height:1.5">Open one to see its games.</p>
+    </div>
+    <div style="font-size:15px;font-weight:700">{{ totalLabel }}</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <sc-for list="{{ moments }}" as="m" hint-placeholder-count="6">
+      <div style="border:2px solid {{ m.border }};border-radius:20px;overflow:hidden;background:#fff;transition:border-color 200ms">
+        <button onClick="{{ m.onToggle }}" aria-expanded="{{ m.open }}" style="width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:20px;align-items:center;padding:clamp(18px,2.4vw,26px) clamp(20px,3vw,32px);background:{{ m.headBg }};border:none;text-align:left;cursor:pointer;transition:background-color 200ms" style-hover="background:#dfeaff">
+          <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-size:clamp(20px,2.2vw,26px);font-weight:800;line-height:1.15;letter-spacing:-.01em">{{ m.title }}</span>
+            <span style="font-size:16px;line-height:1.4">{{ m.blurb }}</span>
+          </span>
+          <span style="font-size:14px;font-weight:700;white-space:nowrap">{{ m.count }}</span>
+          <span aria-hidden="true" style="width:44px;height:44px;border-radius:999px;background:{{ m.iconBg }};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;line-height:1">{{ m.icon }}</span>
+        </button>
+        <sc-if value="{{ m.open }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:clamp(16px,2.4vw,28px) clamp(16px,3vw,32px) clamp(20px,3vw,32px);border-top:2px solid #5d96ff;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px">
+            <sc-for list="{{ filterGroups }}" as="fg" hint-placeholder-count="3">
+              <div role="group" aria-label="{{ fg.label }}" style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">{{ fg.label }}</span>
+                <div style="display:flex;border:2px solid #1e1e4e;border-radius:999px;overflow:hidden;background:#fff">
+                  <sc-for list="{{ fg.options }}" as="o" hint-placeholder-count="3">
+                    <button onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}" style="border:none;min-height:40px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.name }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearFilters }}" style="background:none;border:none;padding:0;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer">Clear</button>
+            </sc-if>
+          </div>
+          <sc-if value="{{ m.empty }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:32px;border-radius:16px;background:#f8f8fa;font-size:16px;font-weight:700;text-align:center">No games match those filters for this moment.</p>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:14px">
+            <sc-for list="{{ m.games }}" as="g" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;background:#f8f8fa">
+                <div style="aspect-ratio:4 / 3;border-radius:10px;background:repeating-linear-gradient(135deg,#E2E4EC 0 10px,#eceef4 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px/1.2 ui-monospace,Menlo,monospace;color:#6b7194;text-align:center;padding:6px">game image</div>
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:18px;font-weight:800;line-height:1.2">{{ g.name }}</span>
+                    <span style="font-size:15px;line-height:1.4">{{ g.tagline }}</span>
+                  </div>
+                  <span style="font-size:13px;line-height:1.4;color:#4a4d6e">Builds {{ g.builds }}</span>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+                    <sc-for list="{{ g.tags }}" as="t" hint-placeholder-count="3">
+                      <span style="font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:{{ t.bg }}">{{ t.name }}</span>
+                    </sc-for>
+                    <a href="#" style="margin-left:auto;text-decoration:none;font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;border:2px solid #1e1e4e;white-space:nowrap" style-hover="background:#1e1e4e;color:#fff">Open game ↗</a>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+</main>
+
+<div style="background:#1e1e4e;color:#fff">
+  <div style="max-width:1280px;margin-inline:auto;padding:56px clamp(20px,5vw,64px);display:grid;grid-template-columns:100px minmax(0,1fr);gap:clamp(24px,4vw,40px);align-items:center">
+    <img src="assets/tg/mascot-tgi.svg" alt="" style="width:100px;display:block">
+    <p style="margin:0;font-size:clamp(18px,2vw,24px);line-height:1.45;font-weight:500;max-width:760px;text-wrap:pretty">The Thinking Games Initiative is part of the Carina project. We invest in what we believe builds the mathematical mind.</p>
+  </div>
+  <footer style="border-top:1px solid #34346a">
+    <div style="max-width:1280px;margin-inline:auto;padding:24px clamp(20px,5vw,64px);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;font-size:14px">
+      <img src="assets/tg/logo-footer.svg" alt="Thinking Games Initiative" style="height:100px;display:block">
+      <nav style="display:flex;flex-wrap:wrap;gap:24px;white-space:nowrap"><a href="#" style="color:#fff;text-decoration:none">Privacy</a><a href="#" style="color:#fff;text-decoration:none">Terms</a><a href="#" style="color:#fff;text-decoration:none">Cookie settings</a><a href="#" style="color:#fff;text-decoration:none">Contact</a></nav>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultOpen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[-1,0,1,2,3,4,5],&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;}}">
+const MOMENTS = [
+  { title: "Morning warm-up",     blurb: "One problem, whole class, five minutes" },
+  { title: "Early finishers",     blurb: "Quiet, self-serve, no setup" },
+  { title: "Indoor recess",       blurb: "Energy out, chaos contained" },
+  { title: "The last 10 minutes", blurb: "Whole class, projector on" },
+  { title: "Cover or sub day",    blurb: "Nothing to explain, nothing to mark" },
+  { title: "Friday reward time",  blurb: "Earned, and still thinking" }
+];
+// Placeholder catalog. grade/minutes/feel drive the in-moment filters (CMS: teacher tags).
+const GAMES = [
+  { name: "Beast Academy Puzzles", tagline: "Daily puzzles for warm-up", builds: "logical deduction · number sense", tags: ["Free", "Solo", "5 min"], grade: ["2-3", "4-5"], minutes: "5", feel: "math" },
+  { name: "Inkwell Games", tagline: "Grid puzzles, pure logic", builds: "logical deduction · pattern recognition", tags: ["Free", "Solo", "Offline", "No reading needed", "10 min"], grade: ["K-1", "2-3", "4-5"], minutes: "10", feel: "a game" },
+  { name: "Star Stuff", tagline: "Command bots to solve puzzles", builds: "sequencing · spatial reasoning", tags: ["Free with account", "Pairs", "20 min"], grade: ["2-3", "4-5"], minutes: "20", feel: "a game" },
+  { name: "SuperWeird", tagline: "Co-design a robot system", builds: "systems thinking · creative thinking", tags: ["Free", "Whole class", "20 min"], grade: ["4-5"], minutes: "20", feel: "a game" },
+  { name: "Set Daily Puzzle", tagline: "Spot the pattern, beat the clock", builds: "pattern recognition · working memory", tags: ["Free", "Whole class", "5 min"], grade: ["2-3", "4-5"], minutes: "5", feel: "a game" },
+  { name: "Math Makers", tagline: "Build it, then prove it works", builds: "arithmetic · strategic planning", tags: ["Free", "Pairs", "Offline", "10 min"], grade: ["K-1", "2-3"], minutes: "10", feel: "math" }
+];
+const FILTERS = [
+  { key: "grade",   label: "Grade",      options: ["K-1", "2-3", "4-5"] },
+  { key: "minutes", label: "Minutes",    options: ["5", "10", "20"] },
+  { key: "feel",    label: "Feels like", options: ["a game", "math"] }
+];
+const gamesFor = i => GAMES.map((_, gi) => GAMES[(gi + i) % GAMES.length]).slice(0, 5 - (i % 2));
+const tagView = g => g.tags.map((t, ti) => ({ name: t, bg: ti === 0 ? "#dfeaff" : "#fff" }));
+
+class Component extends DCLogic {
+  state = { open: this.props.defaultOpen ?? 1, query: "", f: { grade: null, minutes: null, feel: null }, copied: false };
+
+  pass(g) {
+    const f = this.state.f;
+    return (!f.grade || g.grade.indexOf(f.grade) !== -1) && (!f.minutes || g.minutes === f.minutes) && (!f.feel || g.feel === f.feel);
+  }
+
+  renderVals() {
+    const { open, query, f } = this.state;
+    const q = query.trim().toLowerCase();
+    const hits = q ? GAMES.filter(g => g.name.toLowerCase().indexOf(q) !== -1) : [];
+    return {
+      query,
+      onQuery: e => this.setState({ query: e.target.value }),
+      onSearchSubmit: e => e.preventDefault(),
+      clearQuery: () => this.setState({ query: "" }),
+      searching: !!q, notSearching: !q,
+      searchLabel: hits.length === 1 ? "1 game matches" : hits.length + " games match",
+      searchEmpty: !!q && hits.length === 0,
+      searchResults: hits.map(g => ({
+        name: g.name, tagline: g.tagline, tags: tagView(g),
+        moments: MOMENTS.filter((_, i) => gamesFor(i).indexOf(g) !== -1).map(m => m.title.toLowerCase()).join(" · ")
+      })),
+      copyChallenge: () => { this.setState({ copied: true }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ copied: false }), 1600); },
+      challengeCopyLabel: this.state.copied ? "Link copied ✓" : "Copy link",
+      hasFilters: !!(f.grade || f.minutes || f.feel),
+      clearFilters: () => this.setState({ f: { grade: null, minutes: null, feel: null } }),
+      filterGroups: FILTERS.map(fg => ({
+        label: fg.label,
+        options: fg.options.map(o => {
+          const on = f[fg.key] === o;
+          return { name: o, on, bg: on ? "#1e1e4e" : "#fff", fg: on ? "#fff" : "#1e1e4e",
+            onClick: () => this.setState(s => ({ f: Object.assign({}, s.f, { [fg.key]: on ? null : o }) })) };
+        })
+      })),
+      totalLabel: MOMENTS.length + " moments · " + GAMES.length + " games",
+      moments: MOMENTS.map((m, i) => {
+        const isOpen = open === i;
+        const list = gamesFor(i);
+        const shown = list.filter(g => this.pass(g));
+        return {
+          title: m.title, blurb: m.blurb, open: isOpen,
+          count: list.length + " games",
+          empty: shown.length === 0,
+          border: isOpen ? "#5d96ff" : "#E2E4EC",
+          headBg: isOpen ? "#dfeaff" : "#fff",
+          iconBg: isOpen ? "#5d96ff" : "#f8f8fa",
+          icon: isOpen ? "−" : "+",
+          onToggle: () => this.setState({ open: isOpen ? -1 : i }),
+          games: shown.map(g => ({ name: g.name, tagline: g.tagline, builds: g.builds, tags: tagView(g) }))
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

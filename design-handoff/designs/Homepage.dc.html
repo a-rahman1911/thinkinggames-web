@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#e9e9ef;font-family:'Inter',system-ui,sans-serif;color:#1e1e4e}a{color:#1e1e4e}a:hover{color:#f27332}</style>
+</helmet>
+
+<section style="padding:64px;display:flex;flex-direction:column;gap:32px">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:900px">
+    <div style="font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9196B0">Turn 1 · Homepage</div>
+    <div style="font-size:28px;font-weight:800">Two paths only: Teachers and Parents. Same brand, two treatments.</div>
+    <div style="font-size:16px;line-height:1.5;color:#4a4d6e">Every heading, line of copy, button label, and link is a CMS field. Returning visitors still skip straight to their page (handled server-side, so no flash).</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+
+    <!-- 1a -->
+    <div id="1a" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px"><span style="background:#1e1e4e;color:#fff;font-weight:800;font-size:15px;padding:6px 12px;border-radius:999px">1a</span><span style="font-weight:700;font-size:16px">Two doors: light hero, side-by-side panels</span></div>
+      <div data-screen-label="1a Homepage" style="width:1280px;background:#fff;box-shadow:0 2px 24px rgba(30,30,78,.08);overflow:hidden">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:22px 64px;border-bottom:3px solid #f27332">
+          <img src="assets/tg/logo-logotype.svg" alt="Thinking Games Initiative" style="height:44px;display:block">
+          <nav style="display:flex;gap:12px">
+            <a href="#" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #5d96ff;border-radius:999px" style-hover="background:#5d96ff">Teachers</a>
+            <a href="#" style="text-decoration:none;font-weight:700;font-size:15px;padding:10px 20px;border:2px solid #a8ed62;border-radius:999px" style-hover="background:#a8ed62">Parents</a>
+          </nav>
+        </header>
+
+        <div style="padding:88px 64px 56px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:64px;align-items:end">
+          <h1 style="margin:0;font-size:68px;line-height:1.02;font-weight:800;letter-spacing:-.025em;text-wrap:balance"><span style="background:linear-gradient(transparent 58%,#fce3d6 58%)">Where</span> play builds the mathematical mind.</h1>
+          <p style="margin:0 0 8px;font-size:19px;line-height:1.55;text-wrap:pretty">Curated puzzles and strategy games that develop reasoning, persistence, and the thinking skills behind math excellence.</p>
+        </div>
+
+        <div style="padding:0 64px 88px;display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <a href="Teachers Page.hifi.dc.html" style="position:relative;overflow:hidden;display:flex;flex-direction:column;gap:20px;min-height:400px;padding:44px;background:#dfeaff;text-decoration:none;color:#1e1e4e" style-hover="background:#cfdfff">
+            <div style="font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase">For teachers</div>
+            <div style="font-size:38px;font-weight:800;line-height:1.1;letter-spacing:-.015em;max-width:380px;text-wrap:balance">Games that fit the lesson you're already teaching.</div>
+            <div style="font-size:17px;line-height:1.5;max-width:340px">Ready-to-use activities sorted by grade, with setup notes for the classroom.</div>
+            <div style="margin-top:auto;display:flex"><span style="background:#5d96ff;font-weight:700;font-size:16px;padding:16px 24px;border-radius:999px">Start with the teacher toolkit →</span></div>
+            <img src="assets/tg/mascot-teacher.svg" alt="" style="position:absolute;right:-8px;bottom:-8px;width:230px">
+          </a>
+          <a href="Parents Library.dc.html" style="position:relative;overflow:hidden;display:flex;flex-direction:column;gap:20px;min-height:400px;padding:44px;background:#dcf8c0;text-decoration:none;color:#1e1e4e" style-hover="background:#cdf3a6">
+            <div style="font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase">For parents</div>
+            <div style="font-size:38px;font-weight:800;line-height:1.1;letter-spacing:-.015em;max-width:380px;text-wrap:balance">Puzzles your kid will ask to play again.</div>
+            <div style="font-size:17px;line-height:1.5;max-width:340px">A library you can filter by age and skill, with only games we'd hand our own kids.</div>
+            <div style="margin-top:auto;display:flex"><span style="background:#a8ed62;font-weight:700;font-size:16px;padding:16px 24px;border-radius:999px">Browse the library →</span></div>
+            <img src="assets/tg/mascot-parent.svg" alt="" style="position:absolute;right:-10px;bottom:-10px;width:190px;transform:rotate(-8deg)">
+          </a>
+        </div>
+
+        <div style="background:#1e1e4e;color:#fff;padding:56px 64px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:40px;align-items:center">
+          <img src="assets/tg/mascot-tgi.svg" alt="" style="width:120px;display:block">
+          <p style="margin:0;font-size:24px;line-height:1.45;font-weight:500;max-width:760px;text-wrap:pretty">The Thinking Games Initiative is part of the Carina project. We invest in what we believe builds the mathematical mind.</p>
+        </div>
+        <footer style="background:#1e1e4e;color:#fff;border-top:1px solid #34346a;padding:24px 64px;display:flex;justify-content:space-between;align-items:center;font-size:14px">
+          <img src="assets/tg/logo-footer.svg" alt="Thinking Games Initiative" style="height:100px;display:block">
+          <nav style="display:flex;gap:24px;flex-shrink:0;white-space:nowrap"><a href="#" style="color:#fff;text-decoration:none">Privacy</a><a href="#" style="color:#fff;text-decoration:none">Terms</a><a href="#" style="color:#fff;text-decoration:none">Cookie settings</a><a href="#" style="color:#fff;text-decoration:none">Contact</a></nav>
+        </footer>
+      </div>
+    </div>
+
+    <!-- 1b -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px"><span style="background:#1e1e4e;color:#fff;font-weight:800;font-size:15px;padding:6px 12px;border-radius:999px">1b</span><span style="font-weight:700;font-size:16px">The gate: dark hero, "I'm a…" choice rows</span></div>
+      <div data-screen-label="1b Homepage" style="width:1280px;background:#1e1e4e;color:#fff;box-shadow:0 2px 24px rgba(30,30,78,.08);overflow:hidden">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:22px 64px;border-bottom:3px solid #f27332;background:#fff">
+          <img src="assets/tg/logo-logotype.svg" alt="Thinking Games Initiative" style="height:44px;display:block">
+          <a href="#" style="font-size:15px;font-weight:700;text-decoration:none">About the initiative</a>
+        </header>
+
+        <div style="position:relative;overflow:hidden;padding:96px 64px 104px;display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:72px;align-items:center;min-height:560px">
+          <div style="display:flex;flex-direction:column;gap:28px;position:relative;z-index:1">
+            <h1 style="margin:0;font-size:72px;line-height:1.02;font-weight:800;letter-spacing:-.025em;text-wrap:balance"><span style="color:#f27332">Where</span> play builds the mathematical mind.</h1>
+            <p style="margin:0;font-size:19px;line-height:1.55;max-width:500px;color:#fff;text-wrap:pretty">Curated puzzles and strategy games that develop reasoning, persistence, and the thinking skills behind math excellence.</p>
+            <div style="font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;display:flex;gap:10px;align-items:center">Choose your path <span style="color:#f27332">→</span></div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px;position:relative;z-index:1">
+            <a href="#" style="display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:28px;align-items:center;padding:24px 32px 24px 24px;background:#fff;color:#1e1e4e;text-decoration:none;border-bottom:6px solid #5d96ff" style-hover="background:#dfeaff">
+              <div style="width:120px;height:120px;background:#dfeaff;display:flex;align-items:flex-end;justify-content:flex-end;overflow:hidden"><img src="assets/tg/mascot-teacher.svg" alt="" style="width:100px;display:block"></div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-size:30px;font-weight:500;letter-spacing:-.01em">I'm a <b style="font-weight:800">Teacher</b></div>
+                <div style="font-size:16px;line-height:1.4">Classroom-ready games by grade</div>
+              </div>
+              <div style="font-size:28px;font-weight:700">→</div>
+            </a>
+            <a href="#" style="display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:28px;align-items:center;padding:24px 32px 24px 24px;background:#fff;color:#1e1e4e;text-decoration:none;border-bottom:6px solid #a8ed62" style-hover="background:#dcf8c0">
+              <div style="width:120px;height:120px;background:#dcf8c0;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="assets/tg/mascot-parent.svg" alt="" style="width:84px;display:block;transform:rotate(-8deg)"></div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-size:30px;font-weight:500;letter-spacing:-.01em">I'm a <b style="font-weight:800">Parent</b></div>
+                <div style="font-size:16px;line-height:1.4">A library of games for home, by age</div>
+              </div>
+              <div style="font-size:28px;font-weight:700">→</div>
+            </a>
+          </div>
+
+          <img src="assets/tg/mascot-tgi.svg" alt="" style="position:absolute;left:560px;bottom:-90px;width:220px">
+        </div>
+
+        <footer style="background:#16163d;padding:40px 64px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:48px;align-items:center;font-size:14px">
+          <p style="margin:0;font-size:17px;line-height:1.5;max-width:620px">The Thinking Games Initiative is part of the Carina project. We invest in what we believe builds the mathematical mind.</p>
+          <nav style="display:flex;gap:24px;flex-shrink:0;white-space:nowrap"><a href="#" style="color:#fff;text-decoration:none">Privacy</a><a href="#" style="color:#fff;text-decoration:none">Terms</a><a href="#" style="color:#fff;text-decoration:none">Cookie settings</a><a href="#" style="color:#fff;text-decoration:none">Contact</a></nav>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+</body>
+</html>
