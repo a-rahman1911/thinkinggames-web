@@ -5,16 +5,14 @@ import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
-import { TEACHER_GROUPS } from '@/sanity/groups'
+import { TEACHER_GROUPS, badges, builds, facetValues, sortGames, type FacetKey } from '@/lib/derive'
 import type { Game, TeachersData } from '@/sanity/types'
 
-type Sel = Record<string, string | null>
-
-const clean = (games?: (Game | null)[] | null) => (games || []).filter((g): g is Game => !!g)
+type Sel = Partial<Record<FacetKey, string | null>>
 
 export function TeachersView({ data }: { data: TeachersData }) {
-  const { page, options } = data
-  const moments = useMemo(() => data.moments.map((m) => ({ ...m, games: clean(m.games) })), [data.moments])
+  const { page } = data
+  const moments = useMemo(() => (data.moments || []).map((m) => ({ ...m, games: sortGames(m.games || []) })), [data.moments])
   const allGames = useMemo(() => {
     const map = new Map<string, Game>()
     moments.forEach((m) => m.games.forEach((g) => map.set(g._id, g)))
@@ -25,12 +23,11 @@ export function TeachersView({ data }: { data: TeachersData }) {
   const [query, setQuery] = useState('')
   const [sel, setSel] = useState<Sel>({})
 
-  const groups = TEACHER_GROUPS.map((g) => ({ ...g, options: options.filter((o) => o.group === g.key) })).filter(
-    (g) => g.options.length,
-  )
+  const groups = TEACHER_GROUPS
   const hasFilters = Object.values(sel).some(Boolean)
-  // One choice per group; a game passes when it has every chosen option.
-  const pass = (g: Game) => Object.values(sel).every((id) => !id || g.filters?.some((f) => f._id === id))
+  // One choice per group; a game passes when it matches every chosen option.
+  const pass = (g: Game) =>
+    (Object.entries(sel) as [FacetKey, string | null][]).every(([key, v]) => !v || facetValues(g, key).includes(v))
 
   const q = query.trim().toLowerCase()
   const hits = q ? allGames.filter((g) => g.name.toLowerCase().includes(q)) : []
@@ -140,12 +137,12 @@ export function TeachersView({ data }: { data: TeachersData }) {
                                 <span className="seg-label">{g.label}</span>
                                 <div className="seg-opts">
                                   {g.options.map((o) => {
-                                    const on = sel[g.key] === o._id
+                                    const on = sel[g.key] === o.value
                                     return (
                                       <button
-                                        key={o._id}
+                                        key={o.value}
                                         aria-pressed={on}
-                                        onClick={() => setSel((s) => ({ ...s, [g.key]: on ? null : o._id }))}
+                                        onClick={() => setSel((s) => ({ ...s, [g.key]: on ? null : o.value }))}
                                       >
                                         {o.label}
                                       </button>
@@ -164,7 +161,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                         {shown.length ? (
                           <div className="rows">
                             {shown.map((g) => (
-                              <GameRow key={g._id} game={g} meta={g.builds ? `Builds ${g.builds}` : undefined} />
+                              <GameRow key={g._id} game={g} meta={g.skills?.length ? `Builds ${builds(g)}` : undefined} />
                             ))}
                           </div>
                         ) : (
@@ -190,11 +187,11 @@ function GameRow({ game, meta }: { game: Game; meta?: string }) {
       <div className="row-body">
         <div>
           <div className="row-name">{game.name}</div>
-          {game.tagline && <div className="row-tagline">{game.tagline}</div>}
+          {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
         </div>
         {meta && <span className="meta">{meta}</span>}
         <div className="row-foot">
-          <Badges badges={game.badges} />
+          <Badges badges={badges(game)} />
           {game.url && (
             <a className="btn-outline" href={game.url} target="_blank" rel="noopener">
               Open game ↗<span className="sr-only"> {game.name} (opens in new tab)</span>

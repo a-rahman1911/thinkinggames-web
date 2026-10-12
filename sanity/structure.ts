@@ -9,7 +9,8 @@ export const structure: StructureResolver = (S) =>
         S.listItem().title(title).id(type).child(S.document().schemaType(type).documentId(type).title(title)),
       ),
       S.divider(),
-      S.documentTypeListItem('moment').title('Teacher moments'),
       S.documentTypeListItem('game').title('Games'),
-      S.documentTypeListItem('filterOption').title('Filter options'),
+      S.documentTypeListItem('moment').title('Teacher moments'),
+      S.documentTypeListItem('skill').title('Skills'),
+      S.documentTypeListItem('whenOption').title('When options (parents)'),
     ])
