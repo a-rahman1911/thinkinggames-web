@@ -8,6 +8,7 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 - Parents search box height fix. (384a3dd)
 - Install, typecheck and production build pass locally against real Sanity (project rh1roy5u, dataset production, 34 seed documents).
 - Design handoff committed to the repo under design-handoff/ (designs, docs, handoff README). The designs are the visual source of truth.
+- 2026-10-12 build check in the cloud session: typecheck passes, production build compiles with no warnings and prerenders all nine routes, and /, /teachers, /parents and /studio return 200 in a browser. No code changes were needed. Sanity was reached through the seed-content stand-in because the session's network policy still blocks the Sanity hosts; Studio therefore stops at its loading spinner there (it cannot reach api.sanity.io to sign in). The home page requests /favicon.ico, which does not exist yet.
 
 ## Open, in order
 
