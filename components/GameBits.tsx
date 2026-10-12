@@ -1,13 +1,13 @@
 import { urlFor } from '@/sanity/client'
-import type { Game } from '@/sanity/types'
+import type { SanityImage } from '@/sanity/types'
 
-export function GameImage({ game, w, h }: { game: Game; w: number; h: number }) {
+export function GameImage({ image, w, h }: { image?: SanityImage | null; w: number; h: number }) {
   return (
     <div className="thumb">
-      {game.image && (
+      {image && (
         <img
-          src={urlFor(game.image).width(w * 2).height(h * 2).fit('crop').url()}
-          alt={game.image.alt || ''}
+          src={urlFor(image).width(w * 2).height(h * 2).fit('crop').url()}
+          alt={image.alt || ''}
           width={w}
           height={h}
           loading="lazy"

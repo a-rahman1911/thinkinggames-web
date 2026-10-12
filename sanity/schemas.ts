@@ -1,5 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import { COSTS, FEELS, PLATFORMS, PLAYERS, SHOW_ON } from '../lib/derive'
+import { BADGE_KINDS, COSTS, FEELS, GRADES, PLATFORMS, PLAYERS } from '../lib/derive'
 
 export const SINGLETONS = [
   { type: 'siteSettings', title: 'Site settings' },
@@ -141,60 +141,105 @@ const parentsPage = defineType({
   preview: { prepare: () => ({ title: 'Parents page' }) },
 })
 
-type GameDoc = { ageFrom?: number; showOn?: string[] }
+type AudienceObj = { show?: boolean }
 
 const refList = (type: string) => [defineArrayMember({ type: 'reference', to: [{ type }] })]
+const altField = () => defineField({ name: 'alt', title: 'Alt text', type: 'string', validation: (r) => r.required() })
+
+/** Hide a field inside an audience object until that audience's "show" switch is on. */
+const untilShown = ({ parent }: { parent?: unknown }) => !(parent as AudienceObj | undefined)?.show
+
+/** The values an audience tab can override. Blank means "use the Shared value". */
+const overrideFields = (audience: 'Teachers' | 'Parents') => {
+  const only = `Only if different for ${audience.toLowerCase()}. Blank uses the Shared value.`
+  return [
+    defineField({ name: 'url', title: 'URL', type: 'url', description: only, hidden: untilShown }),
+    defineField({ name: 'subtitle', type: 'string', description: only, hidden: untilShown }),
+    defineField({ name: 'image', type: 'image', description: only, options: { hotspot: true }, fields: [altField()], hidden: untilShown }),
+    defineField({ name: 'icon', type: 'image', description: only, fields: [altField()], hidden: untilShown }),
+    defineField({
+      name: 'minutes',
+      type: 'number',
+      description: `${only} Drives this page's Minutes filter and badge.`,
+      hidden: untilShown,
+      validation: (r) => r.integer().min(1).max(120),
+    }),
+    defineField({ name: 'skills', title: 'Skills it builds', type: 'array', description: only, of: refList('skill'), hidden: untilShown, validation: (r) => r.max(3).unique() }),
+    defineField({
+      name: 'feelsLike',
+      title: 'Feels like',
+      type: 'string',
+      description: only,
+      options: { list: [...FEELS], layout: 'dropdown' },
+      hidden: untilShown,
+    }),
+    defineField({
+      name: 'badges',
+      type: 'array',
+      description: 'Which badges to show on this page. Leave empty to show all.',
+      of: [defineArrayMember({ type: 'string' })],
+      options: { list: [...BADGE_KINDS], layout: 'grid' },
+      hidden: untilShown,
+      validation: (r) => r.unique(),
+    }),
+    defineField({
+      name: 'featured',
+      type: 'boolean',
+      description: audience === 'Teachers' ? 'Show first in Teachers search results' : 'Pin to the top of the Library',
+      initialValue: false,
+      hidden: untilShown,
+    }),
+  ]
+}
 
 const game = defineType({
   name: 'game',
   title: 'Game',
   type: 'document',
   groups: [
-    { name: 'basics', title: 'Basics', default: true },
-    { name: 'facts', title: 'Facts' },
-    { name: 'placement', title: 'Where it shows' },
-    { name: 'internal', title: 'Internal' },
+    { name: 'shared', title: 'Shared', default: true },
+    { name: 'teachers', title: 'Teachers' },
+    { name: 'parents', title: 'Parents' },
   ],
   fields: [
-    defineField({ name: 'name', type: 'string', group: 'basics', validation: (r) => r.required() }),
+    defineField({ name: 'name', type: 'string', group: 'shared', validation: (r) => r.required() }),
     defineField({
       name: 'subtitle',
       type: 'string',
-      group: 'basics',
+      group: 'shared',
       description: 'One short line under the name',
       validation: (r) => r.required(),
     }),
-    defineField({ name: 'url', title: 'Game URL', type: 'url', group: 'basics', validation: (r) => r.required() }),
+    defineField({ name: 'url', title: 'Game URL', type: 'url', group: 'shared', validation: (r) => r.required() }),
     defineField({
       name: 'image',
       type: 'image',
-      group: 'basics',
+      group: 'shared',
       description: 'Card picture. Landscape 16:10, at least 800 x 500.',
       options: { hotspot: true },
-      fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string', validation: (r) => r.required() })],
+      fields: [altField()],
       validation: (r) => r.required(),
     }),
     defineField({
       name: 'icon',
       type: 'image',
-      group: 'basics',
+      group: 'shared',
       description: 'Square logo or icon, at least 256 x 256. Used where a picture is too big.',
       fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
     }),
-
     defineField({
       name: 'ageFrom',
       title: 'Age from',
       type: 'number',
-      group: 'facts',
-      description: 'Youngest age it suits. Drives the Parents "Age" and Teachers "Grade" filters.',
+      group: 'shared',
+      description: 'Youngest age it suits. Drives the Parents "Age" filter.',
       validation: (r) => r.required().integer().min(3).max(14),
     }),
     defineField({
       name: 'ageTo',
       title: 'Age to',
       type: 'number',
-      group: 'facts',
+      group: 'shared',
       validation: (r) =>
         r
           .required()
@@ -202,21 +247,21 @@ const game = defineType({
           .min(3)
           .max(14)
           .custom((v, ctx) => {
-            const from = (ctx.document as GameDoc | undefined)?.ageFrom
+            const from = (ctx.document as { ageFrom?: number } | undefined)?.ageFrom
             return typeof v === 'number' && typeof from === 'number' && v < from ? 'Must be at least "Age from"' : true
           }),
     }),
     defineField({
       name: 'minutes',
       type: 'number',
-      group: 'facts',
+      group: 'shared',
       description: 'Typical play time for one round. Drives the "Minutes" filter and the "10 min" badge.',
       validation: (r) => r.required().integer().min(1).max(120),
     }),
     defineField({
       name: 'players',
       type: 'array',
-      group: 'facts',
+      group: 'shared',
       of: [defineArrayMember({ type: 'string' })],
       options: { list: [...PLAYERS], layout: 'grid' },
       validation: (r) => r.required().min(1).unique(),
@@ -224,7 +269,7 @@ const game = defineType({
     defineField({
       name: 'cost',
       type: 'string',
-      group: 'facts',
+      group: 'shared',
       options: { list: [...COSTS], layout: 'radio' },
       validation: (r) => r.required(),
     }),
@@ -232,7 +277,7 @@ const game = defineType({
       name: 'offline',
       title: 'Works offline',
       type: 'boolean',
-      group: 'facts',
+      group: 'shared',
       initialValue: false,
       validation: (r) => r.required(),
     }),
@@ -240,7 +285,7 @@ const game = defineType({
       name: 'noReading',
       title: 'No reading needed',
       type: 'boolean',
-      group: 'facts',
+      group: 'shared',
       description: 'Can a non-reader play it?',
       initialValue: false,
       validation: (r) => r.required(),
@@ -248,7 +293,7 @@ const game = defineType({
     defineField({
       name: 'platforms',
       type: 'array',
-      group: 'facts',
+      group: 'shared',
       description: 'Not shown yet; kept for future filters',
       of: [defineArrayMember({ type: 'string' })],
       options: { list: [...PLATFORMS], layout: 'grid' },
@@ -258,7 +303,7 @@ const game = defineType({
       name: 'skills',
       title: 'Skills it builds',
       type: 'array',
-      group: 'facts',
+      group: 'shared',
       description: '1 to 3 skills. Shown as the "Builds …" line.',
       of: refList('skill'),
       validation: (r) => r.required().min(1).max(3).unique(),
@@ -267,52 +312,63 @@ const game = defineType({
       name: 'feelsLike',
       title: 'Feels like',
       type: 'string',
-      group: 'facts',
+      group: 'shared',
       options: { list: [...FEELS], layout: 'radio' },
       validation: (r) => r.required(),
     }),
+    defineField({ name: 'partner', type: 'string', group: 'shared', description: 'Who makes it. Not shown yet.' }),
+    defineField({ name: 'notes', type: 'text', rows: 3, group: 'shared', description: 'For editors only. Never shown on the site.' }),
+    defineField({
+      name: 'hidden',
+      type: 'boolean',
+      group: 'shared',
+      description: 'Keep the game but take it off the site, on both pages',
+      initialValue: false,
+    }),
 
     defineField({
-      name: 'showOn',
-      title: 'Show on',
-      type: 'array',
-      group: 'placement',
-      of: [defineArrayMember({ type: 'string' })],
-      options: { list: [...SHOW_ON], layout: 'grid' },
-      initialValue: [...SHOW_ON],
-      validation: (r) => r.required().min(1).unique(),
+      name: 'teachers',
+      title: 'Teachers',
+      type: 'object',
+      group: 'teachers',
+      description: 'Which moments it sits under, and in what order, is set on each Teacher moment.',
+      initialValue: { show: true },
+      fields: [
+        defineField({ name: 'show', title: 'Show on Teachers page', type: 'boolean', initialValue: true, validation: (r) => r.required() }),
+        defineField({
+          name: 'grades',
+          type: 'array',
+          description: 'Grades it suits. Drives the Teachers "Grade" filter. Required when shown.',
+          of: [defineArrayMember({ type: 'string' })],
+          options: { list: [...GRADES], layout: 'grid' },
+          hidden: untilShown,
+          validation: (r) =>
+            r.unique().custom((v, ctx) => ((ctx.parent as AudienceObj | undefined)?.show && !v?.length ? 'Required when shown on Teachers' : true)),
+        }),
+        ...overrideFields('Teachers'),
+      ],
     }),
     defineField({
-      name: 'when',
-      title: 'When (parents)',
-      type: 'array',
-      group: 'placement',
-      description: 'When families would play it. Required when shown on Parents.',
-      of: refList('whenOption'),
-      validation: (r) =>
-        r.unique().custom((v, ctx) => {
-          const show = (ctx.document as GameDoc | undefined)?.showOn
-          return show?.includes('parents') && !v?.length ? 'Required when the game is shown on Parents' : true
+      name: 'parents',
+      title: 'Parents',
+      type: 'object',
+      group: 'parents',
+      initialValue: { show: true },
+      fields: [
+        defineField({ name: 'show', title: 'Show on Parents page', type: 'boolean', initialValue: true, validation: (r) => r.required() }),
+        defineField({
+          name: 'when',
+          title: 'When',
+          type: 'array',
+          description: 'When families would play it. Drives the Parents "When" filter. Required when shown.',
+          of: refList('whenOption'),
+          hidden: untilShown,
+          validation: (r) =>
+            r.unique().custom((v, ctx) => ((ctx.parent as AudienceObj | undefined)?.show && !v?.length ? 'Required when shown on Parents' : true)),
         }),
+        ...overrideFields('Parents'),
+      ],
     }),
-    defineField({
-      name: 'moments',
-      title: 'Teacher moments',
-      type: 'array',
-      group: 'placement',
-      description: 'Which lesson moments it appears under. Required when shown on Teachers.',
-      of: refList('moment'),
-      validation: (r) =>
-        r.unique().custom((v, ctx) => {
-          const show = (ctx.document as GameDoc | undefined)?.showOn
-          return show?.includes('teachers') && !v?.length ? 'Required when the game is shown on Teachers' : true
-        }),
-    }),
-    defineField({ name: 'featured', type: 'boolean', group: 'placement', description: 'Pin to the top of the list', initialValue: false }),
-    defineField({ name: 'hidden', type: 'boolean', group: 'placement', description: 'Keep the game but take it off the site', initialValue: false }),
-
-    defineField({ name: 'partner', type: 'string', group: 'internal', description: 'Who makes it. Not shown yet.' }),
-    defineField({ name: 'notes', type: 'text', rows: 3, group: 'internal', description: 'For editors only. Never shown on the site.' }),
   ],
   orderings: [{ title: 'Name', name: 'nameAsc', by: [{ field: 'name', direction: 'asc' }] }],
   preview: {
@@ -325,11 +381,17 @@ const moment = defineType({
   name: 'moment',
   title: 'Teacher moment',
   type: 'document',
-  description: 'Games appear under a moment through the "Teacher moments" field on the game.',
   fields: [
     defineField({ name: 'title', type: 'string', validation: (r) => r.required() }),
     defineField({ name: 'blurb', type: 'string' }),
     defineField({ name: 'order', type: 'number', description: 'Lower numbers show first' }),
+    defineField({
+      name: 'games',
+      type: 'array',
+      description: 'The games under this moment, in the order they appear on the page. Drag to reorder. Only games shown on Teachers can be picked.',
+      of: [defineArrayMember({ type: 'reference', to: [{ type: 'game' }], options: { filter: 'teachers.show == true' } })],
+      validation: (r) => r.unique(),
+    }),
   ],
   orderings: [{ title: 'Order', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] }],
   preview: { select: { title: 'title', subtitle: 'blurb' } },

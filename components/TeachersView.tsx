@@ -5,18 +5,25 @@ import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
-import { TEACHER_GROUPS, badges, builds, facetValues, sortGames, type FacetKey } from '@/lib/derive'
+import { TEACHER_GROUPS, badges, builds, facetValues, resolve, sortGames, type FacetKey, type ResolvedGame } from '@/lib/derive'
 import type { Game, TeachersData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string | null>>
+/** A game as teachers see it: shared facts with the Teachers overrides folded in. */
+type TGame = ResolvedGame<Game>
 
 export function TeachersView({ data }: { data: TeachersData }) {
   const { page } = data
-  const moments = useMemo(() => (data.moments || []).map((m) => ({ ...m, games: sortGames(m.games || []) })), [data.moments])
+  // Inside a moment, games keep the order set by hand in Studio.
+  const moments = useMemo(
+    () => (data.moments || []).map((m) => ({ ...m, games: (m.games || []).filter((g): g is Game => !!g && !g.hidden).map((g) => resolve(g, 'teachers')) })),
+    [data.moments],
+  )
+  // Search covers every game in any moment: Teachers-featured first, then A to Z.
   const allGames = useMemo(() => {
-    const map = new Map<string, Game>()
+    const map = new Map<string, TGame>()
     moments.forEach((m) => m.games.forEach((g) => map.set(g._id, g)))
-    return [...map.values()]
+    return sortGames([...map.values()])
   }, [moments])
 
   const [open, setOpen] = useState<number>((page?.defaultOpen ?? 1) - 1)
@@ -26,7 +33,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
   const groups = TEACHER_GROUPS
   const hasFilters = Object.values(sel).some(Boolean)
   // One choice per group; a game passes when it matches every chosen option.
-  const pass = (g: Game) =>
+  const pass = (g: TGame) =>
     (Object.entries(sel) as [FacetKey, string | null][]).every(([key, v]) => !v || facetValues(g, key).includes(v))
 
   const q = query.trim().toLowerCase()
@@ -180,10 +187,10 @@ export function TeachersView({ data }: { data: TeachersData }) {
   )
 }
 
-function GameRow({ game, meta }: { game: Game; meta?: string }) {
+function GameRow({ game, meta }: { game: TGame; meta?: string }) {
   return (
     <article className="row">
-      <GameImage game={game} w={132} h={99} />
+      <GameImage image={game.image} w={132} h={99} />
       <div className="row-body">
         <div>
           <div className="row-name">{game.name}</div>
