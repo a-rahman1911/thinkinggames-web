@@ -17,7 +17,8 @@ npx sanity init --env .env.local --create-project "Thinking Games" --dataset pro
 #      that offers to add config files or a template; they already exist here.
 
 # 2. Load the placeholder content (6 games, 6 moments, skills, "When" options, page text).
-#    Only on a fresh dataset: --replace wipes everything already there. Never run it against the live dataset.
+#    --replace overwrites documents whose IDs match the seed file; it does not wipe the dataset,
+#    so documents with other IDs are left in place. Never run it against the live dataset.
 npm run seed
 
 # 3. Run it.
