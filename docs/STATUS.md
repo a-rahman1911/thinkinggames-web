@@ -21,6 +21,7 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 
 - Design drift fixes (step 1) and the favicon (app/icon.svg from the TGI mascot). See the list below for what changed.
 - Task B, games backend: games now carry facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, moments, show on) and lib/derive.ts turns them into filters, badges, the "Builds" line and sort order. filterOption documents and sanity/groups.ts are gone. New skill and whenOption documents. Spreadsheet import at scripts/import-games.mts. Seed rewritten to the new model. Studio lists Games, Teacher moments, Skills, When options.
+- Task B2, audience split: the game document has three tabs (Shared, Teachers, Parents). Each audience tab has its own show switch, filters (Teachers: grades set by hand; Parents: when) and optional overrides (URL, subtitle, image, icon, minutes, skills, feels like, badges, featured). Moments carry an ordered games list, reordered by dragging in Studio. lib/derive.ts resolve() folds an audience's overrides in; the views only use resolved values. Import reads the Teacher*/Parent* columns of the new template. The dataset was migrated with scripts/migrate-audience.mts (see the Task B2 notes).
 
 ## Design drift found (step 1)
 
@@ -72,10 +73,22 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 - Required columns in the import follow the " *" markers on the sheet's own headers, so the Guide tab stays the single source of truth for editors. Platforms is therefore required in the import (the sheet marks it) but optional in the schema.
 - The import carries over a "hidden" flag set in Studio; everything else on the game document is replaced.
 
+## Task B2 notes
+
+- Migration ran on 2026-10-12 against rh1roy5u/production (transaction C7XTPBOLOdCkA2v95IIO4r): 6 games moved to the audience shape, 6 moments got their games list. The dry run was reviewed first. The script is safe to re-run; it reports "nothing to migrate" now.
+- Grades were worked out from the age range once, during the migration (K-1 = ages 5–7, 2-3 = 7–9, 4-5 = 9–11). From now on they are set by hand on each game, so a game can sit in fewer or more grades than its age range suggests.
+- Each moment's games list was rebuilt from the old game → moment links, in the order the site showed them (featured first, then A to Z). The /teachers and /parents pages rendered byte-for-byte the same DOM before and after, checked by diffing the prerendered HTML.
+- The old global `featured` became both `teachers.featured` and `parents.featured`. Teacher featured only affects Teachers search order; the moment lists are hand-ordered.
+- A hidden game stays in its moments' lists (hidden is a temporary switch); the query leaves it out while hidden.
+- Import: "Teacher moments" is required when "On Teachers page" is Yes, as the Guide tab says, because a Teachers game outside every moment would not appear anywhere on the page. A game is only ever appended to a moment; removing it from a moment is done in Studio.
+- Studio reference filter on a moment's games: `teachers.show == true`. Turning a game's Teachers switch off does not remove it from moments; the query drops it until it is switched back on.
+- No live site yet (Vercel import is still open), so the dataset and `main` were allowed to differ for the minutes between the migration and the merge.
+
 ## Decisions
 
 - Design handoff lives in the repo at design-handoff/. The repo is public, so the design files are public.
-- Filter group names live in code (sanity/groups.ts); options are CMS documents.
+- Filter group names live in code (lib/derive.ts); "When" options are CMS documents, Grade options are fixed (K-1, 2-3, 4-5).
+- Game properties are split by audience: a Shared tab plus Teachers and Parents tabs with their own show switch, filters and overrides. Views never read an override directly; they use resolve().
 - No "N moments · N games" label on Teachers, even though the design shows one. No counts in copy.
 - Challenge text is "Five puzzles, five minutes, no score." on both pages.
 - Never run npm run seed against the live dataset. It uses --replace and would overwrite real content.
