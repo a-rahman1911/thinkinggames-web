@@ -1,8 +1,14 @@
 import './globals.css'
 import Link from 'next/link'
+import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
+import { sanityFetch } from '@/sanity/client'
+import { settingsQuery } from '@/sanity/queries'
+import type { Settings } from '@/sanity/types'
 
-export default function NotFound() {
+// Unmatched URLs land here, outside the (site) layout, so this page renders the site footer itself.
+export default async function NotFound() {
+  const settings = await sanityFetch<Settings>(settingsQuery)
   return (
     <>
       <Header />
@@ -14,6 +20,7 @@ export default function NotFound() {
           Try the <Link href="/teachers">teacher toolkit</Link> or the <Link href="/parents">parent library</Link>.
         </p>
       </main>
+      <Footer settings={settings} />
     </>
   )
 }
