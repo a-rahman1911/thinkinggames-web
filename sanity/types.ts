@@ -1,22 +1,16 @@
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
-import type { GameFacts } from '@/lib/derive'
+import type { GameFacts, Resolved } from '@/lib/derive'
 
 export type Link = { label: string; url: string }
 export type Seo = { title?: string; description?: string }
 export type Titled = { _id: string; title: string; order?: number }
 export type SanityImage = SanityImageSource & { alt?: string }
 
-/** A game as the queries return it: facts plus resolved skill and when references. */
-export type Game = GameFacts & {
-  _id: string
-  subtitle?: string
-  url?: string
-  image?: SanityImage
-  icon?: SanityImage
-  platforms?: string[] | null
-  skills?: Titled[] | null
-  when?: Titled[] | null
-}
+/** A game as the queries return it: shared facts, the teachers{} and parents{} objects, and dereferenced skills and when. */
+export type Game = GameFacts<SanityImage> & { _id: string; platforms?: string[] | null }
+
+/** A game seen by one audience, after lib/derive resolve(). The views only ever hold these. */
+export type AudienceGame = Resolved<Game>
 
 export type Challenge = {
   show?: boolean
