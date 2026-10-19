@@ -84,7 +84,7 @@ h1,h2,h3,p{margin:0}
 .seg-opts button:focus-visible,.moment-head:focus-visible{outline-offset:-4px}
 .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:14px}
 .row{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;background:var(--soft)}
-.row .thumb{aspect-ratio:4/3}
+.row .thumb{aspect-ratio:16/10}
 .row .tag{background:#fff}.row .tag.first{background:var(--teacher-light)}
 .row-body{display:flex;flex-direction:column;gap:8px;min-width:0}
 .row-name{font-size:18px;font-weight:800;line-height:1.2}

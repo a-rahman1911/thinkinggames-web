@@ -192,7 +192,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
 function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
   return (
     <article className="row">
-      <GameImage image={game.image} w={132} h={99} />
+      <GameImage image={game.image} w={132} />
       <div className="row-body">
         <div>
           <div className="row-name">{game.name}</div>

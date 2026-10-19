@@ -204,7 +204,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
             <div className="cards">
               {results.map((g) => (
                 <article key={g._id} className="card">
-                  <GameImage image={g.image} w={400} h={250} />
+                  <GameImage image={g.image} w={400} />
                   <div className="card-body">
                     <div>
                       <h3>{g.name}</h3>
