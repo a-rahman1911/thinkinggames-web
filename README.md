@@ -89,7 +89,7 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 ## Code map
 - `app/(site)/`: pages (server components that fetch from Sanity)
 - `components/TeachersView.tsx`: search, one-open-at-a-time accordion, in-moment filters
-- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts
+- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; on mobile (≤640px) the filters open as a full-screen panel from a sticky "Filters" button
 - `components/ChallengeBanner.tsx`: shared banner with "Copy link"
 - `sanity/schemas.ts`: the CMS content model
 - `lib/derive.ts`: resolve per audience, then facts → filters, badges, "Builds" line, sort order (unit tests: `npm test`)

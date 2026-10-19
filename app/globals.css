@@ -81,6 +81,7 @@ h1,h2,h3,p{margin:0}
 .seg-opts{display:flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff}
 .seg-opts button{border:none;min-height:40px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;background:#fff}
 .seg-opts button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg-opts button:focus-visible,.moment-head:focus-visible{outline-offset:-4px}
 .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:14px}
 .row{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;background:var(--soft)}
 .row .thumb{aspect-ratio:4/3}
@@ -91,7 +92,6 @@ h1,h2,h3,p{margin:0}
 .meta{font-size:13px;line-height:1.4;color:var(--muted)}
 .row-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .row-foot .btn-outline{margin-left:auto}
-@media (max-width:560px){.row{grid-template-columns:96px minmax(0,1fr)}.moment-count{display:none}}
 
 /* Parents: library */
 .lib{display:flex;flex-wrap:wrap;gap:clamp(24px,3vw,40px);align-items:flex-start}
@@ -109,6 +109,7 @@ h1,h2,h3,p{margin:0}
 .fopt[aria-pressed="true"] .fbox span{opacity:1}
 .fname{flex:1;font-size:16px}.fopt[aria-pressed="true"] .fname{font-weight:700}
 .fcount{font-size:13px;color:var(--muted)}
+.filters-bar,.filters-foot{display:none}
 .results{flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .search.lg{flex:none;max-width:none;padding-left:22px;gap:12px}.search.lg input{font-size:17px;padding:12px 0}
 .search-icon{width:16px;height:16px;border:2.5px solid var(--ink);border-radius:999px;position:relative;flex-shrink:0}
@@ -127,7 +128,6 @@ h1,h2,h3,p{margin:0}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .btn-play{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent)}
 .btn-play:hover{background:var(--ink);color:#fff}
-@media (max-width:640px){.filters{position:static;max-width:none}}
 
 /* Home */
 .home-hero{padding-block:clamp(56px,7vw,88px) clamp(32px,4vw,56px);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:end}
@@ -156,4 +156,81 @@ body:has(.home-hero) .ftr-mission{grid-template-columns:120px minmax(0,1fr)}
 .ftr-bar img{height:100px;width:auto}
 .ftr-bar nav{display:flex;flex-wrap:wrap;gap:24px}
 .ftr a{color:#fff;text-decoration:none}.ftr a:hover{color:var(--orange)}
-@media (max-width:560px){.ftr-mission{grid-template-columns:64px minmax(0,1fr)}.ftr-bar img{height:72px}}
+
+/* ---------- Mobile (≤640px) ---------- */
+@media (max-width:640px){
+  /* Header: logo + pills on row 1; the Teachers search takes its own full-width row 2 */
+  .hdr .wrap{gap:12px}
+  .hdr-logo{display:flex;align-items:center;min-height:44px}
+  .hdr-logo img,.hdr-logo.word img{height:28px}
+  .pills,.hdr.home .pills{gap:8px}
+  .pill{display:inline-flex;align-items:center;min-height:44px;font-size:14px;padding:8px 14px}
+  .hdr .search{order:3;flex:1 1 100%;min-width:0;max-width:none}
+  .search input{min-height:44px}
+  .search button{min-height:44px}
+
+  /* Hero */
+  .hero h1{font-size:34px;line-height:1.08}
+  .hero p{font-size:16px}
+  .hero p a{padding-block:13px}
+
+  /* Challenge banner: copy above, age buttons in a 3-column grid, "Copy link" full width below */
+  .challenge{padding:22px;gap:20px}
+  .challenge-copy{flex-basis:100%}
+  .challenge-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+  .challenge-age{display:flex;align-items:center;justify-content:center;min-height:48px;padding:12px 4px;font-size:15px;text-align:center;white-space:nowrap}
+  .challenge-sep{display:none}
+  .btn-ghost-light{grid-column:1/-1;width:100%;min-height:48px}
+
+  /* Shared tap targets */
+  .link-btn{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+  .btn-clear{min-height:44px}
+
+  /* Teachers: moments */
+  .moment-head{padding:16px 18px;gap:12px}
+  .moment-title{font-size:19px}
+  .moment-blurb{font-size:15px}
+  .moment-icon{width:40px;height:40px;font-size:22px}
+  .moment-count{display:none}
+  .seg-row{flex-direction:column;align-items:stretch;gap:14px}
+  .seg-row .link-btn{align-self:flex-start}
+  .seg{flex-direction:column;align-items:flex-start;gap:6px;min-width:0;max-width:100%}
+  .seg-opts{max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .seg-opts::-webkit-scrollbar{display:none}
+  .seg-opts button{flex-shrink:0;min-width:44px;min-height:44px;white-space:nowrap}
+  .row{grid-template-columns:88px minmax(0,1fr);gap:14px}
+  .row-foot .btn-outline{margin-left:0;flex:1 1 100%;display:flex;align-items:center;justify-content:center;min-height:44px}
+
+  /* Parents: the sidebar becomes a full-screen panel opened from a sticky "Filters" button */
+  .filters{display:none}
+  .filters.open{display:flex;position:fixed;inset:0;z-index:50;max-width:none;gap:24px;padding:20px var(--pad-x) 0;background:#fff;overflow-y:auto;overscroll-behavior:contain}
+  .filters.open .filters-head{align-items:center}
+  .filters.open .fgroup:last-of-type{border-bottom:none}
+  .filters-foot{display:block;position:sticky;bottom:0;margin:auto calc(-1 * var(--pad-x)) 0;padding:12px var(--pad-x) 16px;background:#fff;border-top:1px solid var(--line)}
+  .filters-show{width:100%;min-height:52px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  .filters-bar{display:block;position:sticky;top:0;z-index:5;margin:-8px calc(-1 * var(--pad-x));padding:8px var(--pad-x);background:#fff}
+  .filters-toggle{display:inline-flex;align-items:center;min-height:44px;padding:8px 20px;border:2px solid var(--ink);border-radius:999px;background:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  .filters-toggle.on{background:var(--parent)}
+  .search.lg input{min-height:44px}
+  .chip{min-height:44px}
+  .cards{grid-template-columns:minmax(0,1fr)}
+  .btn-play{display:inline-flex;align-items:center;min-height:44px}
+
+  /* Home: doors stack */
+  .doors{grid-template-columns:minmax(0,1fr)}
+  .door{min-height:320px;padding:28px}
+  .door-mascot{width:140px}
+  .door-mascot.parent{width:120px}
+
+  /* Footer */
+  .ftr-mission,body:has(.home-hero) .ftr-mission{grid-template-columns:64px minmax(0,1fr)}
+  .ftr-bar img{height:72px}
+  .ftr-bar nav{gap:16px}
+  .ftr-bar nav a{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+}
+/* Below 390px the 28px mascot logo (144px wide) and the two pills (188px) don't fit on one row inside the
+   20px gutters. Tighten the gap and shrink only the mascot logo; the home wordmark still fits at 28px. */
+@media (max-width:389px){
+  .hdr .wrap{column-gap:8px}
+  .hdr-logo:not(.word) img{height:24px}
+}
