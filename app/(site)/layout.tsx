@@ -8,7 +8,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const settings = await sanityFetch<Settings>(settingsQuery)
   return (
     <>
-      {children}
+      <div className="page">{children}</div>
       <Footer settings={settings} />
     </>
   )

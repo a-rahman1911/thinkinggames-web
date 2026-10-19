@@ -145,8 +145,11 @@ h1,h2,h3,p{margin:0}
 .door-mascot{position:absolute;right:-8px;bottom:-8px;width:clamp(150px,18vw,230px)}
 .door-mascot.parent{right:-10px;bottom:-10px;width:clamp(130px,15vw,190px);transform:rotate(-8deg)}
 
-/* Footer */
-.ftr{background:var(--ink);color:#fff}
+/* Footer: pinned to the bottom of the screen on pages shorter than it. Only pages with the site footer
+   (the page content sits in .page, the footer in .ftr); the Studio route is left alone. */
+body:has(> .ftr){display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+.page{flex:1 0 auto}
+.ftr{flex-shrink:0;background:var(--ink);color:#fff}
 .ftr-mission{display:grid;grid-template-columns:100px minmax(0,1fr);gap:clamp(24px,4vw,40px);align-items:center;padding-block:56px}
 .ftr-mission img{width:100%}
 body:has(.home-hero) .ftr-mission{grid-template-columns:120px minmax(0,1fr)}
