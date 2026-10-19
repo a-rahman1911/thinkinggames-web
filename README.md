@@ -39,21 +39,23 @@ Open http://localhost:3000 and http://localhost:3000/studio. The first time you 
 | Home page | Headline, highlight word, two audience panels |
 | Teachers page | Headline, search placeholder, Challenge banner, which moment opens first |
 | Parents page | Headline, Challenge banner, empty-results message |
-| Games | Name, subtitle, URL, image, and the facts: age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, teacher moments, show on |
-| Teacher moments | The accordion sections; `order` sets their position. A game appears under a moment through the game's "Teacher moments" field |
+| Games | Three tabs. **Shared**: name, subtitle, URL, image, icon, and the facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like), plus a `hidden` switch that takes the game off both pages. **Teachers**: "On Teachers page", grades (set by hand), and optional overrides. **Parents**: "On Parents page", "When", and the same overrides. An override (URL, subtitle, image, icon, minutes, skills, feels like, badges, featured) replaces the shared value on that page only; blank = use the shared value |
+| Teacher moments | The accordion sections; `order` sets their position. Each moment has a **games** list: which games show under it and in what order. Drag to reorder in Studio. Only games that are on the Teachers page can be added |
 | Skills | The "Builds …" line on cards. 1 to 3 per game |
 | When options | The Parents "When" filter |
 
-Games carry **facts only**. Everything shown is derived from them in `lib/derive.ts`, so filters and badges always agree:
+Games carry **facts only**. Everything shown is derived from them in `lib/derive.ts`, so filters and badges always agree. Each page first calls `resolve(game, 'teachers' | 'parents')`, which folds that audience's overrides into the shared values; every rule below works on the resolved values:
 
 | Shown | Derived from |
 |---|---|
-| Parents "Age" (4-5, 6-8, 9-11) and Teachers "Grade" (K-1 = ages 5–7, 2-3 = 7–9, 4-5 = 9–11) | `ageFrom`–`ageTo`; a game matches every band its range overlaps |
-| "Minutes" filter (5 / 10 / 20) | `minutes`: 5 if at most 5, 10 if 6–10, 20 if more |
+| Teachers "Grade" (K-1, 2-3, 4-5) | `teachers.grades`, set by hand |
+| Parents "Age" (4-5, 6-8, 9-11) | `ageFrom`–`ageTo`; a game matches every band its range overlaps |
+| "Minutes" filter (5 / 10 / 20) and the "N min" badge | resolved `minutes`: 5 if at most 5, 10 if 6–10, 20 if more |
 | Parents "Also": No reading needed, Together | `noReading`; `players` has anything other than Solo |
-| Badges (first one highlighted) | cost, players joined with " / ", "N min", Offline, No reading needed, in that order |
-| "Builds …" | skill titles joined with " · " |
-| Order | featured first, then name; hidden games are left out |
+| Badges (first one highlighted) | cost, players joined with " / ", "N min", Offline, No reading needed, in that order; the audience's badges list keeps only those kinds (empty = all) |
+| "Builds …" | resolved skill titles joined with " · " |
+| Order inside a moment | the moment's games list, as ordered in Studio |
+| Teachers search and the Parents Library | that audience's featured first, then A–Z; hidden games and games switched off for that audience are left out |
 
 ## Importing games from the spreadsheet
 
@@ -66,10 +68,23 @@ npm run import:games -- Games.xlsx ./images --prune     # also delete games that
 ```
 
 - Needs `SANITY_WRITE_TOKEN` in `.env.local` (Sanity → API → Tokens, Editor role). Server only.
+- Columns are the Shared, Teacher* and Parent* columns described on the sheet's Guide tab (`scripts/games-template.xlsx`). A Teacher*/Parent* "only if different" column left blank means "use the Shared value". Teacher grades are required when "On Teachers page" is Yes; "When (parents)" is required when "On Parents page" is Yes.
 - Every row is validated first. If any row has a problem, nothing is written.
 - Games are upserted by `game-<slugified name>`, so re-running updates. Rows whose Notes contain "EXAMPLE ROW" are skipped.
 - Skills, moments and "When" values are matched case-insensitively against the Lists tab and the dataset; new ones are created.
+- "Teacher moments": the game is added to the **end** of each listed moment's games list if it is not already there. Existing entries are never reordered or removed; reorder in Studio. Sheet row order sets the order of the games added in one run.
+- An override image reuses the shared image description as its alt text.
 - A "hidden" flag set in Studio survives re-imports.
+- `--allow-missing-images` (testing only) replaces an image file that cannot be found with a grey placeholder instead of failing the row. Off by default.
+
+### One-off migration to the audience shape
+
+`scripts/migrate-audience.mts` moved existing games from the old `showOn` / `featured` / `when` / `moments` fields to `teachers{}` and `parents{}` (grades worked out once from the age range) and built each moment's games list from the old game → moment links. It is safe to re-run; games already in the new shape are left alone.
+
+```bash
+node --env-file-if-exists=.env.local scripts/migrate-audience.mts --dry-run
+node --env-file-if-exists=.env.local scripts/migrate-audience.mts
+```
 
 ## Code map
 - `app/(site)/`: pages (server components that fetch from Sanity)
@@ -77,8 +92,9 @@ npm run import:games -- Games.xlsx ./images --prune     # also delete games that
 - `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts
 - `components/ChallengeBanner.tsx`: shared banner with "Copy link"
 - `sanity/schemas.ts`: the CMS content model
-- `lib/derive.ts`: facts → filters, badges, "Builds" line, sort order (unit tests: `npm test`)
+- `lib/derive.ts`: resolve per audience, then facts → filters, badges, "Builds" line, sort order (unit tests: `npm test`)
 - `scripts/import-games.mts`: spreadsheet import
+- `scripts/migrate-audience.mts`: one-off migration to the per-audience shape
 - `app/api/revalidate/route.ts`: webhook target that refreshes pages after a publish
 
 ## Not yet done (Phase 6)

@@ -22,6 +22,8 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 - Design drift fixes (step 1) and the favicon (app/icon.svg from the TGI mascot). See the list below for what changed.
 - Task B, games backend: games now carry facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, moments, show on) and lib/derive.ts turns them into filters, badges, the "Builds" line and sort order. filterOption documents and sanity/groups.ts are gone. New skill and whenOption documents. Spreadsheet import at scripts/import-games.mts. Seed rewritten to the new model. Studio lists Games, Teacher moments, Skills, When options.
 
+- Task B2, game properties by audience: the game document has Shared, Teachers and Parents tabs. `teachers{}` and `parents{}` each carry a show switch, their own filter data (grades set by hand; when) and optional overrides of the shared values. `lib/derive.ts` gained `resolve(game, audience)`; the views only use resolved games. Moments own an ordered games list (source of truth for membership and order; drag to reorder in Studio). Import rewritten for the Guide tab's Teacher*/Parent* columns, with a `--allow-missing-images` test flag. `scripts/migrate-audience.mts` migrates a dataset; seed rewritten to the new shape.
+
 ## Design drift found (step 1)
 
 Fixed in the "Fix design drift" PR, except the items marked as decided otherwise.
@@ -71,6 +73,15 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 - The seed has no images, as before, so Studio shows the required-image validation on seed games until real images are imported.
 - Required columns in the import follow the " *" markers on the sheet's own headers, so the Guide tab stays the single source of truth for editors. Platforms is therefore required in the import (the sheet marks it) but optional in the schema.
 - The import carries over a "hidden" flag set in Studio; everything else on the game document is replaced.
+
+## Task B2 notes
+
+- Production (rh1roy5u/production) was already in the audience shape when this task started: all six games carried `teachers{}` / `parents{}` and all six moments had a games list, written in one transaction on 2026-10-12, with no `showOn`, `moments` or `featured` left on any game. The main branch's code still queried `showOn`, so the migration script's dry run and run against production both reported nothing to do. The migrate path was exercised against the old-shape seed through a local stand-in; the result is byte-for-byte what production holds, and is what `seed/seed.ndjson` now contains.
+- Within a moment, games show in the moment's list order. The migration appended the old links featured-first then A–Z (the order the site showed), so nothing moved.
+- Teachers grades are no longer worked out from the age range on the site. `gradesFromAge` in lib/derive.ts remains for the migration and seed only.
+- The import does not require "Teacher moments" when a game is on the Teachers page (only grades, and "When" for parents, are required). A game with no moment is reachable through Teachers search and can be added to a moment in Studio.
+- Moment → game references are strong. `--prune` takes a game out of every moment list before deleting it; in Studio, Sanity blocks deleting a game until it is removed from its moments.
+- Dry run of `scripts/Games - Initial 60.xlsx` with `--allow-missing-images`: 366 problems, all blank required cells that the sheet's own Review tab marks as "fill in" (Subtitle, Minutes, Players and No reading needed on all 60 rows; Image description, Cost and Works offline on the 42 non-PBS rows). Every filled value validates.
 
 ## Decisions
 

@@ -1,29 +1,43 @@
 // Import games from the Games spreadsheet into Sanity.
 //
-//   npm run import:games -- <file.xlsx> <imagesDir> [--dry-run] [--prune]
+//   npm run import:games -- <file.xlsx> <imagesDir> [--dry-run] [--prune] [--allow-missing-images]
 //
 // Reads the "Games" sheet (row 1 = headers; a trailing " *" marks a required column) and the
-// "Lists" sheet (allowed values for Skills, Teacher moments, When, Players, Platforms).
+// "Lists" sheet (allowed values for Skills, Teacher grades, Teacher moments, When, Players, Platforms, Badges).
+// Columns are the ones described on the sheet's Guide tab: Shared columns, then Teacher* and Parent*
+// columns. A Teacher*/Parent* "only if different" column left blank means "use the Shared value".
+//
 // Every row is validated first. If any row has an error, a table is printed and nothing is written.
 // Games are upserted by id "game-<slugified name>", so re-running updates. Games that are no longer
 // in the sheet are kept unless --prune is passed. Rows whose Notes contain "EXAMPLE ROW" are skipped.
+//
+// Teacher moments: a game is appended to the END of each listed moment's games list if it is not
+// already there. Existing entries are never reordered or removed (editors order them in Studio).
+// Sheet row order sets the order of the games added in one run.
+//
+// --allow-missing-images is for testing only: an image file that cannot be found is replaced by a
+// grey placeholder instead of failing the row.
 //
 // Needs NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET and (to write) SANITY_WRITE_TOKEN.
 
 import fs from 'node:fs'
 import path from 'node:path'
+import zlib from 'node:zlib'
 import { createClient, type SanityClient } from '@sanity/client'
 import XLSX from 'xlsx'
-import { COSTS, FEELS, PLATFORMS, PLAYERS } from '../lib/derive.ts'
+import { BADGE_KINDS, COSTS, FEELS, GRADES, PLATFORMS, PLAYERS } from '../lib/derive.ts'
 
 // ---------- arguments and environment ----------
 
+const KNOWN_FLAGS = ['--dry-run', '--prune', '--allow-missing-images']
 const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith('--')))
 const [file, imagesDir] = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const dryRun = flags.has('--dry-run')
 const prune = flags.has('--prune')
+const allowMissingImages = flags.has('--allow-missing-images')
 
-if (!file || !imagesDir) fail('Usage: npm run import:games -- <file.xlsx> <imagesDir> [--dry-run] [--prune]')
+for (const f of flags) if (!KNOWN_FLAGS.includes(f)) fail(`Unknown flag ${f}. Known: ${KNOWN_FLAGS.join(', ')}`)
+if (!file || !imagesDir) fail('Usage: npm run import:games -- <file.xlsx> <imagesDir> [--dry-run] [--prune] [--allow-missing-images]')
 if (!fs.existsSync(file)) fail(`Spreadsheet not found: ${file}`)
 if (!fs.existsSync(imagesDir) || !fs.statSync(imagesDir).isDirectory()) fail(`Images folder not found: ${imagesDir}`)
 
@@ -45,7 +59,7 @@ const client: SanityClient = createClient({
 
 // ---------- spreadsheet ----------
 
-const COLUMNS = {
+const SHARED_COLUMNS = {
   name: 'Name',
   subtitle: 'Subtitle',
   url: 'Game URL',
@@ -62,16 +76,52 @@ const COLUMNS = {
   platforms: 'Platforms',
   skills: 'Skills it builds',
   feelsLike: 'Feels like',
-  when: 'When (parents)',
-  moments: 'Teacher moments',
-  showOn: 'Show on',
   partner: 'Partner',
-  featured: 'Featured',
   notes: 'Notes',
 } as const
-type Col = keyof typeof COLUMNS
 
-const LISTS = { skills: 'Skills', moments: 'Teacher moments', when: 'When (parents)', players: 'Players', platforms: 'Platforms' } as const
+/** The per-audience columns. `${prefix} ${label}` on the sheet, e.g. "Teacher subtitle", "Parent badges". */
+const OVERRIDE_COLUMNS = {
+  url: 'URL',
+  subtitle: 'subtitle',
+  imageFile: 'image file',
+  iconFile: 'icon file',
+  minutes: 'minutes',
+  skills: 'skills',
+  feelsLike: 'feels like',
+  badges: 'badges',
+  featured: 'featured',
+} as const
+type OverrideCol = keyof typeof OVERRIDE_COLUMNS
+
+const AUDIENCE_COLUMNS = {
+  tShow: 'On Teachers page',
+  tGrades: 'Teacher grades',
+  tMoments: 'Teacher moments',
+  pShow: 'On Parents page',
+  when: 'When (parents)',
+} as const
+
+const audienceCol = (audience: Audience, c: OverrideCol) => `${audience === 'teachers' ? 'Teacher' : 'Parent'} ${OVERRIDE_COLUMNS[c]}`
+
+const COLUMNS: Record<string, string> = {
+  ...SHARED_COLUMNS,
+  ...AUDIENCE_COLUMNS,
+  ...Object.fromEntries((Object.keys(OVERRIDE_COLUMNS) as OverrideCol[]).map((c) => [`t_${c}`, audienceCol('teachers', c)])),
+  ...Object.fromEntries((Object.keys(OVERRIDE_COLUMNS) as OverrideCol[]).map((c) => [`p_${c}`, audienceCol('parents', c)])),
+}
+type Col = keyof typeof SHARED_COLUMNS | keyof typeof AUDIENCE_COLUMNS | `t_${OverrideCol}` | `p_${OverrideCol}`
+type Audience = 'teachers' | 'parents'
+
+const LISTS = {
+  skills: 'Skills',
+  grades: 'Teacher grades',
+  moments: 'Teacher moments',
+  when: 'When (parents)',
+  players: 'Players',
+  platforms: 'Platforms',
+  badges: 'Badges',
+} as const
 
 const wb = XLSX.readFile(file)
 const gamesSheet = wb.Sheets['Games']
@@ -92,7 +142,7 @@ const missingCols = (Object.keys(COLUMNS) as Col[]).filter((k) => !colIndex.has(
 if (missingCols.length) fail(`The "Games" sheet is missing these columns: ${missingCols.join(', ')}`)
 
 // Allowed values from the Lists sheet, keyed by lower case. Long cells (the footnote) are ignored.
-const lists: Record<keyof typeof LISTS, Map<string, string>> = { skills: new Map(), moments: new Map(), when: new Map(), players: new Map(), platforms: new Map() }
+const lists = Object.fromEntries(Object.keys(LISTS).map((k) => [k, new Map<string, string>()])) as Record<keyof typeof LISTS, Map<string, string>>
 const listsSheet = wb.Sheets['Lists']
 if (listsSheet) {
   const lr = XLSX.utils.sheet_to_json<unknown[]>(listsSheet, { header: 1, defval: null, blankrows: false })
@@ -106,18 +156,21 @@ if (listsSheet) {
     }
   }
 }
-// Fixed lists from the schema win over the sheet for players and platforms.
+// Fixed lists from the schema win over the sheet.
 for (const p of PLAYERS) lists.players.set(p.toLowerCase(), p)
 for (const p of PLATFORMS) lists.platforms.set(p.toLowerCase(), p)
+for (const g of GRADES) lists.grades.set(g.toLowerCase(), g)
+for (const b of BADGE_KINDS) lists.badges.set(b.toLowerCase(), b)
 
-// ---------- existing documents (for case-insensitive matching and carrying over "hidden") ----------
+// ---------- existing documents (for case-insensitive matching, carrying over "hidden", and moment lists) ----------
 
 type Titled = { _id: string; title: string; order?: number }
-const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: Titled[]; games: { _id: string; hidden?: boolean }[] }>(
+type ExistingMoment = Titled & { games?: string[] | null }
+const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: ExistingMoment[]; games: { _id: string; hidden?: boolean }[] }>(
   `{
     "skills": *[_type == "skill"]{ _id, title, order },
     "when": *[_type == "whenOption"]{ _id, title, order },
-    "moments": *[_type == "moment"]{ _id, title, order },
+    "moments": *[_type == "moment"]{ _id, title, order, "games": games[]._ref },
     "games": *[_type == "game"]{ _id, hidden }
   }`,
 )
@@ -149,7 +202,18 @@ function resolveRef(kind: RefKind, listKey: 'skills' | 'when' | 'moments', typed
 // ---------- validation ----------
 
 type RowError = { Row: number; Column: string; Problem: string }
-type Img = { buffer: Buffer; filename: string }
+type Img = { buffer: Buffer; filename: string; placeholder?: boolean }
+type ParsedOverrides = {
+  url?: string
+  subtitle?: string
+  image?: Img
+  icon?: Img
+  minutes?: number
+  skills?: Titled[]
+  feelsLike?: string
+  badges?: string[]
+  featured: boolean
+}
 type ParsedGame = {
   row: number
   _id: string
@@ -169,18 +233,17 @@ type ParsedGame = {
   platforms: string[]
   skills: Titled[]
   feelsLike: string
-  when: Titled[]
-  moments: Titled[]
-  showOn: string[]
   partner?: string
-  featured: boolean
   notes?: string
+  teachers: { show: boolean; grades: string[]; moments: Titled[] } & ParsedOverrides
+  parents: { show: boolean; when: Titled[] } & ParsedOverrides
 }
 
 const errors: RowError[] = []
 const parsed: ParsedGame[] = []
 const imageCache = new Map<string, Img>()
 let skipped = 0
+let placeholders = 0
 const seenIds = new Map<string, number>()
 
 for (let i = 1; i < rows.length; i++) {
@@ -204,7 +267,7 @@ for (let i = 1; i < rows.length; i++) {
   }
 
   const url = get('url')
-  if (url && !/^https?:\/\/\S+$/i.test(url)) err('url', 'Must be a full link starting with https://')
+  if (url && !isUrl(url)) err('url', 'Must be a full link starting with https://')
 
   const ageFrom = int(get('ageFrom'))
   const ageTo = int(get('ageTo'))
@@ -213,7 +276,7 @@ for (let i = 1; i < rows.length; i++) {
   if (ageFrom !== null && ageTo !== null && ageTo < ageFrom) err('ageTo', 'Must be at least "Age from"')
 
   const minutes = int(get('minutes'))
-  if (get('minutes') && (minutes === null || minutes < 1 || minutes > 120)) err('minutes', 'Whole number 1 to 120')
+  if (get('minutes') && !isMinutes(minutes)) err('minutes', 'Whole number 1 to 120')
 
   const players = listValues(get('players'), lists.players, (bad) => err('players', `Unknown value "${bad}". Allowed: ${PLAYERS.join(', ')}`))
   const platforms = listValues(get('platforms'), lists.platforms, (bad) => err('platforms', `Unknown value "${bad}". Allowed: ${PLATFORMS.join(', ')}`))
@@ -227,22 +290,66 @@ for (let i = 1; i < rows.length; i++) {
   if (get('offline') && offline === null) err('offline', 'Yes or No')
   const noReading = yesNo(get('noReading'))
   if (get('noReading') && noReading === null) err('noReading', 'Yes or No')
-  const featured = yesNo(get('featured') || 'No')
-  if (get('featured') && featured === null) err('featured', 'Yes or No')
-
-  const showOnText = get('showOn').toLowerCase()
-  const showOn = showOnText === 'both' ? ['teachers', 'parents'] : showOnText === 'teachers' ? ['teachers'] : showOnText === 'parents' ? ['parents'] : null
-  if (get('showOn') && !showOn) err('showOn', 'Allowed: Both, Teachers, Parents')
 
   const skillNames = splitList(get('skills'))
   if (get('skills') && (skillNames.length < 1 || skillNames.length > 3)) err('skills', '1 to 3 skills, separated by commas')
-  const whenNames = splitList(get('when'))
-  const momentNames = splitList(get('moments'))
-  if (showOn?.includes('parents') && !whenNames.length) err('when', 'Required when "Show on" includes Parents')
-  if (showOn?.includes('teachers') && !momentNames.length) err('moments', 'Required when "Show on" includes Teachers')
 
-  const image = get('imageFile') ? await loadImage(get('imageFile'), (m) => err('imageFile', m)) : undefined
-  const icon = get('iconFile') ? await loadImage(get('iconFile'), (m) => err('iconFile', m)) : undefined
+  const image = get('imageFile') ? await loadImage(get('imageFile'), 'image', (m) => err('imageFile', m)) : undefined
+  const icon = get('iconFile') ? await loadImage(get('iconFile'), 'icon', (m) => err('iconFile', m)) : undefined
+
+  // Audience switches. The other columns of an audience only matter when it is switched on.
+  const tShow = yesNo(get('tShow'))
+  if (get('tShow') && tShow === null) err('tShow', 'Yes or No')
+  const pShow = yesNo(get('pShow'))
+  if (get('pShow') && pShow === null) err('pShow', 'Yes or No')
+
+  const grades = tShow ? listValues(get('tGrades'), lists.grades, (bad) => err('tGrades', `Unknown value "${bad}". Allowed: ${GRADES.join(', ')}`)) : []
+  if (tShow && !get('tGrades')) err('tGrades', 'Required when "On Teachers page" is Yes')
+  const momentNames = tShow ? splitList(get('tMoments')) : []
+  const whenNames = pShow ? splitList(get('when')) : []
+  if (pShow && !whenNames.length) err('when', 'Required when "On Parents page" is Yes')
+
+  // "Only if different" columns. Blank = use the Shared value.
+  const overrides = async (audience: Audience, on: boolean | null): Promise<ParsedOverrides> => {
+    const p = audience === 'teachers' ? 't_' : 'p_'
+    const col = (c: OverrideCol) => `${p}${c}` as Col
+    const v = (c: OverrideCol) => (on ? get(col(c)) : '')
+    const out: ParsedOverrides = { featured: false }
+    if (v('url')) {
+      if (isUrl(v('url'))) out.url = v('url')
+      else err(col('url'), 'Must be a full link starting with https://')
+    }
+    if (v('subtitle')) out.subtitle = v('subtitle')
+    if (v('imageFile')) out.image = await loadImage(v('imageFile'), 'image', (m) => err(col('imageFile'), m))
+    if (v('iconFile')) out.icon = await loadImage(v('iconFile'), 'icon', (m) => err(col('iconFile'), m))
+    if (v('minutes')) {
+      const m = int(v('minutes'))
+      if (isMinutes(m)) out.minutes = m!
+      else err(col('minutes'), 'Whole number 1 to 120')
+    }
+    if (v('skills')) {
+      const names = splitList(v('skills'))
+      if (names.length < 1 || names.length > 3) err(col('skills'), '1 to 3 skills, separated by commas')
+      else out.skills = names.map((s) => resolveRef('skill', 'skills', s))
+    }
+    if (v('feelsLike')) {
+      const f = oneOf(v('feelsLike'), FEELS)
+      if (f) out.feelsLike = f
+      else err(col('feelsLike'), `Allowed: ${FEELS.join(', ')}`)
+    }
+    if (v('badges')) {
+      const b = listValues(v('badges'), lists.badges, (bad) => err(col('badges'), `Unknown value "${bad}". Allowed: ${BADGE_KINDS.join(', ')}`))
+      if (b.length) out.badges = b
+    }
+    if (v('featured')) {
+      const f = yesNo(v('featured'))
+      if (f === null) err(col('featured'), 'Yes or No')
+      else out.featured = f
+    }
+    return out
+  }
+  const tOver = await overrides('teachers', tShow)
+  const pOver = await overrides('parents', pShow)
 
   if (errors.some((e) => e.Row === row)) continue
   parsed.push({
@@ -264,12 +371,10 @@ for (let i = 1; i < rows.length; i++) {
     platforms,
     skills: skillNames.map((s) => resolveRef('skill', 'skills', s)),
     feelsLike: feelsLike!,
-    when: whenNames.map((s) => resolveRef('whenOption', 'when', s)),
-    moments: momentNames.map((s) => resolveRef('moment', 'moments', s)),
-    showOn: showOn!,
     partner: get('partner') || undefined,
-    featured: featured!,
     notes: get('notes') || undefined,
+    teachers: { show: !!tShow, grades, moments: momentNames.map((s) => resolveRef('moment', 'moments', s)), ...tOver },
+    parents: { show: !!pShow, when: whenNames.map((s) => resolveRef('whenOption', 'when', s)), ...pOver },
   })
 }
 
@@ -279,21 +384,49 @@ if (errors.length) {
   process.exit(1)
 }
 
+// ---------- plan ----------
+
 const toCreate = (['skill', 'whenOption', 'moment'] as RefKind[]).flatMap((kind) => [...refDocs[kind].values()].filter((d) => d.create).map((d) => ({ kind, ...d })))
 const existingIds = new Set(existing.games.map((g) => g._id))
 const toPrune = prune ? existing.games.filter((g) => !seenIds.has(g._id)).map((g) => g._id) : []
 
+// Games to append to each moment's list, in sheet row order, skipping games already in the list.
+const momentGames = new Map<string, Set<string>>(existing.moments.map((m) => [m._id, new Set(m.games || [])]))
+const momentAdds = new Map<string, string[]>()
+for (const g of parsed) {
+  if (!g.teachers.show) continue
+  for (const m of g.teachers.moments) {
+    const have = momentGames.get(m._id) || new Set<string>()
+    momentGames.set(m._id, have)
+    if (have.has(g._id)) continue
+    have.add(g._id)
+    momentAdds.set(m._id, [...(momentAdds.get(m._id) || []), g._id])
+  }
+}
+
+const overrideCount = (o: ParsedOverrides) =>
+  (['url', 'subtitle', 'image', 'icon', 'minutes', 'skills', 'feelsLike', 'badges'] as (keyof ParsedOverrides)[]).filter((k) => o[k] !== undefined).length
+const describe = (on: boolean, detail: string, o: ParsedOverrides) =>
+  on ? [detail, overrideCount(o) ? `${overrideCount(o)} override${overrideCount(o) === 1 ? '' : 's'}` : '', o.featured ? 'featured' : ''].filter(Boolean).join(' · ') : 'off'
+
 console.log(`\n${parsed.length} game${parsed.length === 1 ? '' : 's'} valid, ${skipped} example row${skipped === 1 ? '' : 's'} skipped.`)
+if (placeholders) console.log(`${placeholders} missing image${placeholders === 1 ? '' : 's'} replaced by a grey placeholder (--allow-missing-images).`)
 console.table(
   parsed.map((g) => ({
     Row: g.row,
     Game: g.name,
     Action: existingIds.has(g._id) ? 'update' : 'create',
-    Images: g.icon ? 'image + icon' : 'image',
-    'Shows on': g.showOn.join(', '),
+    Images: [g.image, g.icon, g.teachers.image, g.teachers.icon, g.parents.image, g.parents.icon].filter(Boolean).length,
+    Teachers: describe(g.teachers.show, `${g.teachers.grades.join(', ')} · ${g.teachers.moments.length} moment${g.teachers.moments.length === 1 ? '' : 's'}`, g.teachers),
+    Parents: describe(g.parents.show, `${g.parents.when.length} when`, g.parents),
   })),
 )
 if (toCreate.length) console.log('New list entries to create:', toCreate.map((d) => `${d.kind} "${d.title}"`).join(', '))
+for (const [id, adds] of momentAdds) {
+  const m = [...refDocs.moment.values()].find((d) => d._id === id)!
+  console.log(`Moment "${m.title}": add ${adds.length} game${adds.length === 1 ? '' : 's'} at the end (${momentGames.get(id)!.size} after)`)
+}
+if (parsed.some((g) => g.teachers.show) && !momentAdds.size) console.log('Moments: nothing to add; every listed game is already in its moments.')
 if (prune) console.log(toPrune.length ? `Games to delete (--prune): ${toPrune.join(', ')}` : 'Nothing to prune.')
 
 if (dryRun) {
@@ -313,8 +446,24 @@ async function uploadImage(img: Img) {
   return assetIds.get(key)!
 }
 
-const imageField = (img: Img, assetId: string, alt?: string) => ({ _type: 'image', asset: { _type: 'reference', _ref: assetId }, ...(alt ? { alt } : {}) })
+const imageField = (assetId: string, alt?: string) => ({ _type: 'image', asset: { _type: 'reference', _ref: assetId }, ...(alt ? { alt } : {}) })
 const ref = (id: string) => ({ _type: 'reference', _ref: id, _key: id })
+const defined = <T extends object>(o: T): Partial<T> => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>
+
+/** The audience object as stored. An override image reuses the shared image description as its alt text. */
+async function audienceDoc(g: ParsedGame, o: ParsedOverrides) {
+  return defined({
+    url: o.url,
+    subtitle: o.subtitle,
+    image: o.image ? imageField(await uploadImage(o.image), g.imageAlt) : undefined,
+    icon: o.icon ? imageField(await uploadImage(o.icon), g.name) : undefined,
+    minutes: o.minutes,
+    skills: o.skills?.map((s) => ref(s._id)),
+    feelsLike: o.feelsLike,
+    badges: o.badges,
+    featured: o.featured,
+  })
+}
 
 const tx = client.transaction()
 for (const d of toCreate) tx.createIfNotExists({ _id: d._id, _type: d.kind, title: d.title, order: d.order })
@@ -328,8 +477,8 @@ for (const g of parsed) {
     name: g.name,
     subtitle: g.subtitle,
     url: g.url,
-    image: imageField(g.image, imageId, g.imageAlt),
-    ...(iconId ? { icon: imageField(g.icon!, iconId, g.name) } : {}),
+    image: imageField(imageId, g.imageAlt),
+    ...(iconId ? { icon: imageField(iconId, g.name) } : {}),
     ageFrom: g.ageFrom,
     ageTo: g.ageTo,
     minutes: g.minutes,
@@ -340,19 +489,34 @@ for (const g of parsed) {
     platforms: g.platforms,
     skills: g.skills.map((s) => ref(s._id)),
     feelsLike: g.feelsLike,
-    when: g.when.map((w) => ref(w._id)),
-    moments: g.moments.map((m) => ref(m._id)),
-    showOn: g.showOn,
     ...(g.partner ? { partner: g.partner } : {}),
-    featured: g.featured,
-    hidden: prev?.hidden === true, // keep a "hidden" set in Studio
     ...(g.notes ? { notes: g.notes } : {}),
+    hidden: prev?.hidden === true, // keep a "hidden" set in Studio
+    teachers: g.teachers.show ? { show: true, grades: g.teachers.grades, ...(await audienceDoc(g, g.teachers)) } : { show: false },
+    parents: g.parents.show ? { show: true, when: g.parents.when.map((w) => ref(w._id)), ...(await audienceDoc(g, g.parents)) } : { show: false },
   })
 }
-for (const id of toPrune) tx.delete(id)
+// Append new games to the end of each moment's list. Existing entries are untouched.
+for (const [id, adds] of momentAdds) {
+  tx.patch(id, (p) =>
+    p.setIfMissing({ games: [] }).insert(
+      'after',
+      'games[-1]',
+      adds.map((gid) => ref(gid)),
+    ),
+  )
+}
+// A pruned game is taken out of every moment list first, so the references do not block the delete.
+for (const id of toPrune) {
+  for (const m of existing.moments) if (m.games?.includes(id)) tx.patch(m._id, (p) => p.unset([`games[_ref == "${id}"]`]))
+  tx.delete(id)
+}
 
 const result = await tx.commit()
-console.log(`\nDone. Transaction ${result.transactionId}: ${parsed.length} games written, ${toCreate.length} list entries created, ${toPrune.length} deleted.`)
+const added = [...momentAdds.values()].reduce((n, a) => n + a.length, 0)
+console.log(
+  `\nDone. Transaction ${result.transactionId}: ${parsed.length} games written, ${toCreate.length} list entries created, ${added} moment entries added, ${toPrune.length} deleted.`,
+)
 
 // ---------- helpers ----------
 
@@ -368,6 +532,12 @@ function int(s: string): number | null {
   if (!s) return null
   const n = Number(s)
   return Number.isInteger(n) ? n : null
+}
+function isMinutes(n: number | null): boolean {
+  return n !== null && n >= 1 && n <= 120
+}
+function isUrl(s: string): boolean {
+  return /^https?:\/\/\S+$/i.test(s)
 }
 function yesNo(s: string): boolean | null {
   const v = s.trim().toLowerCase()
@@ -402,23 +572,65 @@ function slug(s: string): string {
 function maxOrder(docs: Titled[]): number {
   return docs.reduce((m, d) => Math.max(m, d.order ?? 0), 0)
 }
-async function loadImage(cell: string, onError: (msg: string) => void): Promise<Img | undefined> {
+
+/** A file name from the images folder, or a link. `kind` picks the placeholder size under --allow-missing-images. */
+async function loadImage(cell: string, kind: 'image' | 'icon', onError: (msg: string) => void): Promise<Img | undefined> {
   if (imageCache.has(cell)) return imageCache.get(cell)
   let img: Img | undefined
+  let missing: string | undefined
   if (/^https?:\/\//i.test(cell)) {
     try {
       const res = await fetch(cell)
-      if (!res.ok) onError(`Could not download (${res.status})`)
+      if (!res.ok) missing = `Could not download (${res.status})`
       else img = { buffer: Buffer.from(await res.arrayBuffer()), filename: path.basename(new URL(cell).pathname) || 'image' }
     } catch (e) {
-      onError(`Could not download: ${(e as Error).message}`)
+      missing = `Could not download: ${(e as Error).message}`
     }
   } else {
     const p = path.join(imagesDir, cell)
-    if (!fs.existsSync(p) || !fs.statSync(p).isFile()) onError(`File "${cell}" not found in ${imagesDir}`)
+    if (!fs.existsSync(p) || !fs.statSync(p).isFile()) missing = `File "${cell}" not found in ${imagesDir}`
     else if (fs.statSync(p).size === 0) onError(`File "${cell}" is empty`)
     else img = { buffer: fs.readFileSync(p), filename: cell }
   }
+  if (missing) {
+    if (allowMissingImages) {
+      placeholders++
+      img = placeholder(kind)
+    } else onError(missing)
+  }
   if (img) imageCache.set(cell, img)
   return img
+}
+
+/** A grey PNG, 800 x 500 for card images and 256 x 256 for icons. Test use only (--allow-missing-images). */
+function placeholder(kind: 'image' | 'icon'): Img {
+  const [w, h] = kind === 'image' ? [800, 500] : [256, 256]
+  const key = `placeholder-${kind}`
+  if (!imageCache.has(key)) imageCache.set(key, { buffer: greyPng(w, h), filename: `${key}.png`, placeholder: true })
+  return imageCache.get(key)!
+}
+
+function greyPng(w: number, h: number, grey = 0xcc): Buffer {
+  const stride = w * 3 + 1 // one filter byte, then RGB per pixel
+  const raw = Buffer.alloc(stride * h, grey)
+  for (let y = 0; y < h; y++) raw[y * stride] = 0
+  const chunk = (type: string, data: Buffer) => {
+    const len = Buffer.alloc(4)
+    len.writeUInt32BE(data.length)
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data])
+    const crc = Buffer.alloc(4)
+    crc.writeUInt32BE(zlib.crc32(body))
+    return Buffer.concat([len, body, crc])
+  }
+  const ihdr = Buffer.alloc(13)
+  ihdr.writeUInt32BE(w, 0)
+  ihdr.writeUInt32BE(h, 4)
+  ihdr[8] = 8 // bit depth
+  ihdr[9] = 2 // colour type: RGB
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', zlib.deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ])
 }

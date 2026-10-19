@@ -5,21 +5,25 @@ import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
-import { badges, builds, facetValues, parentGroups, sortGames, type FacetKey } from '@/lib/derive'
-import type { Game, ParentsData } from '@/sanity/types'
+import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
+import type { AudienceGame, ParentsData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string[]>>
 
 export function ParentsView({ data }: { data: ParentsData }) {
   const { page } = data
-  const games = useMemo(() => sortGames(data.games || []), [data.games])
+  // Featured (for parents) first, then A to Z, with the parents overrides folded in.
+  const games = useMemo(
+    () => sortGames((data.games || []).filter((g) => shownTo(g, 'parents')).map((g) => resolve(g, 'parents'))),
+    [data.games],
+  )
   const groups = useMemo(() => parentGroups(data.whenOptions || []), [data.whenOptions])
   const [sel, setSel] = useState<Sel>({})
   const [query, setQuery] = useState('')
   const q = query.trim().toLowerCase()
 
   // OR within a group, AND across groups. `skip` lets a group count its own options.
-  const matches = (g: Game, skip?: FacetKey) => {
+  const matches = (g: AudienceGame, skip?: FacetKey) => {
     if (q && !g.name.toLowerCase().includes(q)) return false
     return groups.every((gr) => {
       const chosen = sel[gr.key]
@@ -127,7 +131,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
             <div className="cards">
               {results.map((g) => (
                 <article key={g._id} className="card">
-                  <GameImage game={g} w={400} h={250} />
+                  <GameImage image={g.image} w={400} h={250} />
                   <div className="card-body">
                     <div>
                       <h3>{g.name}</h3>
