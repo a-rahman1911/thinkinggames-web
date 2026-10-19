@@ -83,6 +83,12 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 - Moment → game references are strong. `--prune` takes a game out of every moment list before deleting it; in Studio, Sanity blocks deleting a game until it is removed from its moments.
 - Dry run of `scripts/Games - Initial 60.xlsx` with `--allow-missing-images`: 366 problems, all blank required cells that the sheet's own Review tab marks as "fill in" (Subtitle, Minutes, Players and No reading needed on all 60 rows; Image description, Cost and Works offline on the 42 non-PBS rows). Every filled value validates.
 
+## Content state (2026-10-19)
+
+- rh1roy5u/production holds the 60 games from `scripts/Games - Initial 60.xlsx`, imported with `--allow-missing-images`. The six seed games were deleted first and removed from every moment list; the moments, skills and When options from the seed were kept.
+- The 60 games carry **placeholder values and images**: the sheet's blank required cells were filled before import (Subtitle and Image description = the game name, Minutes = 10, Players = Solo, Cost = Free, Works offline = No, No reading needed = No; the 18 PBS KIDS rows already had Cost and Works offline), and every image is the grey placeholder because no image files have been supplied yet. The committed sheet carries those filled values, so the repo matches the CMS.
+- Re-importing the real sheet with real values and an images folder replaces all of it: games are upserted by name, and the placeholder images are superseded by the uploaded files. Moment lists keep their order; only games not yet in a list are appended.
+
 ## Decisions
 
 - Design handoff lives in the repo at design-handoff/. The repo is public, so the design files are public.
