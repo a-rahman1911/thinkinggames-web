@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
@@ -9,6 +9,8 @@ import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames,
 import type { AudienceGame, ParentsData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string[]>>
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export function ParentsView({ data }: { data: ParentsData }) {
   const { page } = data
@@ -21,6 +23,51 @@ export function ParentsView({ data }: { data: ParentsData }) {
   const [sel, setSel] = useState<Sel>({})
   const [query, setQuery] = useState('')
   const q = query.trim().toLowerCase()
+  // Mobile only: the filters sidebar opens as a full-screen panel. On desktop the panel state is never set.
+  const [panelOpen, setPanelOpen] = useState(false)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
+
+  // While the panel is open: focus moves into it and is trapped there, Esc closes it, the page behind
+  // does not scroll, and it closes if the window grows past the mobile breakpoint. Focus returns to the toggle.
+  useEffect(() => {
+    if (!panelOpen) return
+    const panel = panelRef.current
+    if (!panel) return
+    const focusables = () => [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.getClientRects().length > 0)
+    focusables()[0]?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setPanelOpen(false)
+        return
+      }
+      if (e.key !== 'Tab') return
+      const list = focusables()
+      if (!list.length) return
+      const i = list.indexOf(document.activeElement as HTMLElement)
+      if (e.shiftKey && i <= 0) {
+        e.preventDefault()
+        list[list.length - 1].focus()
+      } else if (!e.shiftKey && (i === -1 || i === list.length - 1)) {
+        e.preventDefault()
+        list[0].focus()
+      }
+    }
+    const wide = window.matchMedia('(min-width: 641px)')
+    const onWide = () => wide.matches && setPanelOpen(false)
+    const overflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', onKey)
+    wide.addEventListener('change', onWide)
+    const toggle = toggleRef.current
+    return () => {
+      document.body.style.overflow = overflow
+      document.removeEventListener('keydown', onKey)
+      wide.removeEventListener('change', onWide)
+      toggle?.focus()
+    }
+  }, [panelOpen])
 
   // OR within a group, AND across groups. `skip` lets a group count its own options.
   const matches = (g: AudienceGame, skip?: FacetKey) => {
@@ -69,7 +116,14 @@ export function ParentsView({ data }: { data: ParentsData }) {
       </div>
 
       <main className="wrap lib" style={{ paddingBlock: 'clamp(24px,3vw,32px) clamp(64px,8vw,112px)' }}>
-        <aside className="filters" aria-label="Filters">
+        <aside
+          id="filters-panel"
+          ref={panelRef}
+          className={`filters${panelOpen ? ' open' : ''}`}
+          aria-label="Filters"
+          role={panelOpen ? 'dialog' : undefined}
+          aria-modal={panelOpen ? true : undefined}
+        >
           <div className="filters-head">
             <h2>Filters</h2>
             {hasFilters && (
@@ -102,6 +156,11 @@ export function ParentsView({ data }: { data: ParentsData }) {
               })}
             </fieldset>
           ))}
+          <div className="filters-foot">
+            <button type="button" className="filters-show" onClick={() => setPanelOpen(false)}>
+              Show {results.length === 1 ? '1 game' : `${results.length} games`}
+            </button>
+          </div>
         </aside>
 
         <div className="results">
@@ -117,6 +176,20 @@ export function ParentsView({ data }: { data: ParentsData }) {
               placeholder={page?.searchPlaceholder || 'Search games by name'}
             />
           </label>
+
+          <div className="filters-bar">
+            <button
+              ref={toggleRef}
+              type="button"
+              className={`filters-toggle${active.length ? ' on' : ''}`}
+              aria-haspopup="dialog"
+              aria-expanded={panelOpen}
+              aria-controls="filters-panel"
+              onClick={() => setPanelOpen(true)}
+            >
+              Filters{active.length ? ` · ${active.length}` : ''}
+            </button>
+          </div>
 
           <div className="chips" aria-live="polite">
             <strong>{results.length === 1 ? '1 game' : `${results.length} games`}</strong>

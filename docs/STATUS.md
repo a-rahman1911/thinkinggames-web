@@ -23,6 +23,7 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 - Task B, games backend: games now carry facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, moments, show on) and lib/derive.ts turns them into filters, badges, the "Builds" line and sort order. filterOption documents and sanity/groups.ts are gone. New skill and whenOption documents. Spreadsheet import at scripts/import-games.mts. Seed rewritten to the new model. Studio lists Games, Teacher moments, Skills, When options.
 
 - 2026-10-19: Vercel is connected and live. Production domain: https://thinkinggames-web.vercel.app/. Main deploys on every merge. The Sanity webhook points to /api/revalidate on that domain, so a publish in Studio goes live in seconds without a redeploy. **To check a deploy, fetch the production domain and look at what it serves; do not rely on GitHub commit statuses or check runs** (Vercel posts none on this repository).
+- Task C1, mobile layout (≤640px): header on two rows (logo + pills, then the Teachers search), smaller hero, Challenge banner with a 3-column age grid, compact moments with stacked in-moment filters that scroll sideways if too wide, full-width "Open game", stacked home doors, smaller footer. On Parents the sidebar becomes a full-screen filter panel opened from a sticky "Filters · N" button; the panel traps focus, closes on Esc and returns focus to the button. Checked at 360, 390 and 430px: no horizontal scroll, every tap target at least 44px, every focus ring visible and unclipped. Desktop (641px and up) renders pixel-identical to the previous build. Screenshots in docs/screenshots/c1-mobile/.
 - Task B2, game properties by audience: the game document has Shared, Teachers and Parents tabs. `teachers{}` and `parents{}` each carry a show switch, their own filter data (grades set by hand; when) and optional overrides of the shared values. `lib/derive.ts` gained `resolve(game, audience)`; the views only use resolved games. Moments own an ordered games list (source of truth for membership and order; drag to reorder in Studio). Import rewritten for the Guide tab's Teacher*/Parent* columns, with a `--allow-missing-images` test flag. `scripts/migrate-audience.mts` migrates a dataset; seed rewritten to the new shape.
 
 ## Design drift found (step 1)
@@ -74,6 +75,14 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 - The seed has no images, as before, so Studio shows the required-image validation on seed games until real images are imported.
 - Required columns in the import follow the " *" markers on the sheet's own headers, so the Guide tab stays the single source of truth for editors. Platforms is therefore required in the import (the sheet marks it) but optional in the schema.
 - The import carries over a "hidden" flag set in Studio; everything else on the game document is replaced.
+
+## Task C1 notes
+
+- Below 390px the 28px mascot logo (144px wide) and the two pills (188px) cannot share one row inside the 20px page gutters; at 360px only 320px is available. Below 390px the header gap tightens to 8px and the mascot logo shrinks to 24px tall. The home wordmark still fits at 28px. At 390px and up every header value is as specified.
+- The 34px hero applies to the Teachers, Parents and 404 heroes. The home hero keeps its own size (42px at 390px), since the Home section of the spec only lists the doors.
+- "Open game" spans the full width of the row's text column, under the badges; the thumbnail column stays beside it.
+- In the filter panel, "Clear all" shows once a filter or search is active, as on desktop.
+- Two focus rings were clipped by their container's overflow on every screen size (the in-moment filter options and the moment headers). They are now drawn inside the element; this changes nothing until an element has keyboard focus.
 
 ## Task B2 notes
 
