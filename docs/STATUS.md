@@ -14,14 +14,15 @@ Running record of what is done, what is open, and decisions made. Updated in eac
 
 1. Fix visual drift against the design files: done, see below.
 2. Walk through opening /studio locally (sign-in, localhost:3000 CORS origin).
-3. Vercel import with env vars set before the first deploy.
-4. Sanity webhook to /api/revalidate plus CORS for the Vercel URL. Verify publish updates the live page.
+3. Vercel import with env vars set before the first deploy: done, see below.
+4. Sanity webhook to /api/revalidate plus CORS for the Vercel URL: done, see below.
 5. Port analytics: PostHog, Meta Pixel, Google tag AW-18247964071, gated on CookieYes consent, suppressed on Kids URLs, no identify, no session recording.
 6. Stop before staging domain, content migration and DNS cutover.
 
 - Design drift fixes (step 1) and the favicon (app/icon.svg from the TGI mascot). See the list below for what changed.
 - Task B, games backend: games now carry facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like, when, moments, show on) and lib/derive.ts turns them into filters, badges, the "Builds" line and sort order. filterOption documents and sanity/groups.ts are gone. New skill and whenOption documents. Spreadsheet import at scripts/import-games.mts. Seed rewritten to the new model. Studio lists Games, Teacher moments, Skills, When options.
 
+- 2026-10-19: Vercel is connected and live. Production domain: https://thinkinggames-web.vercel.app/. Main deploys on every merge. The Sanity webhook points to /api/revalidate on that domain, so a publish in Studio goes live in seconds without a redeploy. **To check a deploy, fetch the production domain and look at what it serves; do not rely on GitHub commit statuses or check runs** (Vercel posts none on this repository).
 - Task B2, game properties by audience: the game document has Shared, Teachers and Parents tabs. `teachers{}` and `parents{}` each carry a show switch, their own filter data (grades set by hand; when) and optional overrides of the shared values. `lib/derive.ts` gained `resolve(game, audience)`; the views only use resolved games. Moments own an ordered games list (source of truth for membership and order; drag to reorder in Studio). Import rewritten for the Guide tab's Teacher*/Parent* columns, with a `--allow-missing-images` test flag. `scripts/migrate-audience.mts` migrates a dataset; seed rewritten to the new shape.
 
 ## Design drift found (step 1)
@@ -100,4 +101,5 @@ Not drift: game order, game counts per moment, tag sets and thumbnails differ be
 
 ## Environment notes
 
-- The cloud session's network policy blocks rh1roy5u.api.sanity.io, so pages and the production build cannot reach Sanity from there. Local verification used a stand-in that evaluates the site's GROQ queries against seed/seed.ndjson. Allow the host in the environment's network settings to lift this.
+- The cloud session's network policy allows api.sanity.io and GitHub but blocks thinkinggames-web.vercel.app, so the live site cannot be fetched from a cloud session unless that host is added to the environment's Allowed domains.
+- Earlier note: the cloud session's network policy blocked rh1roy5u.api.sanity.io, so pages and the production build cannot reach Sanity from there. Local verification used a stand-in that evaluates the site's GROQ queries against seed/seed.ndjson. Allow the host in the environment's network settings to lift this.
