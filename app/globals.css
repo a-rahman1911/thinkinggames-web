@@ -56,8 +56,8 @@ h1,h2,h3,p{margin:0}
 .thumb{border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#e2e4ec 0 10px,#eceef4 10px 20px)}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .link-btn{background:none;border:none;padding:0;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer}
-.btn-outline{text-decoration:none;font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;border:2px solid var(--ink);white-space:nowrap}
-.btn-outline:hover{background:var(--ink);color:#fff}
+.btn-open{flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;text-decoration:none;font-size:14px;font-weight:700;padding:11px 16px;border-radius:999px;background:var(--ink);color:#fff;white-space:nowrap}
+.btn-open:hover{background:var(--orange);color:var(--ink)}
 .empty{padding:40px;border-radius:16px;background:var(--soft);font-size:17px;font-weight:700;text-align:center}
 .empty.sm{padding:32px;font-size:16px}
 .empty.panel{padding:56px 32px;border-radius:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
@@ -82,16 +82,17 @@ h1,h2,h3,p{margin:0}
 .seg-opts button{border:none;min-height:40px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;background:#fff}
 .seg-opts button[aria-pressed="true"]{background:var(--ink);color:#fff}
 .seg-opts button:focus-visible,.moment-head:focus-visible{outline-offset:-4px}
-.rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:14px}
-.row{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;background:var(--soft)}
+.rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:14px}
+.row{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--soft)}
+.row-top{display:grid;grid-template-columns:clamp(112px,28%,132px) minmax(0,1fr);gap:14px;align-items:center}
 .row .thumb{aspect-ratio:16/10}
 .row .tag{background:#fff}.row .tag.first{background:var(--teacher-light)}
-.row-body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.row-text{display:flex;flex-direction:column;gap:2px;min-width:0}
 .row-name{font-size:18px;font-weight:800;line-height:1.2}
-.row-tagline{font-size:15px;line-height:1.4;margin-top:2px}
+.row-tagline{font-size:15px;line-height:1.35}
 .meta{font-size:13px;line-height:1.4;color:var(--muted)}
-.row-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.row-foot .btn-outline{margin-left:auto}
+.row-foot{display:flex;align-items:center;gap:6px}
+.row-badges{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px}
 
 /* Parents: library */
 .lib{display:flex;flex-wrap:wrap;gap:clamp(24px,3vw,40px);align-items:flex-start}
@@ -201,8 +202,7 @@ body:has(.home-hero) .ftr-mission{grid-template-columns:120px minmax(0,1fr)}
   .seg-opts{max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .seg-opts::-webkit-scrollbar{display:none}
   .seg-opts button{flex-shrink:0;min-width:44px;min-height:44px;white-space:nowrap}
-  .row{grid-template-columns:88px minmax(0,1fr);gap:14px}
-  .row-foot .btn-outline{margin-left:0;flex:1 1 100%;display:flex;align-items:center;justify-content:center;min-height:44px}
+  .row-top{grid-template-columns:112px minmax(0,1fr)}
 
   /* Parents: the sidebar becomes a full-screen panel opened from a sticky "Filters" button */
   .filters{display:none}

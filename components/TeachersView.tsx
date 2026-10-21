@@ -192,21 +192,23 @@ export function TeachersView({ data }: { data: TeachersData }) {
 function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
   return (
     <article className="row">
-      <GameImage image={game.image} w={132} />
-      <div className="row-body">
-        <div>
+      <div className="row-top">
+        <GameImage image={game.image} w={132} />
+        <div className="row-text">
           <div className="row-name">{game.name}</div>
           {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
         </div>
-        {meta && <span className="meta">{meta}</span>}
-        <div className="row-foot">
+      </div>
+      {meta && <span className="meta">{meta}</span>}
+      <div className="row-foot">
+        <div className="row-badges">
           <Badges badges={badges(game)} />
-          {game.url && (
-            <a className="btn-outline" href={game.url} target="_blank" rel="noopener">
-              Open game ↗<span className="sr-only"> {game.name} (opens in new tab)</span>
-            </a>
-          )}
         </div>
+        {game.url && (
+          <a className="btn-open" href={game.url} target="_blank" rel="noopener">
+            Open game ↗<span className="sr-only"> {game.name} (opens in new tab)</span>
+          </a>
+        )}
       </div>
     </article>
   )
