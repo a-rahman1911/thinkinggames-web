@@ -24,12 +24,12 @@
 </header>
 
 <section data-screen-label="Parents hero" style="max-width:1280px;margin-inline:auto;padding:clamp(32px,4vw,48px) clamp(20px,5vw,64px) 0;display:flex;flex-direction:column;gap:12px">
-  <h1 style="margin:0;font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:800;letter-spacing:-.025em;text-wrap:balance">Every game, one shelf, sorted for your <span style="background:#a8ed62;padding:0 .14em;border-radius:8px">kid.</span></h1>
+  <h1 style="margin:0;font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:800;letter-spacing:-.025em;text-wrap:balance">Every game, one shelf, sorted for your <span style="background:linear-gradient(transparent 52%, #dcf8c0 52%, #dcf8c0 90%, transparent 90%);padding:0 .06em">kid.</span></h1>
   <p style="margin:0;font-size:clamp(16px,1.4vw,18px);line-height:1.5;max-width:640px;text-wrap:pretty">Browse everything. Stack the filters if you like.</p>
 </section>
 
-<div data-screen-label="Thinking Challenge" style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) 0">
-  <div style="background:#1e1e4e;color:#fff;border-radius:20px;padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,44px);display:flex;flex-wrap:wrap;gap:28px 40px;align-items:center">
+<div style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) 0;display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+  <div data-screen-label="Thinking Challenge" style="flex:999 1 560px;background:#1e1e4e;color:#fff;border-radius:20px;padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,44px);display:flex;flex-wrap:wrap;gap:28px 40px;align-items:center">
     <div style="flex:1 1 380px;display:flex;flex-direction:column;gap:10px;min-width:0">
       <div style="font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f27332">Opens on the Challenge site</div>
       <div style="font-size:clamp(26px,2.8vw,34px);font-weight:800;line-height:1.1;letter-spacing:-.015em">The Thinking Challenge</div>
@@ -39,10 +39,14 @@
       <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 4-5</a>
       <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 6-8</a>
       <a href="#" style="text-decoration:none;background:#a8ed62;color:#1e1e4e;font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px" style-hover="background:#fff;color:#1e1e4e">Ages 9-11</a>
-      <span aria-hidden="true" style="width:2px;height:40px;background:#34346a;margin:0 6px"></span>
-      <button onClick="{{ copyChallenge }}" style="background:transparent;color:#fff;border:2px solid #fff;font-size:15px;font-weight:700;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:#fff;color:#1e1e4e">{{ challengeCopyLabel }}</button>
     </div>
   </div>
+  <sc-if value="{{ partnersTop }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="Brands we support" style="flex:1 1 100%;border:1px solid #E2E4EC;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;justify-content:center">
+      <span style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Brands we support</span>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px"><a href="#" aria-label="Funexpected (opens in new tab)" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid #E2E4EC;text-decoration:none;font-size:16px;font-weight:700" style-hover="border-color:#1e1e4e"><img src="assets/partners/funexpected.png" alt="" style="height:44px;width:auto;max-width:calc(100% - 32px);object-fit:contain;object-position:left;display:block"><span aria-hidden="true">↗</span></a><a href="#" aria-label="Math Makers (opens in new tab)" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid #E2E4EC;text-decoration:none;font-size:16px;font-weight:700" style-hover="border-color:#1e1e4e"><img src="assets/partners/math-makers-horizontal.png" alt="" style="height:44px;width:auto;max-width:calc(100% - 32px);object-fit:contain;object-position:left;display:block"><span aria-hidden="true">↗</span></a></div>
+    </div>
+    </sc-if>
 </div>
 
 <main data-screen-label="Library" style="max-width:1280px;margin-inline:auto;padding:clamp(24px,3vw,32px) clamp(20px,5vw,64px) clamp(64px,8vw,112px);display:flex;flex-wrap:wrap;gap:clamp(24px,3vw,40px);align-items:flex-start">
@@ -115,6 +119,47 @@
   </div>
 </main>
 
+<sc-if value="{{ partnersBottom }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Brands we support" style="border-top:1px solid #E2E4EC">
+  <div style="max-width:1280px;margin-inline:auto;padding:clamp(40px,5vw,64px) clamp(20px,5vw,64px);display:flex;flex-direction:column;gap:clamp(20px,2.5vw,28px)">
+    <h2 style="margin:0;font-size:clamp(26px,3vw,36px);line-height:1.1;font-weight:800;letter-spacing:-.02em">Brands we support</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <div style="display:grid;grid-template-columns:clamp(112px,30%,176px) minmax(0,1fr);gap:clamp(14px,2vw,20px);align-items:center;padding:clamp(14px,2vw,20px);border-radius:20px;background:#f8f8fa">
+        <div style="aspect-ratio:16 / 10;border-radius:12px;background:repeating-linear-gradient(135deg,#E2E4EC 0 10px,#eceef4 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px/1 ui-monospace,Menlo,monospace;color:#6b7194">Funexpected logo</div>
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:clamp(18px,1.8vw,22px);font-weight:800;line-height:1.15">Funexpected</span>
+            <span style="font-size:14px;color:#4a4d6e">App</span>
+          </div>
+          <a href="#" style="text-decoration:none;font-size:14px;font-weight:700;padding:11px 18px;min-height:44px;display:flex;align-items:center;border-radius:999px;background:#1e1e4e;color:#fff" style-hover="background:#f27332;color:#1e1e4e">Get the app ↗</a>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:clamp(112px,30%,176px) minmax(0,1fr);gap:clamp(14px,2vw,20px);align-items:center;padding:clamp(14px,2vw,20px);border-radius:20px;background:#f8f8fa">
+        <div style="aspect-ratio:16 / 10;border-radius:12px;background:repeating-linear-gradient(135deg,#E2E4EC 0 10px,#eceef4 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px/1 ui-monospace,Menlo,monospace;color:#6b7194">Math Makers logo</div>
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:clamp(18px,1.8vw,22px);font-weight:800;line-height:1.15">Math Makers</span>
+            <span style="font-size:14px;color:#4a4d6e">5 games here</span>
+          </div>
+          <a href="#" style="text-decoration:none;font-size:14px;font-weight:700;padding:11px 18px;min-height:44px;display:flex;align-items:center;border-radius:999px;background:#1e1e4e;color:#fff" style-hover="background:#f27332;color:#1e1e4e">Visit Math Makers ↗</a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:6px;width:100%;max-width:max-content">Also on this page</span>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>PlayMath</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>PBS KIDS</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>Beast Academy</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>Inkwell Games</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>CouchGames</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>Star Stuff</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>SuperWEIRD</a>
+      <a href="#" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;min-height:44px;border:2px solid #E2E4EC;border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:#fff" style-hover="border-color:#1e1e4e"><span style="width:30px;height:30px;border-radius:999px;background:repeating-linear-gradient(135deg,#E2E4EC 0 6px,#eceef4 6px 12px)"></span>Thinky Games</a>
+    </div>
+  </div>
+</section>
+</sc-if>
+
 <div style="background:#1e1e4e;color:#fff">
   <div style="max-width:1280px;margin-inline:auto;padding:56px clamp(20px,5vw,64px);display:grid;grid-template-columns:100px minmax(0,1fr);gap:clamp(24px,4vw,40px);align-items:center">
     <img src="assets/tg/mascot-tgi.svg" alt="" style="width:100px;display:block">
@@ -128,7 +173,7 @@
   </footer>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;partnersPosition&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;top&quot;,&quot;bottom&quot;],&quot;default&quot;:&quot;top&quot;,&quot;tsType&quot;:&quot;\&quot;top\&quot; | \&quot;bottom\&quot;&quot;,&quot;description&quot;:&quot;top = panel under the Challenge banner; bottom = full section above the footer&quot;}}">
 // Placeholder catalog — becomes `initiative` documents in the CMS; filter
 // options become `tag` documents with persona = parent.
 const GROUPS = [
@@ -139,18 +184,18 @@ const GROUPS = [
 ];
 
 const GAMES = [
-  { name: "Beast Academy Puzzles", tagline: "A fresh puzzle every day, free", builds: "number sense · logical deduction",
+  { name: "Beast Academy Puzzles", tagline: "A fresh puzzle every day, free", builds: "Number sense · Logical deduction",
     tags: ["Free", "Solo", "5 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["Math"], also: [] },
-  { name: "Inkwell Games", tagline: "Grid puzzles, no reading needed", builds: "logical deduction · pattern recognition",
-    tags: ["Free", "Solo", "Offline", "10 min"], age: ["Ages 4-5", "Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed"] },
-  { name: "Star Stuff", tagline: "Command cute robots, quietly", builds: "sequencing · spatial reasoning",
-    tags: ["Free with account", "Solo", "20 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Free time", "Weekend"], feel: ["A game"], also: [] },
-  { name: "SuperWeird", tagline: "Silly problems, real reasoning", builds: "systems thinking · creative thinking",
-    tags: ["Subscription", "Together", "20 min"], age: ["Ages 9-11"], when: ["Weekend"], feel: ["A game"], also: ["Together"] },
-  { name: "Set Daily Puzzle", tagline: "Spot the pattern, beat the clock", builds: "pattern recognition · working memory",
-    tags: ["Free", "Together", "5 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed", "Together"] },
-  { name: "Math Makers", tagline: "Build it, then prove it works", builds: "arithmetic · strategic planning",
-    tags: ["Free", "Together", "Offline", "15 min"], age: ["Ages 4-5", "Ages 6-8"], when: ["Weekend"], feel: ["Math"], also: ["Together"] }
+  { name: "Inkwell Games", tagline: "Grid puzzles, no reading needed", builds: "Logical deduction · Pattern recognition",
+    tags: ["Free", "Solo", "10 min", "Offline", "No reading needed"], age: ["Ages 4-5", "Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed"] },
+  { name: "Star Stuff", tagline: "Command cute robots, quietly", builds: "Sequencing · Spatial reasoning",
+    tags: ["Free with account", "Pairs", "20 min"], age: ["Ages 6-8", "Ages 9-11"], when: ["Free time", "Weekend"], feel: ["A game"], also: ["Together"] },
+  { name: "SuperWeird", tagline: "Silly problems, real reasoning", builds: "Systems thinking · Creative thinking",
+    tags: ["Free", "Whole class", "20 min"], age: ["Ages 9-11"], when: ["Weekend"], feel: ["A game"], also: ["Together"] },
+  { name: "Set Daily Puzzle", tagline: "Spot the pattern, beat the clock", builds: "Pattern recognition · Working memory",
+    tags: ["Free", "Solo / Whole class", "5 min", "No reading needed"], age: ["Ages 6-8", "Ages 9-11"], when: ["Car or waiting", "Free time"], feel: ["A game"], also: ["No reading needed", "Together"] },
+  { name: "Math Makers", tagline: "Build it, then prove it works", builds: "Arithmetic · Strategic planning",
+    tags: ["Free", "Pairs", "10 min", "Offline"], age: ["Ages 4-5", "Ages 6-8"], when: ["Weekend"], feel: ["Math"], also: ["Together"] }
 ];
 
 class Component extends DCLogic {
@@ -180,6 +225,8 @@ class Component extends DCLogic {
     const clearAll = () => this.setState({ sel: { age: [], when: [], feel: [], also: [] }, query: "" });
 
     return {
+      partnersTop: (this.props.partnersPosition ?? "top") === "top",
+      partnersBottom: (this.props.partnersPosition ?? "top") === "bottom",
       copyChallenge: () => { this.setState({ copied: true }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ copied: false }), 1600); },
       challengeCopyLabel: this.state.copied ? "Link copied ✓" : "Copy link",
       query,
