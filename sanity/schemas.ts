@@ -461,4 +461,54 @@ const whenOption = defineType({
   preview: { select: { title: 'title' } },
 })
 
-export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption]
+type BrandDoc = { showOnTeachers?: boolean; showOnParents?: boolean }
+
+/** A tile in the "Brands we support" panel under the Challenge banner. Each page has its own switch and order. */
+const brand = defineType({
+  name: 'brand',
+  title: 'Brand',
+  type: 'document',
+  fields: [
+    defineField({ name: 'name', type: 'string', validation: (r) => r.required() }),
+    defineField({
+      name: 'logo',
+      type: 'image',
+      description: 'Any shape. Shown 44px tall on white, so a logo on a white or transparent background works best. The brand name is used as alt text.',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'url',
+      title: 'URL',
+      type: 'url',
+      description: 'Opens in a new tab',
+      validation: (r) => r.required().uri({ scheme: ['http', 'https'] }),
+    }),
+    defineField({ name: 'showOnTeachers', title: 'On Teachers page', type: 'boolean', initialValue: false }),
+    defineField({
+      name: 'teachersOrder',
+      title: 'Order on Teachers page',
+      type: 'number',
+      description: 'Lower numbers show first',
+      hidden: ({ document }) => !(document as BrandDoc | undefined)?.showOnTeachers,
+    }),
+    defineField({ name: 'showOnParents', title: 'On Parents page', type: 'boolean', initialValue: false }),
+    defineField({
+      name: 'parentsOrder',
+      title: 'Order on Parents page',
+      type: 'number',
+      description: 'Lower numbers show first',
+      hidden: ({ document }) => !(document as BrandDoc | undefined)?.showOnParents,
+    }),
+  ],
+  orderings: [{ title: 'Name', name: 'nameAsc', by: [{ field: 'name', direction: 'asc' }] }],
+  preview: {
+    select: { title: 'name', media: 'logo', teachers: 'showOnTeachers', parents: 'showOnParents' },
+    prepare: ({ title, media, teachers, parents }) => ({
+      title,
+      subtitle: [teachers && 'Teachers', parents && 'Parents'].filter(Boolean).join(' + ') || 'nowhere',
+      media,
+    }),
+  },
+})
+
+export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand]

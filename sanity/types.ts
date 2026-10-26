@@ -45,5 +45,7 @@ export type ParentsPage = (Hero & { challenge?: Challenge; searchPlaceholder?: s
 
 export type Moment = { _id: string; title: string; blurb?: string; games?: Game[] | null }
 
-export type TeachersData = { page: TeachersPage; moments: Moment[] | null }
-export type ParentsData = { page: ParentsPage; games: Game[] | null; whenOptions: Titled[] | null }
+export type Brand = { _id: string; name: string; url: string; logo: SanityImage }
+
+export type TeachersData = { page: TeachersPage; moments: Moment[] | null; brands: Brand[] | null }
+export type ParentsData = { page: ParentsPage; games: Game[] | null; whenOptions: Titled[] | null; brands: Brand[] | null }
