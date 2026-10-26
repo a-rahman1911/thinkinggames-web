@@ -9,6 +9,8 @@
 // Nothing here touches Sanity or React, so it is unit-tested directly (lib/derive.test.mts).
 
 export const PLAYERS = ['Solo', 'Pairs', 'Small group', 'Whole class'] as const
+/** Minutes per round. Stored as these strings; each is also a Minutes filter option. */
+export const MINUTES = ['5', '10', '20', '30+'] as const
 export const COSTS = ['Free', 'Free with account', 'Paid'] as const
 export const PLATFORMS = ['Web', 'iOS', 'Android', 'Print', 'Physical game'] as const
 export const FEELS = ['A game', 'Math'] as const
@@ -17,6 +19,7 @@ export const BADGE_KINDS = ['Cost', 'Players', 'Minutes', 'Offline', 'No reading
 export const AUDIENCES = ['teachers', 'parents'] as const
 
 export type Player = (typeof PLAYERS)[number]
+export type Minutes = (typeof MINUTES)[number]
 export type Cost = (typeof COSTS)[number]
 export type Platform = (typeof PLATFORMS)[number]
 export type Feel = (typeof FEELS)[number]
@@ -33,7 +36,7 @@ export type Overrides<Img = unknown> = {
   subtitle?: string | null
   image?: Img | null
   icon?: Img | null
-  minutes?: number | null
+  minutes?: string | null
   skills?: Skill[] | null
   feelsLike?: string | null
   /** Which badge kinds to show (BADGE_KINDS). Empty or unset = all. */
@@ -53,7 +56,8 @@ export type GameFacts<Img = unknown> = {
   icon?: Img | null
   ageFrom: number
   ageTo: number
-  minutes: number
+  /** One of MINUTES. */
+  minutes: string
   players?: string[] | null
   cost?: string | null
   offline?: boolean | null
@@ -123,7 +127,6 @@ export const TEACHER_GRADE_BANDS: Band[] = [
   { label: '4-5', from: 9, to: 11 },
 ]
 
-export const MINUTE_BUCKETS = ['5', '10', '20'] as const
 export const TEACHER_FEELS = ['a game', 'math'] as const
 export const ALSO_OPTIONS = ['No reading needed', 'Together'] as const
 
@@ -136,10 +139,6 @@ export const parentAgeBands = (g: Pick<GameFacts, 'ageFrom' | 'ageTo'>) => ageBa
 
 /** A first guess at teachers.grades from the age range. Migration and seed only; the site uses teachers.grades as is. */
 export const gradesFromAge = (g: Pick<GameFacts, 'ageFrom' | 'ageTo'>) => ageBands(g, TEACHER_GRADE_BANDS)
-
-/** "5" if 5 minutes or less, "10" if 6 to 10, "20" if more than 10. */
-export const minutesBucket = (minutes: number): (typeof MINUTE_BUCKETS)[number] =>
-  minutes <= 5 ? '5' : minutes <= 10 ? '10' : '20'
 
 /** Teachers show "Feels like" in lower case ("a game", "math"); Parents show it as stored. */
 export const teacherFeel = (g: Pick<GameFacts, 'feelsLike'>) => (g.feelsLike || '').toLowerCase()
@@ -160,7 +159,7 @@ export const badges = (g: BadgeFacts): string[] => {
   const all: [BadgeKind, string | null | undefined][] = [
     ['Cost', g.cost],
     ['Players', g.players?.length ? g.players.join(' / ') : null],
-    ['Minutes', typeof g.minutes === 'number' ? `${g.minutes} min` : null],
+    ['Minutes', g.minutes ? `${g.minutes} min` : null],
     ['Offline', g.offline ? 'Offline' : null],
     ['No reading needed', g.noReading ? 'No reading needed' : null],
   ]
@@ -185,7 +184,8 @@ export function facetValues(g: Resolved<GameFacts>, key: FacetKey): string[] {
     case 'grade':
       return g.grades
     case 'minutes':
-      return [minutesBucket(g.minutes)]
+      // Each game matches its own value only. String() also covers a number left from before the migration.
+      return g.minutes ? [String(g.minutes)] : []
     case 'feel':
       return [teacherFeel(g)]
     case 'age':
@@ -206,7 +206,7 @@ const opts = (values: readonly string[]) => values.map((v) => ({ value: v, label
 /** Teachers filter groups (all derived, nothing from the CMS). */
 export const TEACHER_GROUPS: FilterGroup[] = [
   { key: 'grade', label: 'Grade', options: opts(GRADES) },
-  { key: 'minutes', label: 'Minutes', options: opts(MINUTE_BUCKETS) },
+  { key: 'minutes', label: 'Minutes', options: opts(MINUTES) },
   { key: 'feel', label: 'Feels like', options: opts(TEACHER_FEELS) },
 ]
 
