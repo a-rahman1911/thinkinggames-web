@@ -54,7 +54,7 @@ h1,h2,h3,p{margin:0}
 .challenge-stack{display:flex;flex-direction:column;gap:16px}
 .brands{border:1px solid var(--line);border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
 .brands-label{margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.brands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:8px}
+.brands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
 .brand{display:flex;justify-content:space-between;align-items:center;min-height:72px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none;transition:border-color .15s}
 .brand:hover{border-color:var(--ink);color:var(--ink)}
 .brand img{display:block;height:44px;width:auto;max-width:calc(100% - 32px);object-fit:contain;object-position:left;mix-blend-mode:multiply}
