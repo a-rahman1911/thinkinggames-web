@@ -18,7 +18,6 @@ export type Challenge = {
   title?: string
   text?: string
   buttons?: Link[]
-  shareUrl?: string
 }
 
 type Hero = { headline?: string; highlight?: string; subline?: string; seo?: Seo }

@@ -44,7 +44,8 @@ const challenge = defineType({
     defineField({ name: 'title', type: 'string', initialValue: 'The Thinking Challenge' }),
     defineField({ name: 'text', type: 'text', rows: 3 }),
     defineField({ name: 'buttons', title: 'Age buttons', type: 'array', of: [defineArrayMember({ type: 'link' })] }),
-    defineField({ name: 'shareUrl', title: '"Copy link" URL', type: 'url' }),
+    // The design dropped the "Copy link" button. Kept hidden so the stored value raises no "unknown field" warning.
+    defineField({ name: 'shareUrl', title: '"Copy link" URL', type: 'url', hidden: true }),
   ],
 })
 
