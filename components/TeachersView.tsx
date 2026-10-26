@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
@@ -70,7 +71,10 @@ export function TeachersView({ data }: { data: TeachersData }) {
         className="wrap"
         style={{ display: 'flex', flexDirection: 'column', gap: 32, paddingBlock: 'clamp(24px,3vw,32px) clamp(64px,8vw,112px)' }}
       >
-        <ChallengeBanner data={page?.challenge} />
+        <div className="challenge-stack">
+          <ChallengeBanner data={page?.challenge} />
+          <BrandsPanel brands={data.brands} />
+        </div>
 
         {q ? (
           <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }} aria-live="polite">

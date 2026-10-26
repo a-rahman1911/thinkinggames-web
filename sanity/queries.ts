@@ -16,6 +16,12 @@ const gameFields = groq`
   parents{ show, "when": when[]->{ _id, title, order }, ${overrideFields} }
 `
 
+// "Brands we support". A brand needs a logo and a URL to show; until both are set in Studio it is left out.
+const brands = (audience: 'Teachers' | 'Parents') => groq`
+  "brands": *[_type == "brand" && showOn${audience} == true && defined(logo.asset) && defined(url)]
+    | order(${audience.toLowerCase()}Order asc, name asc){ _id, name, url, logo }
+`
+
 export const settingsQuery = groq`*[_type == "siteSettings"][0]{ mission, footerLinks[]{label, url} }`
 
 export const homeQuery = groq`*[_type == "homePage"][0]{ headline, highlight, subline, panels[]{persona, eyebrow, title, text, cta}, seo }`
@@ -27,11 +33,13 @@ export const teachersQuery = groq`{
   "moments": *[_type == "moment"] | order(order asc){
     _id, title, blurb,
     "games": games[@->teachers.show == true && @->hidden != true]->{${gameFields}}
-  }
+  },
+  ${brands('Teachers')}
 }`
 
 export const parentsQuery = groq`{
   "page": *[_type == "parentsPage"][0],
   "games": *[_type == "game" && parents.show == true && hidden != true]{${gameFields}},
-  "whenOptions": *[_type == "whenOption"] | order(order asc, title asc){ _id, title }
+  "whenOptions": *[_type == "whenOption"] | order(order asc, title asc){ _id, title },
+  ${brands('Parents')}
 }`

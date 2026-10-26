@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage } from './GameBits'
 import { Header } from './Header'
@@ -111,8 +112,9 @@ export function ParentsView({ data }: { data: ParentsData }) {
         {page?.subline && <p>{page.subline}</p>}
       </section>
 
-      <div className="wrap" style={{ paddingTop: 'clamp(24px,3vw,32px)' }}>
+      <div className="wrap challenge-stack" style={{ paddingTop: 'clamp(24px,3vw,32px)' }}>
         <ChallengeBanner data={page?.challenge} />
+        <BrandsPanel brands={data.brands} />
       </div>
 
       <main className="wrap lib" style={{ paddingBlock: 'clamp(24px,3vw,32px) clamp(64px,8vw,112px)' }}>

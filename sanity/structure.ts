@@ -10,6 +10,7 @@ export const structure: StructureResolver = (S) =>
       ),
       S.divider(),
       S.documentTypeListItem('game').title('Games'),
+      S.documentTypeListItem('brand').title('Brands we support'),
       S.documentTypeListItem('moment').title('Teacher moments'),
       S.documentTypeListItem('skill').title('Skills'),
       S.documentTypeListItem('whenOption').title('When options (parents)'),
