@@ -1,5 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import { BADGE_KINDS, COSTS, FEELS, GRADES, PLATFORMS, PLAYERS } from '../lib/derive'
+import { BADGE_KINDS, COSTS, FEELS, GRADES, MINUTES, PLATFORMS, PLAYERS } from '../lib/derive'
 
 export const SINGLETONS = [
   { type: 'siteSettings', title: 'Site settings' },
@@ -188,10 +188,10 @@ const overrideFields = (audience: 'teachers' | 'parents') => [
   }),
   defineField({
     name: 'minutes',
-    type: 'number',
+    type: 'string',
     hidden: whenShown,
     description: `Only if a round is a different length for ${audience}. Drives the badge and the Minutes filter.`,
-    validation: (r) => r.integer().min(1).max(120),
+    options: { list: [...MINUTES], layout: 'radio' },
   }),
   defineField({
     name: 'skills',
@@ -329,10 +329,11 @@ const game = defineType({
     }),
     defineField({
       name: 'minutes',
-      type: 'number',
+      type: 'string',
       group: 'shared',
       description: 'Typical play time for one round. Drives the "Minutes" filter and the "10 min" badge.',
-      validation: (r) => r.required().integer().min(1).max(120),
+      options: { list: [...MINUTES], layout: 'radio' },
+      validation: (r) => r.required(),
     }),
     defineField({
       name: 'players',

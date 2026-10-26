@@ -7,3 +7,6 @@ out
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Banner sources and processed JPGs for npm run import:games (local cache, not committed)
+scripts/images/

@@ -50,7 +50,7 @@ Games carry **facts only**. Everything shown is derived from them in `lib/derive
 |---|---|
 | Teachers "Grade" (K-1, 2-3, 4-5) | `teachers.grades`, set by hand |
 | Parents "Age" (4-5, 6-8, 9-11) | `ageFrom`–`ageTo`; a game matches every band its range overlaps |
-| "Minutes" filter (5 / 10 / 20) and the "N min" badge | resolved `minutes`: 5 if at most 5, 10 if 6–10, 20 if more |
+| "Minutes" filter (5 / 10 / 20 / 30+) and the "N min" badge | resolved `minutes`, one of "5", "10", "20", "30+"; each game matches its own value only; the badge reads e.g. "30+ min" |
 | Parents "Also": No reading needed, Together | `noReading`; `players` has anything other than Solo |
 | Badges (first one highlighted) | cost, players joined with " / ", "N min", Offline, No reading needed, in that order; the audience's badges list keeps only those kinds (empty = all) |
 | "Builds …" | resolved skill titles joined with " · " |
@@ -65,6 +65,7 @@ Editors fill in the Games spreadsheet (see its Guide and Lists tabs) and send it
 npm run import:games -- Games.xlsx ./images --dry-run   # validate only, prints a per-row error table
 npm run import:games -- Games.xlsx ./images             # write
 npm run import:games -- Games.xlsx ./images --prune     # also delete games that are no longer in the sheet
+npm run import:games -- scripts/games-final.xlsx scripts/images --sheet=Sheet2 --dry-run   # the final games list (below)
 ```
 
 - Needs `SANITY_WRITE_TOKEN` in `.env.local` (Sanity → API → Tokens, Editor role). Server only.
@@ -75,7 +76,33 @@ npm run import:games -- Games.xlsx ./images --prune     # also delete games that
 - "Teacher moments": the game is added to the **end** of each listed moment's games list if it is not already there. Existing entries are never reordered or removed; reorder in Studio. Sheet row order sets the order of the games added in one run.
 - An override image reuses the shared image description as its alt text.
 - A "hidden" flag set in Studio survives re-imports.
+- Minutes must be 5, 10, 20 or 30+ (the sheet's dropdown). Anything else is a row error.
+- A subtitle over 50 characters is listed in the report and imported as written.
 - `--allow-missing-images` (testing only) replaces an image file that cannot be found with a grey placeholder instead of failing the row. Off by default.
+
+### Card images
+
+An "Image file" cell (or a Teacher/Parent image file) can be a file name or a link, including a Google Drive share link. The import looks first for a file in the images folder whose name, or name without extension, is the cell or its Drive file ID (`scripts/images/<drive id>.png`, say), then downloads it (Drive files through `drive.usercontent.google.com`, which needs the file shared with "Anyone with the link"; the download is saved to the images folder, so each Drive file is fetched once). Every card image is then centre-cropped to 16:10, resized to 1600×1000 and saved as a JPG on white (quality 85, under 1 MB; copies in `<images>/processed/`). A source a crop would cut by more than a quarter, such as a wide logo, is fitted on white with a margin instead. Icons are uploaded as they are. `scripts/images/` is git-ignored.
+
+### The final games list (`--sheet=Sheet2`)
+
+`scripts/games-final.xlsx`, tab "Sheet2", is the real data for the 60 games. A tab with its headers (Game, URL, Primary skills, Best teacher moment, Parent moment, Feels like, Teacher Group, Parent Group, Subtitle, Minutes, Players, No Reading Needed?, Banners, optional Image description) only **updates existing games**:
+
+- Each row must match an existing game by name (case-insensitive). Nothing is created; `--prune` is refused.
+- Skills, moments and "When" values must already exist. "Last 10 minutes" means "The last 10 minutes" and "Friday reward" means "Friday reward time". Feels like "Game" means "A game".
+- Parent Group 5-6 / 7-8 / 9-10 sets Age from and Age to. Teacher Group sets Teacher grades.
+- Image description is optional; blank means "{name} screenshot".
+- Only those fields are written. Cost, Works offline, platforms, partner, notes, icon, the on-page switches, overrides, featured and hidden keep their current values.
+- An image that cannot be found or downloaded is listed, and that game keeps its current image. Every other problem stops the run as usual.
+
+### One-off migration of minutes to options
+
+Minutes used to be a whole number. `scripts/migrate-minutes.mts` turns the shared and override values into the option strings (5 → "5", 10 → "10", 20 → "20", 30 or more → "30+"; anything else goes up to the next option and is listed). Run it once the code that reads strings is deployed. Safe to re-run.
+
+```bash
+node --env-file-if-exists=.env.local scripts/migrate-minutes.mts --dry-run
+node --env-file-if-exists=.env.local scripts/migrate-minutes.mts
+```
 
 ### One-off migration to the audience shape
 
@@ -95,6 +122,7 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 - `lib/derive.ts`: resolve per audience, then facts → filters, badges, "Builds" line, sort order (unit tests: `npm test`)
 - `scripts/import-games.mts`: spreadsheet import
 - `scripts/migrate-audience.mts`: one-off migration to the per-audience shape
+- `scripts/migrate-minutes.mts`: one-off migration of minutes to the 5 / 10 / 20 / 30+ options
 - `app/api/revalidate/route.ts`: webhook target that refreshes pages after a publish
 
 ## Not yet done (Phase 6)
