@@ -1,21 +1,18 @@
 import { urlFor } from '@/sanity/client'
 import type { SanityImage } from '@/sanity/types'
 
-/** Every game image is 16:10, so card pictures and row thumbnails share one crop. */
-const RATIO = 16 / 10
+const hasAsset = (img?: SanityImage | null): img is SanityImage => !!(img as { asset?: unknown } | null | undefined)?.asset
 
-/** A game image `w` CSS pixels wide, cropped to 16:10 (around the hotspot) and requested at 2x. */
-export function GameImage({ image, w }: { image?: SanityImage | null; w: number }) {
+/**
+ * A game's card picture: a square `w` CSS pixels wide, requested at 2x. It is the icon if the game has one,
+ * otherwise the 16:10 image cropped to a square around its hotspot.
+ */
+export function GameImage({ image, icon, w }: { image?: SanityImage | null; icon?: SanityImage | null; w: number }) {
+  const picture = hasAsset(icon) ? icon : image
   return (
     <div className="thumb">
-      {image && (
-        <img
-          src={urlFor(image).width(w * 2).height(Math.round((w * 2) / RATIO)).fit('crop').url()}
-          alt={image.alt || ''}
-          width={w}
-          height={Math.round(w / RATIO)}
-          loading="lazy"
-        />
+      {picture && (
+        <img src={urlFor(picture).width(w * 2).height(w * 2).fit('crop').url()} alt={picture.alt || ''} width={w} height={w} loading="lazy" />
       )}
     </div>
   )

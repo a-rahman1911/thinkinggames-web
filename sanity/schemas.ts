@@ -176,7 +176,7 @@ const overrideFields = (audience: 'teachers' | 'parents') => [
     name: 'image',
     type: 'image',
     hidden: whenShown,
-    description: `Only if different for ${audience}. Landscape 16:10, upload 1600×1000.`,
+    description: `Only if different for ${audience}. Card picture. Upload landscape 16:10, 1600×1000. Cards show the middle square of it: set the hotspot if the important part is off-centre.`,
     options: { hotspot: true },
     fields: [altIfImage],
   }),
@@ -184,7 +184,7 @@ const overrideFields = (audience: 'teachers' | 'parents') => [
     name: 'icon',
     type: 'image',
     hidden: whenShown,
-    description: `Only if different for ${audience}. Square, at least 256 x 256.`,
+    description: `Only if different for ${audience}. Square picture, at least 512 × 512. If set, cards show this instead of a crop of the picture above. Use it when a square crop would cut the picture, such as a wide logo.`,
     fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
   }),
   defineField({
@@ -292,7 +292,7 @@ const game = defineType({
       name: 'image',
       type: 'image',
       group: 'shared',
-      description: 'Card picture. Landscape 16:10, upload 1600×1000.',
+      description: 'Card picture. Upload landscape 16:10, 1600×1000. Cards show the middle square of it: set the hotspot if the important part is off-centre.',
       options: { hotspot: true },
       fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string', validation: (r) => r.required() })],
       validation: (r) => r.required(),
@@ -301,7 +301,7 @@ const game = defineType({
       name: 'icon',
       type: 'image',
       group: 'shared',
-      description: 'Square logo or icon, at least 256 x 256. Used where a picture is too big.',
+      description: 'Square picture, at least 512 × 512. If set, cards show this instead of a crop of the picture above. Use it when a square crop would cut the picture, such as a wide logo.',
       fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
     }),
     defineField({
@@ -464,7 +464,10 @@ const whenOption = defineType({
 
 type BrandDoc = { showOnTeachers?: boolean; showOnParents?: boolean }
 
-/** A tile in the "Brands we support" panel under the Challenge banner. Each page has its own switch and order. */
+/**
+ * A chip in the "Brands we support" line under the Challenge banner. Each page has its own switch and order.
+ * A brand shows once it is switched on for the page and has a URL; without a logo the chip shows its name.
+ */
 const brand = defineType({
   name: 'brand',
   title: 'Brand',
@@ -474,8 +477,8 @@ const brand = defineType({
     defineField({
       name: 'logo',
       type: 'image',
-      description: 'Any shape. Shown 44px tall on white, so a logo on a white or transparent background works best. The brand name is used as alt text.',
-      validation: (r) => r.required(),
+      description:
+        "Shown 22px tall in a chip about 100px wide, on white. A wide logo with no empty space around it works best. With no logo, the brand's name is shown as text.",
     }),
     defineField({
       name: 'url',

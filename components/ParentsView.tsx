@@ -206,13 +206,15 @@ export function ParentsView({ data }: { data: ParentsData }) {
             <div className="cards">
               {results.map((g) => (
                 <article key={g._id} className="card">
-                  <GameImage image={g.image} w={400} />
-                  <div className="card-body">
-                    <div>
+                  <div className="card-top">
+                    <GameImage image={g.image} icon={g.icon} w={120} />
+                    <div className="card-text">
                       <h3>{g.name}</h3>
                       {g.subtitle && <p className="card-tagline">{g.subtitle}</p>}
+                      {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
                     </div>
-                    {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
+                  </div>
+                  <div className="card-foot">
                     <div className="tags">
                       <Badges badges={badges(g)} />
                     </div>
