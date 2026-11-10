@@ -28,6 +28,9 @@
 //   - the listed fields are patched in; everything else on the game (cost, offline, platforms, partner,
 //     notes, icon, on-page switches, overrides, featured, hidden) keeps its current value; the one exception
 //     is the square icon of a banner fitted on white (see below), added when the game has no icon yet
+//
+// Icons: in both layouts a game keeps the icon it has (set in Studio or by scripts/set-icons.mts) unless the
+// row supplies its own icon file. The generated square of a fitted banner is used only when the game has none.
 //   - an image that cannot be found or downloaded is listed and the game keeps its current image
 //
 // Card images (not icons) are looked up in this order: a file in <imagesDir> whose name, or name without
@@ -37,7 +40,7 @@
 // on white. A source far from 16:10 (a wide logo, say) is fitted on white instead, since a crop would cut it.
 // Cards show a square crop of the image, which would cut such a logo too, so a fitted image also gets a
 // 1000×1000 version, fitted on white with the same margin, stored as the icon (cards show the icon when
-// there is one) unless the row supplies its own icon file.
+// there is one) unless the row supplies its own icon file or the game already has an icon.
 //
 // Needs NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET and (to write) SANITY_WRITE_TOKEN.
 
@@ -234,12 +237,12 @@ for (const b of BADGE_KINDS) lists.badges.set(b.toLowerCase(), b)
 
 type Titled = { _id: string; title: string; order?: number }
 type ExistingMoment = Titled & { games?: string[] | null }
-const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: ExistingMoment[]; games: { _id: string; name: string; hidden?: boolean }[] }>(
+const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: ExistingMoment[]; games: { _id: string; name: string; hidden?: boolean; icon?: { asset?: unknown } }[] }>(
   `{
     "skills": *[_type == "skill"]{ _id, title, order },
     "when": *[_type == "whenOption"]{ _id, title, order },
     "moments": *[_type == "moment"]{ _id, title, order, "games": games[]._ref },
-    "games": *[_type == "game"]{ _id, name, hidden }
+    "games": *[_type == "game"]{ _id, name, hidden, icon }
   }`,
 )
 const gameByName = new Map(existing.games.filter((g) => !g._id.startsWith('drafts.')).map((g) => [g.name.trim().toLowerCase(), g]))
@@ -430,8 +433,7 @@ for (let i = 1; i < rows.length; i++) {
   // In the final list a missing image is listed and the game keeps its current image.
   const onImageMissing = (m: string) => (listLayout ? missingImages.push({ Row: row, Game: name, Image: get('imageFile'), Problem: m }) : err('imageFile', m))
   const image = get('imageFile') ? await loadImage(get('imageFile'), 'image', onImageMissing) : undefined
-  // The row's own icon file wins; otherwise a banner that was fitted on white brings its square version.
-  const icon = (get('iconFile') ? await loadImage(get('iconFile'), 'icon', (m) => err('iconFile', m)) : undefined) ?? image?.square
+  const icon = get('iconFile') ? await loadImage(get('iconFile'), 'icon', (m) => err('iconFile', m)) : undefined
 
   // Audience switches. The other columns of an audience only matter when it is switched on.
   const tShow = yesNo(get('tShow'))
@@ -651,8 +653,11 @@ for (const g of parsed) {
     )
     continue
   }
-  const iconId = g.icon ? await uploadImage(g.icon) : undefined
   const prev = existing.games.find((x) => x._id === g._id)
+  // The row's own icon file wins; then the icon the game already has; then the square of a banner fitted on white.
+  const keptIcon = !g.icon && prev?.icon?.asset ? prev.icon : undefined
+  const newIcon = g.icon ?? (keptIcon ? undefined : g.image?.square)
+  const iconId = newIcon ? await uploadImage(newIcon) : undefined
   tx.createOrReplace({
     _id: g._id,
     _type: 'game',
@@ -660,7 +665,7 @@ for (const g of parsed) {
     subtitle: g.subtitle,
     url: g.url,
     image: imageField(imageId!, g.imageAlt),
-    ...(iconId ? { icon: imageField(iconId, g.name) } : {}),
+    ...(iconId ? { icon: imageField(iconId, g.name) } : keptIcon ? { icon: keptIcon } : {}),
     ageFrom: g.ageFrom,
     ageTo: g.ageTo,
     minutes: g.minutes,

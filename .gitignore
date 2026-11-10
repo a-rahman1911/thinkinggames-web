@@ -10,3 +10,6 @@ next-env.d.ts
 
 # Banner sources and processed JPGs for npm run import:games (local cache, not committed)
 scripts/images/
+
+# Brand logos for the "Brands we support" line (other companies' logos: uploaded to Sanity, not committed)
+scripts/brand-logos/

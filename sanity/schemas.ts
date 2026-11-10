@@ -478,7 +478,7 @@ const brand = defineType({
       name: 'logo',
       type: 'image',
       description:
-        "Shown 22px tall in a chip about 100px wide, on white. A wide logo with no empty space around it works best. With no logo, the brand's name is shown as text.",
+        "Shown up to 34px tall and about 90px wide, on white. Crop the file tightly to the logo: empty space around it makes it smaller. With no logo, the brand's name is shown as text.",
     }),
     defineField({
       name: 'url',
