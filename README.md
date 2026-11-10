@@ -82,7 +82,7 @@ npm run import:games -- scripts/games-final.xlsx scripts/images --sheet=Sheet2 -
 
 ### Card images
 
-An "Image file" cell (or a Teacher/Parent image file) can be a file name or a link, including a Google Drive share link. The import looks first for a file in the images folder whose name, or name without extension, is the cell or its Drive file ID (`scripts/images/<drive id>.png`, say), then downloads it (Drive files through `drive.usercontent.google.com`, which needs the file shared with "Anyone with the link"; the download is saved to the images folder, so each Drive file is fetched once). Every card image is then centre-cropped to 16:10, resized to 1600×1000 and saved as a JPG on white (quality 85, under 1 MB; copies in `<images>/processed/`). A source a crop would cut by more than a quarter, such as a wide logo, is fitted on white with a margin instead; because cards show a square crop of the image, which would cut such a logo too, it also gets a 1000×1000 version fitted on white with the same margin, stored as the game's icon unless the row has its own icon file (cards show the icon when a game has one). Icons are uploaded as they are. `scripts/images/` is git-ignored.
+An "Image file" cell (or a Teacher/Parent image file) can be a file name or a link, including a Google Drive share link. The import looks first for a file in the images folder whose name, or name without extension, is the cell or its Drive file ID (`scripts/images/<drive id>.png`, say), then downloads it (Drive files through `drive.usercontent.google.com`, which needs the file shared with "Anyone with the link"; the download is saved to the images folder, so each Drive file is fetched once). Every card image is then centre-cropped to 16:10, resized to 1600×1000 and saved as a JPG on white (quality 85, under 1 MB; copies in `<images>/processed/`). A source a crop would cut by more than a quarter, such as a wide logo, is fitted on white with a margin instead; because cards show a square crop of the image, which would cut such a logo too, it also gets a 1000×1000 version fitted on white with the same margin, stored as the game's icon unless the row has its own icon file or the game already has an icon (cards show the icon when a game has one). A game always keeps the icon it has unless the row supplies an icon file. Icons are uploaded as they are. `scripts/images/` is git-ignored.
 
 ### The final games list (`--sheet=Sheet2`)
 
@@ -94,6 +94,15 @@ An "Image file" cell (or a Teacher/Parent image file) can be a file name or a li
 - Image description is optional; blank means "{name} screenshot".
 - Only those fields are written. Cost, Works offline, platforms, partner, notes, icon, the on-page switches, overrides, featured and hidden keep their current values (a game with no icon gets the square version of a banner that was fitted on white).
 - An image that cannot be found or downloaded is listed, and that game keeps its current image. Every other problem stops the run as usual.
+
+### Game tiles
+
+`scripts/icons/` holds a square tile (1000×1000 PNG, original artwork drawn for this site) for each game that would otherwise share a brand logo with other games. `scripts/set-icons.mts` sets each as the game's shared icon, matched by the game names listed in the script. It only writes `icon`, and is safe to re-run. The import keeps an icon a game already has.
+
+```bash
+node --env-file-if-exists=.env.local scripts/set-icons.mts --dry-run
+node --env-file-if-exists=.env.local scripts/set-icons.mts
+```
 
 ### One-off migration of minutes to options
 
