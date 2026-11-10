@@ -16,9 +16,9 @@ const gameFields = groq`
   parents{ show, "when": when[]->{ _id, title, order }, ${overrideFields} }
 `
 
-// "Brands we support". A brand needs a logo and a URL to show; until both are set in Studio it is left out.
+// "Brands we support". A brand needs a URL to show. The logo is optional: without one the chip shows the name.
 const brands = (audience: 'Teachers' | 'Parents') => groq`
-  "brands": *[_type == "brand" && showOn${audience} == true && defined(logo.asset) && defined(url)]
+  "brands": *[_type == "brand" && showOn${audience} == true && defined(url)]
     | order(${audience.toLowerCase()}Order asc, name asc){ _id, name, url, logo }
 `
 

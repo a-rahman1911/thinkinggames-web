@@ -34,8 +34,8 @@ h1,h2,h3,p{margin:0}
 .hero{display:flex;flex-direction:column;gap:12px;padding-top:clamp(32px,4vw,48px)}
 .hero h1{font-size:clamp(36px,4.4vw,56px);line-height:1.05;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
 .hero p{font-size:clamp(16px,1.4vw,18px);line-height:1.5;max-width:640px;text-wrap:pretty}
-/* A light band behind the lower half of the highlighted words, in the page's light accent */
-.hl{background:linear-gradient(transparent 52%,var(--accent-light) 52%,var(--accent-light) 90%,transparent 90%);padding:0 .06em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+/* A solid light background over the full height of the highlighted words, in the page's light accent */
+.hl{background:var(--accent-light);padding:0 .06em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 /* Challenge banner */
 .challenge{background:var(--ink);color:#fff;border-radius:20px;padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,44px);display:flex;flex-wrap:wrap;gap:28px 40px;align-items:center}
@@ -48,15 +48,18 @@ h1,h2,h3,p{margin:0}
 .challenge-age{text-decoration:none;background:var(--accent);color:var(--ink);font-size:16px;font-weight:700;padding:14px 20px;border-radius:999px}
 .challenge-age:hover{background:#fff;color:var(--ink)}
 
-/* Brands we support, 16px under the Challenge banner */
+/* Brands we support, 16px under the Challenge banner: the title above one line of small logo chips.
+   From 1024px the chips share one line and shrink evenly; below that they wrap into rows. */
 .challenge-stack{display:flex;flex-direction:column;gap:16px}
-.brands{border:1px solid var(--line);border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.brands{display:flex;flex-direction:column;gap:10px}
 .brands-label{margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.brands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
-.brand{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:72px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid var(--line);color:var(--ink);font-size:16px;font-weight:700;text-decoration:none;transition:border-color .15s}
+.brands-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,150px);gap:8px}
+@media (max-width:1023px){.brands-grid{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}}
+.brand{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px 10px;border-radius:12px;background:#fff;border:1px solid var(--line);color:var(--ink);font-size:13px;font-weight:800;white-space:nowrap;text-decoration:none;transition:border-color .15s}
 .brand:hover{border-color:var(--ink);color:var(--ink)}
-.brand img{display:block;height:44px;width:auto;max-width:calc(100% - 32px);object-fit:contain;object-position:left;mix-blend-mode:multiply}
-.brand-arrow{flex-shrink:0}
+/* A name standing in for a missing logo is cut with an ellipsis when the chip is narrower than it */
+.brand-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.brand img{display:block;height:22px;width:auto;max-width:100%;min-width:0;object-fit:contain;mix-blend-mode:multiply}
 
 /* Shared */
 .tag{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--soft)}
@@ -91,11 +94,11 @@ h1,h2,h3,p{margin:0}
 .seg-opts button[aria-pressed="true"]{background:var(--ink);color:#fff}
 .seg-opts button:focus-visible,.moment-head:focus-visible{outline-offset:-4px}
 .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:14px}
-.row{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--soft)}
-.row-top{display:grid;grid-template-columns:clamp(112px,28%,132px) minmax(0,1fr);gap:14px;align-items:center}
-.row .thumb{aspect-ratio:16/10}
+.row{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:16px;background:var(--soft)}
+.row-top{display:grid;grid-template-columns:clamp(88px,26%,112px) minmax(0,1fr);gap:14px;align-items:center}
+.row .thumb{aspect-ratio:1/1;border-radius:12px}
 .row .tag{background:#fff}.row .tag.first{background:var(--teacher-light)}
-.row-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.row-text{display:flex;flex-direction:column;gap:4px;min-width:0}
 .row-name{font-size:18px;font-weight:800;line-height:1.2}
 .row-tagline{font-size:15px;line-height:1.35}
 .meta{font-size:13px;line-height:1.4;color:var(--muted)}
@@ -127,21 +130,24 @@ h1,h2,h3,p{margin:0}
 .chips strong{font-size:16px;font-weight:800;margin-right:6px}
 .chip{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:7px 12px 7px 14px;border-radius:999px;border:none;background:var(--parent-light);cursor:pointer}
 .chip:hover{background:var(--parent)}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:20px}
-.card{display:flex;flex-direction:column;border:2px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;transition:border-color .15s}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:12px;padding:14px;border:2px solid var(--line);border-radius:20px;background:#fff;transition:border-color .15s}
 .card:hover{border-color:var(--parent)}
-.card .thumb{aspect-ratio:16/10;border-radius:0}
-.card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
-.card h3{font-size:19px;font-weight:800;line-height:1.2}
-.card-tagline{font-size:15px;line-height:1.45;margin-top:4px}
+.card-top{display:grid;grid-template-columns:clamp(88px,28%,120px) minmax(0,1fr);gap:14px;align-items:center}
+.card .thumb{aspect-ratio:1/1;border-radius:12px}
+.card-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.card h3{font-size:18px;font-weight:800;line-height:1.2}
+.card-tagline{font-size:15px;line-height:1.35;margin:0}
+.card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 6px}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
-.btn-play{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent)}
+.card .tags{flex:999 1 200px;min-width:0}
+.btn-play{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent);color:var(--ink);white-space:nowrap}
 .btn-play:hover{background:var(--ink);color:#fff}
 
 /* Home */
 .home-hero{padding-block:clamp(56px,7vw,88px) clamp(32px,4vw,56px);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:end}
 .home-hero h1{font-size:clamp(42px,5.4vw,68px);line-height:1.02;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
-.home-hero h1 .hl{background:linear-gradient(transparent 58%,var(--orange-light) 58%);padding:0;border-radius:0}
+.home-hero h1 .hl{background:var(--orange-light);padding:0;border-radius:0}
 .home-hero p{font-size:clamp(17px,1.5vw,19px);line-height:1.55;text-wrap:pretty;margin-bottom:8px}
 @media (max-width:860px){.home-hero{grid-template-columns:1fr}.home-hero p{margin-bottom:0}}
 .doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;padding-bottom:clamp(56px,7vw,88px)}
@@ -208,7 +214,6 @@ body:has(.home-hero) .ftr-mission{grid-template-columns:120px minmax(0,1fr)}
   .seg-opts{max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .seg-opts::-webkit-scrollbar{display:none}
   .seg-opts button{flex-shrink:0;min-width:44px;min-height:44px;white-space:nowrap}
-  .row-top{grid-template-columns:112px minmax(0,1fr)}
 
   /* Parents: the sidebar becomes a full-screen panel opened from a sticky "Filters" button */
   .filters{display:none}
@@ -223,7 +228,6 @@ body:has(.home-hero) .ftr-mission{grid-template-columns:120px minmax(0,1fr)}
   .search.lg input{min-height:44px}
   .chip{min-height:44px}
   .cards{grid-template-columns:minmax(0,1fr)}
-  .btn-play{display:inline-flex;align-items:center;min-height:44px}
 
   /* Home: doors stack */
   .doors{grid-template-columns:minmax(0,1fr)}

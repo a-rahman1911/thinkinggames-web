@@ -26,7 +26,8 @@
 //   - skills, moments and "When" values must already exist (MOMENT_ALIASES maps the short moment names)
 //   - "Parent Group" 5-6 means Age from 5, Age to 6 (Excel may have turned it into a date; its text is used)
 //   - the listed fields are patched in; everything else on the game (cost, offline, platforms, partner,
-//     notes, icon, on-page switches, overrides, featured, hidden) keeps its current value
+//     notes, icon, on-page switches, overrides, featured, hidden) keeps its current value; the one exception
+//     is the square icon of a banner fitted on white (see below), added when the game has no icon yet
 //   - an image that cannot be found or downloaded is listed and the game keeps its current image
 //
 // Card images (not icons) are looked up in this order: a file in <imagesDir> whose name, or name without
@@ -34,6 +35,9 @@
 // drive.usercontent.google.com, saved to <imagesDir>/<id>.<ext> so each Drive file is fetched once).
 // Each is then centre-cropped to 16:10, resized to 1600×1000 and saved as a JPG (quality 85, under 1 MB)
 // on white. A source far from 16:10 (a wide logo, say) is fitted on white instead, since a crop would cut it.
+// Cards show a square crop of the image, which would cut such a logo too, so a fitted image also gets a
+// 1000×1000 version, fitted on white with the same margin, stored as the icon (cards show the icon when
+// there is one) unless the row supplies its own icon file.
 //
 // Needs NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET and (to write) SANITY_WRITE_TOKEN.
 
@@ -267,7 +271,8 @@ function resolveRef(kind: RefKind, listKey: 'skills' | 'when' | 'moments', typed
 // ---------- validation ----------
 
 type RowError = { Row: number; Column: string; Problem: string }
-type Img = { buffer: Buffer; filename: string; placeholder?: boolean }
+/** `square` is set on a card image that was fitted on white: the same picture fitted in a square, to use as the icon. */
+type Img = { buffer: Buffer; filename: string; placeholder?: boolean; square?: Img }
 type ParsedOverrides = {
   url?: string
   subtitle?: string
@@ -312,6 +317,8 @@ type Source = { buffer: Buffer; filename: string }
 /** Each source looked up once, keyed by Drive file ID or cell. A string is the reason it could not be found. */
 const sourceCache = new Map<string, Source | string>()
 const BANNER = { width: 1600, height: 1000, quality: 85, minQuality: 60, maxBytes: 1024 * 1024 }
+/** Side of the square icon made for a banner that was fitted on white. */
+const SQUARE = 1000
 /** Banners that were fitted instead of cropped, or saved below quality 85, for the report. Keyed by source file. */
 const bannerNotes = new Map<string, string>()
 
@@ -423,7 +430,8 @@ for (let i = 1; i < rows.length; i++) {
   // In the final list a missing image is listed and the game keeps its current image.
   const onImageMissing = (m: string) => (listLayout ? missingImages.push({ Row: row, Game: name, Image: get('imageFile'), Problem: m }) : err('imageFile', m))
   const image = get('imageFile') ? await loadImage(get('imageFile'), 'image', onImageMissing) : undefined
-  const icon = get('iconFile') ? await loadImage(get('iconFile'), 'icon', (m) => err('iconFile', m)) : undefined
+  // The row's own icon file wins; otherwise a banner that was fitted on white brings its square version.
+  const icon = (get('iconFile') ? await loadImage(get('iconFile'), 'icon', (m) => err('iconFile', m)) : undefined) ?? image?.square
 
   // Audience switches. The other columns of an audience only matter when it is switched on.
   const tShow = yesNo(get('tShow'))
@@ -451,6 +459,7 @@ for (let i = 1; i < rows.length; i++) {
     if (v('subtitle')) out.subtitle = v('subtitle')
     if (v('imageFile')) out.image = await loadImage(v('imageFile'), 'image', (m) => err(col('imageFile'), m))
     if (v('iconFile')) out.icon = await loadImage(v('iconFile'), 'icon', (m) => err(col('iconFile'), m))
+    out.icon ??= out.image?.square
     if (v('minutes')) {
       const m = oneOf(v('minutes'), MINUTES)
       if (m) out.minutes = m
@@ -578,7 +587,7 @@ for (const [id, adds] of momentAdds) {
 }
 if (parsed.some((g) => g.teachers.show) && !momentAdds.size) console.log('Moments: nothing to add; every listed game is already in its moments.')
 if (prune) console.log(toPrune.length ? `Games to delete (--prune): ${toPrune.join(', ')}` : 'Nothing to prune.')
-if (listLayout) console.log('Final-list sheet: existing games are patched; cost, offline, platforms, partner, notes, icon, on-page switches, overrides, featured and hidden are kept.')
+if (listLayout) console.log('Final-list sheet: existing games are patched; cost, offline, platforms, partner, notes, icon, on-page switches, overrides, featured and hidden are kept (a game with no icon gets the square version of a banner fitted on white).')
 
 if (dryRun) {
   console.log('\nDry run: nothing written.')
@@ -622,8 +631,10 @@ for (const g of parsed) {
   const imageId = g.image ? await uploadImage(g.image) : undefined
   if (listLayout) {
     // Only the fields the final list carries. The name stays as stored (it matched case-insensitively).
+    // The list has no icon column: a fitted banner's square version is added only if the game has no icon.
+    const squareId = g.image?.square ? await uploadImage(g.image.square) : undefined
     tx.patch(g._id, (p) =>
-      p.setIfMissing({ teachers: { show: true }, parents: { show: true } }).set({
+      p.setIfMissing({ teachers: { show: true }, parents: { show: true }, ...(squareId ? { icon: imageField(squareId, g.name) } : {}) }).set({
         subtitle: g.subtitle,
         url: g.url,
         ...(imageId ? { image: imageField(imageId, g.imageAlt) } : {}),
@@ -819,7 +830,8 @@ async function loadImage(cell: string, kind: 'image' | 'icon', onError: (msg: st
 /**
  * Centre-crop to 16:10, resize to 1600×1000 and save as a JPG on white, quality 85, stepping the quality
  * down if needed to stay under 1 MB. A crop that would cut more than a quarter of the width or height (a
- * wide logo, say) fits the whole image on white instead. The result is also written to <imagesDir>/processed/.
+ * wide logo, say) fits the whole image on white instead, and also makes a 1000×1000 version fitted on white
+ * with the same 10% margin (`square`), for the icon. The results are also written to <imagesDir>/processed/.
  */
 async function toBanner(src: Source): Promise<Img> {
   const meta = await sharp(src.buffer).metadata()
@@ -848,7 +860,18 @@ async function toBanner(src: Source): Promise<Img> {
     const filename = `${path.parse(src.filename).name}.jpg`
     fs.mkdirSync(path.join(imagesDir, 'processed'), { recursive: true })
     fs.writeFileSync(path.join(imagesDir, 'processed', filename), buffer)
-    return { buffer, filename }
+    if (fit !== 'contain') return { buffer, filename }
+    const square = {
+      buffer: await sharp(src.buffer, density ? { density } : {})
+        .flatten({ background: '#ffffff' })
+        .resize(SQUARE * 0.8, SQUARE * 0.8, { fit: 'contain', position: 'centre', background: '#ffffff' })
+        .extend({ top: SQUARE / 10, bottom: SQUARE / 10, left: SQUARE / 10, right: SQUARE / 10, background: '#ffffff' })
+        .jpeg({ quality: BANNER.quality })
+        .toBuffer(),
+      filename: `${path.parse(src.filename).name}-square.jpg`,
+    }
+    fs.writeFileSync(path.join(imagesDir, 'processed', square.filename), square.buffer)
+    return { buffer, filename, square }
   }
 }
 

@@ -197,13 +197,13 @@ function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
   return (
     <article className="row">
       <div className="row-top">
-        <GameImage image={game.image} w={132} />
+        <GameImage image={game.image} icon={game.icon} w={112} />
         <div className="row-text">
           <div className="row-name">{game.name}</div>
           {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
+          {meta && <span className="meta">{meta}</span>}
         </div>
       </div>
-      {meta && <span className="meta">{meta}</span>}
       <div className="row-foot">
         <div className="row-badges">
           <Badges badges={badges(game)} />
