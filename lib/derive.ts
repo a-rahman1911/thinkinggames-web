@@ -52,6 +52,8 @@ export type GameFacts<Img = unknown> = {
   name: string
   subtitle?: string | null
   url?: string | null
+  /** Where the game lives ("PBS KIDS"). Optional: lib/site.ts works it out from the URL when empty. */
+  site?: string | null
   image?: Img | null
   icon?: Img | null
   ageFrom: number

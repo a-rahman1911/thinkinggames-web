@@ -26,7 +26,7 @@
 //   - skills, moments and "When" values must already exist (MOMENT_ALIASES maps the short moment names)
 //   - "Parent Group" 5-6 means Age from 5, Age to 6 (Excel may have turned it into a date; its text is used)
 //   - the listed fields are patched in; everything else on the game (cost, offline, platforms, partner,
-//     notes, icon, on-page switches, overrides, featured, hidden) keeps its current value; the one exception
+//     notes, site, icon, on-page switches, overrides, featured, hidden) keeps its current value; the one exception
 //     is the square icon of a banner fitted on white (see below), added when the game has no icon yet
 //
 // Icons: in both layouts a game keeps the icon it has (set in Studio or by scripts/set-icons.mts) unless the
@@ -237,12 +237,12 @@ for (const b of BADGE_KINDS) lists.badges.set(b.toLowerCase(), b)
 
 type Titled = { _id: string; title: string; order?: number }
 type ExistingMoment = Titled & { games?: string[] | null }
-const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: ExistingMoment[]; games: { _id: string; name: string; hidden?: boolean; icon?: { asset?: unknown } }[] }>(
+const existing = await client.fetch<{ skills: Titled[]; when: Titled[]; moments: ExistingMoment[]; games: { _id: string; name: string; hidden?: boolean; site?: string; icon?: { asset?: unknown } }[] }>(
   `{
     "skills": *[_type == "skill"]{ _id, title, order },
     "when": *[_type == "whenOption"]{ _id, title, order },
     "moments": *[_type == "moment"]{ _id, title, order, "games": games[]._ref },
-    "games": *[_type == "game"]{ _id, name, hidden, icon }
+    "games": *[_type == "game"]{ _id, name, hidden, site, icon }
   }`,
 )
 const gameByName = new Map(existing.games.filter((g) => !g._id.startsWith('drafts.')).map((g) => [g.name.trim().toLowerCase(), g]))
@@ -664,6 +664,7 @@ for (const g of parsed) {
     name: g.name,
     subtitle: g.subtitle,
     url: g.url,
+    ...(prev?.site ? { site: prev.site } : {}), // the sheet has no site column: keep one set in Studio
     image: imageField(imageId!, g.imageAlt),
     ...(iconId ? { icon: imageField(iconId, g.name) } : keptIcon ? { icon: keptIcon } : {}),
     ageFrom: g.ageFrom,

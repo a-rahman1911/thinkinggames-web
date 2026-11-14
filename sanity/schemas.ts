@@ -103,6 +103,11 @@ const homePage = defineType({
       description: 'When off, no pop-up is shown and first-time visitors go straight to the Parents page.',
     }),
     defineField({
+      name: 'label',
+      type: 'string',
+      description: 'The small capital line above the headline in the pop-up. Leave empty to hide it.',
+    }),
+    defineField({
       name: 'headline',
       type: 'string',
       description: 'The large heading at the top of the pop-up.',
@@ -336,6 +341,14 @@ const game = defineType({
       validation: (r) => r.required(),
     }),
     defineField({ name: 'url', title: 'Game URL', type: 'url', group: 'shared', validation: (r) => r.required() }),
+    defineField({
+      name: 'site',
+      title: 'Site name',
+      type: 'string',
+      group: 'shared',
+      description:
+        "Where the game lives, for example PBS KIDS. Shown on the game's button: 'Play on PBS KIDS'. Leave empty to work it out from the game's URL.",
+    }),
     defineField({
       name: 'image',
       type: 'image',

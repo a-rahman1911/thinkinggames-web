@@ -27,6 +27,7 @@ export type Settings = { missionLabel?: string; mission?: string; missionHighlig
 /** The welcome pop-up on `/` (the "homePage" document). */
 export type WelcomePopup = {
   enabled?: boolean
+  label?: string
   headline?: string
   highlight?: string
   subline?: string

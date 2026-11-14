@@ -75,7 +75,7 @@ h1,h2,h3,p{margin:0}
 .thumb{border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#e2e4ec 0 10px,#eceef4 10px 20px)}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .link-btn{background:none;border:none;padding:0;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer}
-.btn-open{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:14px;font-weight:700;padding:11px 16px;border-radius:999px;background:var(--ink);color:#fff;white-space:nowrap}
+.btn-open{flex:1 1 auto;max-width:100%;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:14px;font-weight:700;padding:11px 16px;border-radius:999px;background:var(--ink);color:#fff;text-align:center}
 .btn-open:hover{background:var(--orange);color:var(--ink)}
 .empty{padding:40px;border-radius:16px;background:var(--soft);font-size:17px;font-weight:700;text-align:center}
 .empty.sm{padding:32px;font-size:16px}
@@ -156,7 +156,7 @@ h1,h2,h3,p{margin:0}
 .card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 6px}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .card .tags{flex:999 1 200px;min-width:0}
-.btn-play{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent);color:var(--ink);white-space:nowrap}
+.btn-play{flex:1 1 auto;max-width:100%;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent);color:var(--ink);text-align:center}
 .btn-play:hover{background:var(--ink);color:#fff}
 
 /* Welcome pop-up on `/`, over the Parents page. The page behind does not scroll while it is open. */
@@ -168,6 +168,8 @@ body:has(.welcome-backdrop){overflow:hidden}
 .welcome-close{position:absolute;top:14px;right:14px;width:44px;height:44px;padding:0;border:none;border-radius:999px;background:var(--soft);font-size:24px;line-height:1;cursor:pointer}
 .welcome-close:hover{background:var(--line)}
 .welcome-logo{height:36px;width:auto;align-self:flex-start}
+/* The dialog's gap is 22px; the label sits 10px above the headline. */
+.welcome-label{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:-12px}
 .welcome h2{font-size:clamp(28px,4vw,40px);line-height:1.08;font-weight:800;letter-spacing:-.02em;text-wrap:balance}
 .welcome h2 .hl{background:linear-gradient(transparent 14%,var(--orange-light) 14%,var(--orange-light) 86%,transparent 86%);padding:0}
 .welcome-intro{font-size:17px;line-height:1.5;text-wrap:pretty}

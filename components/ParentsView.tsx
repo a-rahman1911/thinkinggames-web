@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage } from './GameBits'
+import { Badges, GameImage, GameLink } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
@@ -218,11 +218,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
                     <div className="tags">
                       <Badges badges={badges(g)} />
                     </div>
-                    {g.url && (
-                      <a className="btn-play" href={g.url} target="_blank" rel="noopener">
-                        Play ↗<span className="sr-only"> {g.name} (opens in new tab)</span>
-                      </a>
-                    )}
+                    <GameLink game={g} className="btn-play" verb="Play" plain="Play" />
                   </div>
                 </article>
               ))}
