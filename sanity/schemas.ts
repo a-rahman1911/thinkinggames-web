@@ -3,7 +3,7 @@ import { BADGE_KINDS, COSTS, FEELS, GRADES, MINUTES, PLATFORMS, PLAYERS } from '
 
 export const SINGLETONS = [
   { type: 'siteSettings', title: 'Site settings' },
-  { type: 'homePage', title: 'Home page' },
+  { type: 'homePage', title: 'Welcome pop-up' },
   { type: 'teachersPage', title: 'Teachers page' },
   { type: 'parentsPage', title: 'Parents page' },
 ]
@@ -64,22 +64,61 @@ const siteSettings = defineType({
   title: 'Site settings',
   type: 'document',
   fields: [
-    defineField({ name: 'mission', title: 'Mission statement (footer)', type: 'text', rows: 3 }),
+    defineField({
+      name: 'missionLabel',
+      title: 'Footer label',
+      type: 'string',
+      description: 'The small orange line above the footer statement, on every page.',
+    }),
+    defineField({
+      name: 'mission',
+      title: 'Footer statement',
+      type: 'text',
+      rows: 3,
+      description: 'The large headline in the footer, on every page.',
+    }),
+    defineField({
+      name: 'missionHighlight',
+      title: 'Footer statement: words in orange',
+      type: 'string',
+      description: 'Words from the footer statement to show in orange. Must match the statement text exactly.',
+    }),
     defineField({ name: 'footerLinks', type: 'array', of: [defineArrayMember({ type: 'link' })] }),
   ],
   preview: { prepare: () => ({ title: 'Site settings' }) },
 })
 
+// The welcome pop-up shown on a first visit to the site's address. The type name and document id are still
+// "homePage", from when this content was the home page, so the stored content carries over.
 const homePage = defineType({
   name: 'homePage',
-  title: 'Home page',
+  title: 'Welcome pop-up',
   type: 'document',
   fields: [
-    ...heroFields,
+    defineField({
+      name: 'enabled',
+      title: 'Show the welcome pop-up',
+      type: 'boolean',
+      initialValue: true,
+      description: 'When off, no pop-up is shown and first-time visitors go straight to the Parents page.',
+    }),
+    defineField({
+      name: 'headline',
+      type: 'string',
+      description: 'The large heading at the top of the pop-up.',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'highlight',
+      type: 'string',
+      description: 'Words from the headline to highlight in the pop-up. Must match the headline text exactly.',
+    }),
+    defineField({ name: 'subline', title: 'Intro', type: 'text', rows: 2, description: 'The paragraph under the headline in the pop-up.' }),
     defineField({
       name: 'panels',
-      title: 'Audience panels',
+      title: 'Choices',
       type: 'array',
+      description: 'The two choices in the middle of the pop-up, one for teachers and one for parents.',
       validation: (r) => r.max(2),
       of: [
         defineArrayMember({
@@ -89,21 +128,26 @@ const homePage = defineType({
             defineField({
               name: 'persona',
               type: 'string',
+              description: 'Which page this choice leads to, and its colour and mascot.',
               options: { list: ['teachers', 'parents'], layout: 'radio' },
               validation: (r) => r.required(),
             }),
-            defineField({ name: 'eyebrow', type: 'string' }),
-            defineField({ name: 'title', type: 'string' }),
-            defineField({ name: 'text', type: 'text', rows: 2 }),
-            defineField({ name: 'cta', title: 'Button label', type: 'string' }),
+            defineField({ name: 'eyebrow', title: 'Label', type: 'string', description: 'The small capital line at the top of the choice.' }),
+            defineField({ name: 'title', title: 'Heading', type: 'string', description: 'The heading inside the choice.' }),
+            defineField({
+              name: 'cta',
+              title: 'Button label',
+              type: 'string',
+              description: 'The button at the bottom of the choice. The arrow is added for you.',
+            }),
           ],
           preview: { select: { title: 'title', subtitle: 'persona' } },
         }),
       ],
     }),
-    defineField({ name: 'seo', type: 'seo' }),
+    defineField({ name: 'note', type: 'string', description: 'The small line under the choices, at the bottom of the pop-up.' }),
   ],
-  preview: { prepare: () => ({ title: 'Home page' }) },
+  preview: { prepare: () => ({ title: 'Welcome pop-up' }) },
 })
 
 const teachersPage = defineType({
@@ -115,7 +159,11 @@ const teachersPage = defineType({
     defineField({ name: 'searchPlaceholder', type: 'string', initialValue: 'Search games by name' }),
     defineField({ name: 'challenge', type: 'challenge' }),
     defineField({ name: 'momentsHeading', type: 'string', initialValue: "What's the moment?" }),
-    defineField({ name: 'momentsSub', type: 'string', initialValue: 'Open one to see its games.' }),
+    defineField({
+      name: 'momentsSub',
+      type: 'string',
+      initialValue: 'Open one to see its games. Narrow them all at once with the filters.',
+    }),
     defineField({
       name: 'defaultOpen',
       title: 'Moment open on load',
@@ -465,7 +513,7 @@ const whenOption = defineType({
 type BrandDoc = { showOnTeachers?: boolean; showOnParents?: boolean }
 
 /**
- * A chip in the "Brands we support" line under the Challenge banner. Each page has its own switch and order.
+ * A chip in the "Brands we support" carousel under the Challenge banner. Each page has its own switch and order.
  * A brand shows once it is switched on for the page and has a URL; without a logo the chip shows its name.
  */
 const brand = defineType({
@@ -478,7 +526,7 @@ const brand = defineType({
       name: 'logo',
       type: 'image',
       description:
-        "Shown up to 34px tall and about 90px wide, on white. Crop the file tightly to the logo: empty space around it makes it smaller. With no logo, the brand's name is shown as text.",
+        "Shown up to 44px tall and about 180px wide, on white. Crop the file tightly to the logo. With no logo, the brand's name is shown as text.",
     }),
     defineField({
       name: 'url',

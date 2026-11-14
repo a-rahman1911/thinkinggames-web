@@ -1,3 +1,4 @@
+import { Highlight } from './Highlight'
 import type { Settings } from '@/sanity/types'
 
 const FALLBACK_LINKS = [
@@ -10,10 +11,14 @@ export function Footer({ settings }: { settings: Settings }) {
   const links = settings?.footerLinks?.length ? settings.footerLinks : FALLBACK_LINKS
   return (
     <div className="ftr">
-      {settings?.mission && (
+      {(settings?.mission || settings?.missionLabel) && (
         <div className="wrap ftr-mission">
-          <img src="/brand/mascot-tgi.svg" alt="" />
-          <p>{settings.mission}</p>
+          {settings.missionLabel && <div className="ftr-label">{settings.missionLabel}</div>}
+          {settings.mission && (
+            <p>
+              <Highlight text={settings.mission} highlight={settings.missionHighlight} className="accent" />
+            </p>
+          )}
         </div>
       )}
       <footer className="ftr-bar">

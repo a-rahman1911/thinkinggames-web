@@ -22,13 +22,17 @@ export type Challenge = {
 
 type Hero = { headline?: string; highlight?: string; subline?: string; seo?: Seo }
 
-export type Settings = { mission?: string; footerLinks?: Link[] } | null
+export type Settings = { missionLabel?: string; mission?: string; missionHighlight?: string; footerLinks?: Link[] } | null
 
-export type HomePage =
-  | (Hero & {
-      panels?: { persona: 'teachers' | 'parents'; eyebrow?: string; title?: string; text?: string; cta?: string }[]
-    })
-  | null
+/** The welcome pop-up on `/` (the "homePage" document). */
+export type WelcomePopup = {
+  enabled?: boolean
+  headline?: string
+  highlight?: string
+  subline?: string
+  panels?: { persona: 'teachers' | 'parents'; eyebrow?: string; title?: string; cta?: string }[]
+  note?: string
+} | null
 
 export type TeachersPage =
   | (Hero & {
