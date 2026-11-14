@@ -34,29 +34,30 @@ export function Badges({ badges }: { badges?: string[] }) {
 }
 
 /**
- * The button that opens a game, in a new tab. It names the site the game lives on: "Play on PBS KIDS ↗",
- * "Open on PBS KIDS ↗". With no site name known it keeps the plain label ("Play ↗", "Open game ↗").
- * The visible label comes first in the accessible name, then the game's name.
+ * The small capital line above a game's name that says where the game lives: "On PBS KIDS".
+ * Put it AFTER the name in the markup: CSS (`order:-1`) moves it above, so the name is still the first
+ * thing a screen reader meets in the card. With no site name known it renders nothing.
  */
-export function GameLink({
-  game,
-  className,
-  verb,
-  plain,
-}: {
-  game: { name: string; url?: string | null; site?: string | null }
-  className: string
-  verb: string
-  plain: string
-}) {
+export function GameSite({ game }: { game: { url?: string | null; site?: string | null } }) {
+  const site = siteName(game)
+  return site ? <p className="game-site">On {site}</p> : null
+}
+
+/**
+ * The button that opens a game, in a new tab. The label is the same for every game ("Play ↗", "Open game ↗").
+ * The accessible name is the visible label, then the game and the site it lives on:
+ * "Play ↗ Down the Tubes on PBS KIDS (opens in new tab)". With no site name known, "on …" is left out.
+ */
+export function GameLink({ game, className, label }: { game: { name: string; url?: string | null; site?: string | null }; className: string; label: string }) {
   if (!game.url) return null
   const site = siteName(game)
   return (
     <a className={className} href={game.url} target="_blank" rel="noopener">
-      {site ? `${verb} on ${site}` : plain} ↗
+      {label} ↗
       <span className="sr-only">
-        {site ? ': ' : ' '}
-        {game.name} (opens in new tab)
+        {' '}
+        {game.name}
+        {site ? ` on ${site}` : ''} (opens in new tab)
       </span>
     </a>
   )

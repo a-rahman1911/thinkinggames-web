@@ -347,7 +347,7 @@ const game = defineType({
       type: 'string',
       group: 'shared',
       description:
-        "Where the game lives, for example PBS KIDS. Shown on the game's button: 'Play on PBS KIDS'. Leave empty to work it out from the game's URL.",
+        "Where the game lives, for example PBS KIDS. Shown above the game's name: 'On PBS KIDS'. Leave empty to work it out from the game's URL.",
     }),
     defineField({
       name: 'image',

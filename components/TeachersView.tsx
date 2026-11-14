@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage, GameLink } from './GameBits'
+import { Badges, GameImage, GameLink, GameSite } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { TEACHER_GROUPS, badges, builds, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
@@ -198,6 +198,7 @@ function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
         <GameImage image={game.image} icon={game.icon} w={112} />
         <div className="row-text">
           <div className="row-name">{game.name}</div>
+          <GameSite game={game} />
           {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
           {meta && <span className="meta">{meta}</span>}
         </div>
@@ -206,7 +207,7 @@ function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
         <div className="row-badges">
           <Badges badges={badges(game)} />
         </div>
-        <GameLink game={game} className="btn-open" verb="Open" plain="Open game" />
+        <GameLink game={game} className="btn-open" label="Open game" />
       </div>
     </article>
   )

@@ -1,5 +1,5 @@
-// The name of the site a game lives on, shown on its button: "Play on PBS KIDS", "Open on PBS KIDS".
-// This site is a guide: every game opens somewhere else, and the button says where.
+// The name of the site a game lives on, shown above the game's name on its card: "On PBS KIDS".
+// This site is a guide: every game opens somewhere else, and the card says where.
 //
 // Nothing here touches Sanity or React, so it is unit-tested directly (lib/site.test.mts).
 
@@ -29,7 +29,7 @@ export function siteFromUrl(url?: string | null): string | null {
 }
 
 /**
- * The site name for a game's button: the game's own `site` field if it is filled, otherwise worked out
+ * The site name for a game's card: the game's own `site` field if it is filled, otherwise worked out
  * from the URL the card links to (pass the resolved URL, after the audience override). Null = no name known.
  */
 export const siteName = (g: { site?: string | null; url?: string | null }): string | null => g.site?.trim() || siteFromUrl(g.url)

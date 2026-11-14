@@ -75,7 +75,7 @@ h1,h2,h3,p{margin:0}
 .thumb{border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#e2e4ec 0 10px,#eceef4 10px 20px)}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .link-btn{background:none;border:none;padding:0;font-size:14px;font-weight:700;text-decoration:underline;cursor:pointer}
-.btn-open{flex:1 1 auto;max-width:100%;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:14px;font-weight:700;padding:11px 16px;border-radius:999px;background:var(--ink);color:#fff;text-align:center}
+.btn-open{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:14px;font-weight:700;padding:11px 16px;border-radius:999px;background:var(--ink);color:#fff;white-space:nowrap}
 .btn-open:hover{background:var(--orange);color:var(--ink)}
 .empty{padding:40px;border-radius:16px;background:var(--soft);font-size:17px;font-weight:700;text-align:center}
 .empty.sm{padding:32px;font-size:16px}
@@ -113,6 +113,8 @@ h1,h2,h3,p{margin:0}
 .row-top{display:grid;grid-template-columns:clamp(88px,26%,112px) minmax(0,1fr);gap:14px;align-items:center}
 .row .thumb{aspect-ratio:1/1;border-radius:12px}
 .row .tag{background:#fff}.row .tag.first{background:var(--teacher-light)}
+/* Where the game lives ("On PBS KIDS"). After the name in the markup, above it on screen. Used in .row-text and .card-text. */
+.game-site{order:-1;margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .row-text{display:flex;flex-direction:column;gap:4px;min-width:0}
 .row-name{font-size:18px;font-weight:800;line-height:1.2}
 .row-tagline{font-size:15px;line-height:1.35}
@@ -156,7 +158,7 @@ h1,h2,h3,p{margin:0}
 .card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 6px}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .card .tags{flex:999 1 200px;min-width:0}
-.btn-play{flex:1 1 auto;max-width:100%;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent);color:var(--ink);text-align:center}
+.btn-play{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--parent);color:var(--ink);white-space:nowrap}
 .btn-play:hover{background:var(--ink);color:#fff}
 
 /* Welcome pop-up on `/`, over the Parents page. The page behind does not scroll while it is open. */
