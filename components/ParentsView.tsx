@@ -6,6 +6,9 @@ import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage, GameLink, GameSite } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
+import { SaveButton } from './saved/SaveButton'
+import { SavedList } from './saved/SavedList'
+import type { SavedListData } from './saved/load'
 import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
 import type { AudienceGame, ParentsData } from '@/sanity/types'
 
@@ -13,7 +16,7 @@ type Sel = Partial<Record<FacetKey, string[]>>
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export function ParentsView({ data }: { data: ParentsData }) {
+export function ParentsView({ data, savedList }: { data: ParentsData; savedList?: SavedListData }) {
   const { page } = data
   // Featured (for parents) first, then A to Z, with the parents overrides folded in.
   const games = useMemo(
@@ -219,7 +222,14 @@ export function ParentsView({ data }: { data: ParentsData }) {
                     <div className="tags">
                       <Badges badges={badges(g)} />
                     </div>
-                    <GameLink game={g} className="btn-play" label="Play" />
+                    {savedList ? (
+                      <div className="card-actions">
+                        <SaveButton game={g} />
+                        <GameLink game={g} className="btn-play" label="Play" />
+                      </div>
+                    ) : (
+                      <GameLink game={g} className="btn-play" label="Play" />
+                    )}
                   </div>
                 </article>
               ))}
@@ -235,6 +245,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
           )}
         </div>
       </main>
+      {savedList && <SavedList audience="parents" games={games} all={savedList.games} />}
     </div>
   )
 }

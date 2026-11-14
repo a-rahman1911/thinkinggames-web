@@ -84,6 +84,13 @@ const siteSettings = defineType({
       description: 'Words from the footer statement to show in orange. Must match the statement text exactly.',
     }),
     defineField({ name: 'footerLinks', type: 'array', of: [defineArrayMember({ type: 'link' })] }),
+    // Saved list (test, round 8). No initial value: missing or false means off. See "Saved list" in docs/STATUS.md.
+    defineField({
+      name: 'savedList',
+      title: 'Saved list (test)',
+      type: 'boolean',
+      description: 'Lets visitors save games to a list in their browser and share it. Off by default.',
+    }),
   ],
   preview: { prepare: () => ({ title: 'Site settings' }) },
 })

@@ -6,12 +6,15 @@ import { ChallengeBanner } from './ChallengeBanner'
 import { Badges, GameImage, GameLink, GameSite } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
+import { SaveButton } from './saved/SaveButton'
+import { SavedList } from './saved/SavedList'
+import type { SavedListData } from './saved/load'
 import { TEACHER_GROUPS, badges, builds, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
 import type { AudienceGame, TeachersData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string | null>>
 
-export function TeachersView({ data }: { data: TeachersData }) {
+export function TeachersView({ data, savedList }: { data: TeachersData; savedList?: SavedListData }) {
   const { page } = data
   // Games inside a moment keep the order of the moment's games list (set by hand in Studio).
   const moments = useMemo(
@@ -127,6 +130,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                   <GameRow
                     key={g._id}
                     game={g}
+                    save={!!savedList}
                     meta={
                       'Good for ' +
                       moments
@@ -172,7 +176,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                         {shown.length ? (
                           <div className="rows">
                             {shown.map((g) => (
-                              <GameRow key={g._id} game={g} meta={g.skills?.length ? `Builds ${builds(g)}` : undefined} />
+                              <GameRow key={g._id} game={g} save={!!savedList} meta={g.skills?.length ? `Builds ${builds(g)}` : undefined} />
                             ))}
                           </div>
                         ) : (
@@ -187,11 +191,13 @@ export function TeachersView({ data }: { data: TeachersData }) {
           )}
         </section>
       </main>
+      {savedList && <SavedList audience="teachers" games={allGames} all={savedList.games} />}
     </div>
   )
 }
 
-function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
+function GameRow({ game, meta, save }: { game: AudienceGame; meta?: string; save?: boolean }) {
+  const open = <GameLink game={game} className="btn-open" label="Open game" />
   return (
     <article className="row">
       <div className="row-top">
@@ -207,7 +213,14 @@ function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
         <div className="row-badges">
           <Badges badges={badges(game)} />
         </div>
-        <GameLink game={game} className="btn-open" label="Open game" />
+        {save ? (
+          <div className="card-actions">
+            <SaveButton game={game} />
+            {open}
+          </div>
+        ) : (
+          open
+        )}
       </div>
     </article>
   )

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { ParentsView } from '@/components/ParentsView'
 import { WelcomeDialog } from '@/components/WelcomeDialog'
+import { loadSavedList } from '@/components/saved/load'
 import { sanityFetch } from '@/sanity/client'
 import { parentsQuery, welcomeQuery } from '@/sanity/queries'
 import type { ParentsData, WelcomePopup } from '@/sanity/types'
@@ -20,12 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Welcome() {
-  const [data, popup] = await load()
+  const [[data, popup], savedList] = await Promise.all([load(), loadSavedList()])
   // "Show the welcome pop-up" switched off in Studio: `/` is just a way in to the Parents page.
   if (!popup || popup.enabled === false) redirect('/parents')
   return (
     <WelcomeDialog popup={popup}>
-      <ParentsView data={data} />
+      <ParentsView data={data} savedList={savedList} />
     </WelcomeDialog>
   )
 }
