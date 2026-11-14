@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage, GameLink } from './GameBits'
+import { Badges, GameImage, GameLink, GameSite } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
@@ -210,6 +210,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
                     <GameImage image={g.image} icon={g.icon} w={120} />
                     <div className="card-text">
                       <h3>{g.name}</h3>
+                      <GameSite game={g} />
                       {g.subtitle && <p className="card-tagline">{g.subtitle}</p>}
                       {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
                     </div>
@@ -218,7 +219,7 @@ export function ParentsView({ data }: { data: ParentsData }) {
                     <div className="tags">
                       <Badges badges={badges(g)} />
                     </div>
-                    <GameLink game={g} className="btn-play" verb="Play" plain="Play" />
+                    <GameLink game={g} className="btn-play" label="Play" />
                   </div>
                 </article>
               ))}
