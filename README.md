@@ -36,7 +36,7 @@ Open http://localhost:3000 and http://localhost:3000/studio. The first time you 
 | Studio | Shows up on |
 |---|---|
 | Site settings | Footer mission text and links (all pages) |
-| Home page | Headline, highlight word, two audience panels |
+| Welcome pop-up | Headline, highlight word, intro, the two choices, the note, and the on/off switch |
 | Teachers page | Headline, search placeholder, Challenge banner, which moment opens first |
 | Parents page | Headline, Challenge banner, empty-results message |
 | Games | Three tabs. **Shared**: name, subtitle, URL, image, icon, and the facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like), plus a `hidden` switch that takes the game off both pages. **Teachers**: "On Teachers page", grades (set by hand), and optional overrides. **Parents**: "On Parents page", "When", and the same overrides. An override (URL, subtitle, image, icon, minutes, skills, feels like, badges, featured) replaces the shared value on that page only; blank = use the shared value |

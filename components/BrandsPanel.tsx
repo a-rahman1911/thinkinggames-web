@@ -1,8 +1,11 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
 import { urlFor } from '@/sanity/client'
 import type { Brand } from '@/sanity/types'
 
 /** The box a logo is fitted into, in CSS pixels. The chip's CSS caps the height at BOX.h and the width at the chip. */
-const BOX = { w: 92, h: 34 }
+const BOX = { w: 180, h: 44 }
 
 const hasAsset = (logo: Brand['logo']): logo is NonNullable<Brand['logo']> => !!(logo as { asset?: unknown } | null | undefined)?.asset
 
@@ -32,18 +35,68 @@ const logoUrl = (logo: NonNullable<Brand['logo']>) =>
     .url()
 
 /**
- * "Brands we support": the title above one line of logo chips, under the Challenge banner. Each logo is
- * scales to fill its chip.
- * A brand without a logo shows its name as text. Hidden when the page has no brands.
+ * "Brands we support", under the Challenge banner: a carousel of logo chips, five visible at a time (about two
+ * and a half on phones). It moves only when the visitor moves it: the two arrows (one screenful each), a swipe,
+ * or tabbing to a chip. A brand without a logo shows its name as text. Hidden when the page has no brands.
  */
 export function BrandsPanel({ brands }: { brands?: Brand[] | null }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  // More than five brands never fit, at any width, so the arrows are in the server-rendered HTML then.
+  // With five or fewer they appear after measuring, only if the track really scrolls (it does on phones).
+  const [scrolls, setScrolls] = useState((brands?.length || 0) > 5)
+  const [atStart, setAtStart] = useState(true)
+  const [atEnd, setAtEnd] = useState(false)
+
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+    const measure = () => {
+      const max = track.scrollWidth - track.clientWidth
+      setScrolls(max > 1)
+      setAtStart(track.scrollLeft <= 1)
+      setAtEnd(track.scrollLeft >= max - 1)
+    }
+    measure()
+    track.addEventListener('scroll', measure, { passive: true })
+    const ro = new ResizeObserver(measure)
+    ro.observe(track)
+    return () => {
+      track.removeEventListener('scroll', measure)
+      ro.disconnect()
+    }
+  }, [brands?.length])
+
   if (!brands?.length) return null
+
+  /** One screenful: as many whole chips as are fully visible (five, or two on phones). */
+  const move = (dir: 1 | -1) => {
+    const track = trackRef.current
+    const chip = track?.firstElementChild as HTMLElement | null
+    if (!track || !chip) return
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0
+    const step = chip.offsetWidth + gap
+    const count = Math.max(1, Math.floor((track.clientWidth + gap + 1) / step))
+    track.scrollBy({ left: dir * count * step, behavior: 'smooth' })
+  }
+
   return (
     <section className="brands" aria-labelledby="brands-label">
-      <h2 id="brands-label" className="brands-label">
-        Brands we support
-      </h2>
-      <div className="brands-grid">
+      <div className="brands-head">
+        <h2 id="brands-label" className="brands-label">
+          Brands we support
+        </h2>
+        {scrolls && (
+          <div className="brands-arrows">
+            <button type="button" className="brands-arrow" aria-label="Previous brands" disabled={atStart} onClick={() => move(-1)}>
+              ←
+            </button>
+            <button type="button" className="brands-arrow" aria-label="Next brands" disabled={atEnd} onClick={() => move(1)}>
+              →
+            </button>
+          </div>
+        )}
+      </div>
+      <div ref={trackRef} className="brands-grid">
         {brands.map((b) => (
           <a key={b._id} className="brand" href={b.url} target="_blank" rel="noopener" aria-label={`${b.name} (opens in new tab)`}>
             {hasAsset(b.logo) ? (

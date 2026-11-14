@@ -40,25 +40,12 @@ export function TeachersView({ data }: { data: TeachersData }) {
     (Object.entries(sel) as [FacetKey, string | null][]).every(([key, v]) => !v || facetValues(g, key).includes(v))
 
   const q = query.trim().toLowerCase()
-  const hits = q ? allGames.filter((g) => g.name.toLowerCase().includes(q)) : []
+  const named = q ? allGames.filter((g) => g.name.toLowerCase().includes(q)) : []
+  const hits = named.filter(pass)
 
   return (
     <div style={{ '--accent': 'var(--teacher)', '--accent-light': 'var(--teacher-light)' } as React.CSSProperties}>
-      <Header current="teachers">
-        <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>
-          <label htmlFor="tsearch" className="sr-only">
-            Search games by name
-          </label>
-          <input
-            id="tsearch"
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={page?.searchPlaceholder || 'Search games by name'}
-          />
-          <button type="submit">Search</button>
-        </form>
-      </Header>
+      <Header current="teachers" />
 
       <section className="wrap hero">
         <h1>
@@ -76,9 +63,9 @@ export function TeachersView({ data }: { data: TeachersData }) {
           <BrandsPanel brands={data.brands} />
         </div>
 
-        {q ? (
-          <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }} aria-live="polite">
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: q ? 20 : 32 }}>
+          {q ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }} aria-live="polite">
               <h2 style={{ fontSize: 'clamp(26px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em' }}>
                 {hits.length === 1 ? '1 game matches' : `${hits.length} games match`}
               </h2>
@@ -86,7 +73,55 @@ export function TeachersView({ data }: { data: TeachersData }) {
                 Back to moments
               </button>
             </div>
-            {hits.length ? (
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h2 style={{ fontSize: 'clamp(30px,3.6vw,44px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-.02em' }}>
+                {page?.momentsHeading || "What's the moment?"}
+              </h2>
+              <p style={{ fontSize: 17, lineHeight: 1.5 }}>
+                {page?.momentsSub || 'Open one to see its games. Narrow them all at once with the filters.'}
+              </p>
+            </div>
+          )}
+
+          {/* Search and filters for the whole page. It stays in place while searching, so the box keeps focus. */}
+          <div className="toolbar">
+            <label className="search">
+              <span className="search-icon" aria-hidden="true">
+                <span />
+              </span>
+              <span className="sr-only">Search games by name</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={page?.searchPlaceholder || 'Search games by name'}
+              />
+            </label>
+            {groups.map((g) => (
+              <div key={g.key} className="seg" role="group" aria-label={g.label}>
+                <span className="seg-label">{g.label}</span>
+                <div className="seg-opts">
+                  {g.options.map((o) => {
+                    const on = sel[g.key] === o.value
+                    return (
+                      <button key={o.value} aria-pressed={on} onClick={() => setSel((s) => ({ ...s, [g.key]: on ? null : o.value }))}>
+                        {o.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+            {hasFilters && (
+              <button className="link-btn" onClick={() => setSel({})}>
+                Clear
+              </button>
+            )}
+          </div>
+
+          {q ? (
+            hits.length ? (
               <div className="rows">
                 {hits.map((g) => (
                   <GameRow
@@ -103,25 +138,16 @@ export function TeachersView({ data }: { data: TeachersData }) {
                 ))}
               </div>
             ) : (
-              <p className="empty">No games with that name yet.</p>
-            )}
-          </section>
-        ) : (
-          <section style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <h2 style={{ fontSize: 'clamp(30px,3.6vw,44px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-.02em' }}>
-                {page?.momentsHeading || "What's the moment?"}
-              </h2>
-              {page?.momentsSub && <p style={{ fontSize: 17, lineHeight: 1.5 }}>{page.momentsSub}</p>}
-            </div>
-
+              <p className="empty">{named.length ? 'No games with that name match those filters.' : 'No games with that name yet.'}</p>
+            )
+          ) : (
             <div className="moments">
               {moments.map((m, i) => {
                 const isOpen = open === i
                 const shown = m.games.filter(pass)
                 const panelId = `moment-${m._id}`
                 return (
-                  <div key={m._id} className={`moment${isOpen ? ' open' : ''}`}>
+                  <div key={m._id} className={`moment${isOpen ? ' open' : ''}${shown.length ? '' : ' none'}`}>
                     <h3 style={{ margin: 0 }}>
                       <button
                         className="moment-head"
@@ -134,7 +160,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                           {m.blurb && <span className="moment-blurb">{m.blurb}</span>}
                         </span>
                         <span className="moment-count">
-                          {m.games.length} {m.games.length === 1 ? 'game' : 'games'}
+                          {shown.length} {shown.length === 1 ? 'game' : 'games'}
                         </span>
                         <span className="moment-icon" aria-hidden="true">
                           {isOpen ? '−' : '+'}
@@ -143,34 +169,6 @@ export function TeachersView({ data }: { data: TeachersData }) {
                     </h3>
                     {isOpen && (
                       <div id={panelId} className="moment-body">
-                        {groups.length > 0 && (
-                          <div className="seg-row">
-                            {groups.map((g) => (
-                              <div key={g.key} className="seg" role="group" aria-label={g.label}>
-                                <span className="seg-label">{g.label}</span>
-                                <div className="seg-opts">
-                                  {g.options.map((o) => {
-                                    const on = sel[g.key] === o.value
-                                    return (
-                                      <button
-                                        key={o.value}
-                                        aria-pressed={on}
-                                        onClick={() => setSel((s) => ({ ...s, [g.key]: on ? null : o.value }))}
-                                      >
-                                        {o.label}
-                                      </button>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            ))}
-                            {hasFilters && (
-                              <button className="link-btn" onClick={() => setSel({})}>
-                                Clear
-                              </button>
-                            )}
-                          </div>
-                        )}
                         {shown.length ? (
                           <div className="rows">
                             {shown.map((g) => (
@@ -178,7 +176,7 @@ export function TeachersView({ data }: { data: TeachersData }) {
                             ))}
                           </div>
                         ) : (
-                          <p className="empty sm">No games match those filters for this moment.</p>
+                          <p className="empty sm">No games in this moment match those filters.</p>
                         )}
                       </div>
                     )}
@@ -186,8 +184,8 @@ export function TeachersView({ data }: { data: TeachersData }) {
                 )
               })}
             </div>
-          </section>
-        )}
+          )}
+        </section>
       </main>
     </div>
   )

@@ -22,9 +22,10 @@ const brands = (audience: 'Teachers' | 'Parents') => groq`
     | order(${audience.toLowerCase()}Order asc, name asc){ _id, name, url, logo }
 `
 
-export const settingsQuery = groq`*[_type == "siteSettings"][0]{ mission, footerLinks[]{label, url} }`
+export const settingsQuery = groq`*[_type == "siteSettings"][0]{ missionLabel, mission, missionHighlight, footerLinks[]{label, url} }`
 
-export const homeQuery = groq`*[_type == "homePage"][0]{ headline, highlight, subline, panels[]{persona, eyebrow, title, text, cta}, seo }`
+// The welcome pop-up on "/". The document type and id are still "homePage", from when this was the home page.
+export const welcomeQuery = groq`*[_type == "homePage"][0]{ enabled, headline, highlight, subline, panels[]{persona, eyebrow, title, cta}, note }`
 
 // A moment's games array is the source of truth for which games it holds and in what order.
 // Games that are off the Teachers page or hidden are left out; the order is kept.
