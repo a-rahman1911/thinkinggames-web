@@ -1,3 +1,4 @@
+import { siteName } from '@/lib/site'
 import { urlFor } from '@/sanity/client'
 import type { SanityImage } from '@/sanity/types'
 
@@ -29,5 +30,34 @@ export function Badges({ badges }: { badges?: string[] }) {
         </span>
       ))}
     </>
+  )
+}
+
+/**
+ * The button that opens a game, in a new tab. It names the site the game lives on: "Play on PBS KIDS ↗",
+ * "Open on PBS KIDS ↗". With no site name known it keeps the plain label ("Play ↗", "Open game ↗").
+ * The visible label comes first in the accessible name, then the game's name.
+ */
+export function GameLink({
+  game,
+  className,
+  verb,
+  plain,
+}: {
+  game: { name: string; url?: string | null; site?: string | null }
+  className: string
+  verb: string
+  plain: string
+}) {
+  if (!game.url) return null
+  const site = siteName(game)
+  return (
+    <a className={className} href={game.url} target="_blank" rel="noopener">
+      {site ? `${verb} on ${site}` : plain} ↗
+      <span className="sr-only">
+        {site ? ': ' : ' '}
+        {game.name} (opens in new tab)
+      </span>
+    </a>
   )
 }

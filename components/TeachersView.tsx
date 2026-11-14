@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage } from './GameBits'
+import { Badges, GameImage, GameLink } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { TEACHER_GROUPS, badges, builds, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
@@ -206,11 +206,7 @@ function GameRow({ game, meta }: { game: AudienceGame; meta?: string }) {
         <div className="row-badges">
           <Badges badges={badges(game)} />
         </div>
-        {game.url && (
-          <a className="btn-open" href={game.url} target="_blank" rel="noopener">
-            Open game ↗<span className="sr-only"> {game.name} (opens in new tab)</span>
-          </a>
-        )}
+        <GameLink game={game} className="btn-open" verb="Open" plain="Open game" />
       </div>
     </article>
   )

@@ -70,6 +70,7 @@ export function WelcomeDialog({ popup, children }: { popup: NonNullable<WelcomeP
               <span aria-hidden="true">×</span>
             </button>
             <img className="welcome-logo" src="/brand/logo-horizontal.svg" alt="Thinking Games Initiative" />
+            {popup.label && <p className="welcome-label">{popup.label}</p>}
             <h2 id="welcome-title">
               <Highlight text={popup.headline} highlight={popup.highlight} />
             </h2>

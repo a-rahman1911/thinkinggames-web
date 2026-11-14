@@ -8,7 +8,7 @@ const overrideFields = groq`
 `
 
 const gameFields = groq`
-  _id, name, subtitle, url, image, icon,
+  _id, name, subtitle, url, site, image, icon,
   ageFrom, ageTo, minutes, players, cost, offline, noReading, platforms, feelsLike,
   hidden,
   "skills": skills[]->{ _id, title, order },
@@ -25,7 +25,7 @@ const brands = (audience: 'Teachers' | 'Parents') => groq`
 export const settingsQuery = groq`*[_type == "siteSettings"][0]{ missionLabel, mission, missionHighlight, footerLinks[]{label, url} }`
 
 // The welcome pop-up on "/". The document type and id are still "homePage", from when this was the home page.
-export const welcomeQuery = groq`*[_type == "homePage"][0]{ enabled, headline, highlight, subline, panels[]{persona, eyebrow, title, cta}, note }`
+export const welcomeQuery = groq`*[_type == "homePage"][0]{ enabled, label, headline, highlight, subline, panels[]{persona, eyebrow, title, cta}, note }`
 
 // A moment's games array is the source of truth for which games it holds and in what order.
 // Games that are off the Teachers page or hidden are left out; the order is kept.
