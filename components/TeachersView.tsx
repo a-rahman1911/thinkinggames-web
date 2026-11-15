@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { TeacherGameRow, buildsMeta } from './GameBits'
+import { TeacherGameRow } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { SaveButton } from './saved/SaveButton'
@@ -178,7 +178,7 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
                         {shown.length ? (
                           <div className="rows">
                             {shown.map((g) => (
-                              <TeacherGameRow key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} meta={buildsMeta(g)} />
+                              <TeacherGameRow key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} />
                             ))}
                           </div>
                         ) : (

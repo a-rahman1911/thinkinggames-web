@@ -321,7 +321,7 @@ const parentSettings = defineType({
       title: 'When (parents)',
       type: 'array',
       hidden: whenShown,
-      description: 'When families would play it. Drives the Parents "When" filter.',
+      description: 'When families would play it. Not shown on the site at the moment: the Parents "When" filter is switched off. The values are kept.',
       of: refList('whenOption'),
       validation: (r) =>
         r.unique().custom((v, ctx) => ((ctx.parent as AudienceParent)?.show && !v?.length ? 'Required when the game is on the Parents page' : true)),
@@ -451,7 +451,7 @@ const game = defineType({
       title: 'Skills it builds',
       type: 'array',
       group: 'shared',
-      description: '1 to 3 skills. Shown as the "Builds …" line.',
+      description: '1 to 3 skills. Shown under the game, in this order. Also the Parents "Thinking skill" filter.',
       of: refList('skill'),
       validation: (r) => r.required().min(1).max(3).unique(),
     }),

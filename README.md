@@ -41,8 +41,8 @@ Open http://localhost:3000 and http://localhost:3000/studio. The first time you 
 | Parents page | Headline, Challenge banner, empty-results message |
 | Games | Three tabs. **Shared**: name, subtitle, URL, site name (optional: the card says "On PBS KIDS" above the game's name; left empty, the name is worked out from the URL in `lib/site.ts`), image, icon, and the facts (age range, minutes, players, cost, offline, no reading, platforms, skills, feels like), plus a `hidden` switch that takes the game off both pages. **Teachers**: "On Teachers page", grades (set by hand), and optional overrides. **Parents**: "On Parents page", "When", and the same overrides. An override (URL, subtitle, image, icon, minutes, skills, feels like, badges, featured) replaces the shared value on that page only; blank = use the shared value |
 | Teacher moments | The accordion sections; `order` sets their position. Each moment has a **games** list: which games show under it and in what order. Drag to reorder in Studio. Only games that are on the Teachers page can be added |
-| Skills | The "Builds …" line on cards. 1 to 3 per game |
-| When options | The Parents "When" filter |
+| Skills | The skills line on cards, and the Parents "Thinking skill" filter. 1 to 3 per game |
+| When options | Not shown on the site since round 12 (the Parents "When" filter is off). The data is kept |
 
 Games carry **facts only**. Everything shown is derived from them in `lib/derive.ts`, so filters and badges always agree. Each page first calls `resolve(game, 'teachers' | 'parents')`, which folds that audience's overrides into the shared values; every rule below works on the resolved values:
 
@@ -53,7 +53,7 @@ Games carry **facts only**. Everything shown is derived from them in `lib/derive
 | "Minutes" filter (5 / 10 / 20 / 30+) and the "N min" badge | resolved `minutes`, one of "5", "10", "20", "30+"; each game matches its own value only; the badge reads e.g. "30+ min" |
 | Parents "Also": No reading needed, Together | `noReading`; `players` has anything other than Solo |
 | Badges (first one highlighted) | cost, players joined with " / ", "N min", Offline, No reading needed, in that order; the audience's badges list keeps only those kinds (empty = all) |
-| "Builds …" | resolved skill titles joined with " · " |
+| Skills line | resolved skill titles, as a list with a dot between them |
 | Order inside a moment | the moment's games list, as ordered in Studio |
 | Teachers search and the Parents Library | that audience's featured first, then A–Z; hidden games and games switched off for that audience are left out |
 
@@ -128,7 +128,7 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 - `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; on mobile (≤640px) the filters open as a full-screen panel from a sticky "Filters" button
 - `components/ChallengeBanner.tsx`: shared banner with "Copy link"
 - `sanity/schemas.ts`: the CMS content model
-- `lib/derive.ts`: resolve per audience, then facts → filters, badges, "Builds" line, sort order (unit tests: `npm test`)
+- `lib/derive.ts`: resolve per audience, then facts → filters, badges, sort order (unit tests: `npm test`)
 - `scripts/import-games.mts`: spreadsheet import
 - `scripts/migrate-audience.mts`: one-off migration to the per-audience shape
 - `scripts/migrate-minutes.mts`: one-off migration of minutes to the 5 / 10 / 20 / 30+ options

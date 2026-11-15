@@ -54,7 +54,7 @@ export type Moment = { _id: string; title: string; blurb?: string; games?: Game[
 export type Brand = { _id: string; name: string; url: string; logo?: SanityImage | null }
 
 export type TeachersData = { page: TeachersPage; moments: Moment[] | null; brands: Brand[] | null }
-export type ParentsData = { page: ParentsPage; games: Game[] | null; whenOptions: Titled[] | null; brands: Brand[] | null }
+export type ParentsData = { page: ParentsPage; games: Game[] | null; skills: Titled[] | null; brands: Brand[] | null }
 
 // ---- Ideas (round 11) ----
 /** The "Ideas section" document: the switch and the texts of /ideas. */

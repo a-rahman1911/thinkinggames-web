@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PortableText, type PortableTextComponents } from 'next-sanity'
-import { ParentGameCard, TeacherGameRow, buildsMeta } from '@/components/GameBits'
+import { ParentGameCard, TeacherGameRow } from '@/components/GameBits'
 import { resolve } from '@/lib/derive'
 import type { PageAudience } from '@/lib/ideas'
 import { urlFor } from '@/sanity/client'
@@ -54,7 +54,7 @@ export function ArticleBody({ body, audience }: { body: ArticleBlock[]; audience
         const game = resolve(value.game, audience)
         return (
           <div className={`prose-game ${audience}`}>
-            {audience === 'teachers' ? <TeacherGameRow game={game} meta={buildsMeta(game)} /> : <ParentGameCard game={game} />}
+            {audience === 'teachers' ? <TeacherGameRow game={game} /> : <ParentGameCard game={game} />}
           </div>
         )
       },

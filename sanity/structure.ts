@@ -13,7 +13,7 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('brand').title('Brands we support'),
       S.documentTypeListItem('moment').title('Teacher moments'),
       S.documentTypeListItem('skill').title('Skills'),
-      S.documentTypeListItem('whenOption').title('When options (parents)'),
+      S.documentTypeListItem('whenOption').title('When options (parents) · not shown on the site'),
       S.divider(),
       // Ideas (round 11): newest first.
       S.listItem()

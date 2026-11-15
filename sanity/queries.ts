@@ -1,6 +1,6 @@
 import { groq } from 'next-sanity'
 
-// Games carry facts only. Filters, badges and the "Builds" line are derived in lib/derive.ts,
+// Games carry facts only. Filters and badges are derived in lib/derive.ts,
 // after resolve() folds the audience's overrides (teachers{} or parents{}) into the shared values.
 const overrideFields = groq`
   url, subtitle, image, icon, minutes, feelsLike, badges, featured,
@@ -41,7 +41,7 @@ export const teachersQuery = groq`{
 export const parentsQuery = groq`{
   "page": *[_type == "parentsPage"][0],
   "games": *[_type == "game" && parents.show == true && hidden != true]{${gameFields}},
-  "whenOptions": *[_type == "whenOption"] | order(order asc, title asc){ _id, title },
+  "skills": *[_type == "skill"] | order(order asc, title asc){ _id, title },
   ${brands('Parents')}
 }`
 

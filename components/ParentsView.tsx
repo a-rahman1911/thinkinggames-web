@@ -11,10 +11,8 @@ import { SavedList } from './saved/SavedList'
 import { IdeaStrip } from './ideas/IdeaStrip'
 import type { IdeasForPage } from './ideas/load'
 import type { SavedListData } from './saved/load'
-import { facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
+import { matchesSelection, optionCount, parentGroups, resolve, shownTo, sortGames, type FacetKey, type Selection } from '@/lib/derive'
 import type { AudienceGame, ParentsData } from '@/sanity/types'
-
-type Sel = Partial<Record<FacetKey, string[]>>
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -25,8 +23,8 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
     () => sortGames((data.games || []).filter((g) => shownTo(g, 'parents')).map((g) => resolve(g, 'parents'))),
     [data.games],
   )
-  const groups = useMemo(() => parentGroups(data.whenOptions || []), [data.whenOptions])
-  const [sel, setSel] = useState<Sel>({})
+  const groups = useMemo(() => parentGroups(data.skills || [], games), [data.skills, games])
+  const [sel, setSel] = useState<Selection>({})
   const [query, setQuery] = useState('')
   const q = query.trim().toLowerCase()
   // Mobile only: the filters sidebar opens as a full-screen panel. On desktop the panel state is never set.
@@ -75,16 +73,8 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
     }
   }, [panelOpen])
 
-  // OR within a group, AND across groups. `skip` lets a group count its own options.
-  const matches = (g: AudienceGame, skip?: FacetKey) => {
-    if (q && !g.name.toLowerCase().includes(q)) return false
-    return groups.every((gr) => {
-      const chosen = sel[gr.key]
-      if (gr.key === skip || !chosen?.length) return true
-      const values = facetValues(g, gr.key)
-      return chosen.some((v) => values.includes(v))
-    })
-  }
+  // The search box narrows everything, counts included. Within the filters: OR within a group, AND across groups.
+  const named = q ? games.filter((g: AudienceGame) => g.name.toLowerCase().includes(q)) : games
 
   const toggle = (group: FacetKey, value: string) =>
     setSel((s) => {
@@ -92,7 +82,7 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
       return { ...s, [group]: cur.includes(value) ? cur.filter((x) => x !== value) : [...cur, value] }
     })
 
-  const results = games.filter((g) => matches(g))
+  const results = named.filter((g) => matchesSelection(g, groups, sel))
   const active = groups.flatMap((gr) =>
     (sel[gr.key] || []).map((value) => ({
       group: gr.key,
@@ -144,7 +134,7 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
               <legend>{gr.label}</legend>
               {gr.options.map((o) => {
                 const on = !!sel[gr.key]?.includes(o.value)
-                const count = games.filter((g) => facetValues(g, gr.key).includes(o.value) && matches(g, gr.key)).length
+                const count = optionCount(named, groups, sel, gr.key, o.value)
                 return (
                   <button
                     key={o.value}
