@@ -1,5 +1,5 @@
 // Pure functions that turn a game's facts (age range, minutes, players, cost, ...) into
-// everything the site shows: filter membership, badges, the "Builds" line and sort order.
+// everything the site shows: filter membership, badges and sort order.
 //
 // A game carries shared facts plus a `teachers` and a `parents` object. Each audience object has a
 // `show` switch, its own filter data (grades for teachers, when for parents) and optional overrides
@@ -27,7 +27,8 @@ export type Grade = (typeof GRADES)[number]
 export type BadgeKind = (typeof BADGE_KINDS)[number]
 export type Audience = (typeof AUDIENCES)[number]
 
-export type Skill = { title: string }
+/** A skill as a game carries it. `_id` is there on games read from the CMS; the filter falls back to the title. */
+export type Skill = { _id?: string; title: string }
 export type WhenRef = { _id: string }
 
 /** The per-audience values that may replace a shared value. Unset (null/undefined) means "use the shared value". */
@@ -169,8 +170,8 @@ export const badges = (g: BadgeFacts): string[] => {
   return all.filter(([kind, label]) => !!label && (!keep || keep.has(kind.toLowerCase()))).map(([, label]) => label as string)
 }
 
-/** The "Builds …" line: skill titles joined with a middle dot. */
-export const builds = (g: Pick<GameFacts, 'skills'>) => (g.skills || []).map((s) => s.title).join(' · ')
+/** What the Parents "Thinking skill" filter compares: the skill document's id (its title if it has none). */
+export const skillValue = (s: Skill) => s._id || s.title
 
 /** Featured games first, then A to Z. Hidden games are dropped. Use on resolved games (featured is per audience). */
 export const sortGames = <T extends { name: string; featured?: boolean | null; hidden?: boolean | null }>(games: T[]): T[] =>
@@ -178,7 +179,7 @@ export const sortGames = <T extends { name: string; featured?: boolean | null; h
     .filter((g) => !g.hidden)
     .sort((a, b) => Number(!!b.featured) - Number(!!a.featured) || a.name.localeCompare(b.name))
 
-export type FacetKey = 'grade' | 'minutes' | 'feel' | 'age' | 'when' | 'feelsLike' | 'also'
+export type FacetKey = 'grade' | 'minutes' | 'feel' | 'age' | 'skill' | 'when' | 'feelsLike' | 'also'
 
 /** The filter values a resolved game matches for one filter group. The views compare against these. */
 export function facetValues(g: Resolved<GameFacts>, key: FacetKey): string[] {
@@ -192,6 +193,9 @@ export function facetValues(g: Resolved<GameFacts>, key: FacetKey): string[] {
       return [teacherFeel(g)]
     case 'age':
       return parentAgeBands(g)
+    case 'skill':
+      return (g.skills || []).map(skillValue)
+    // Not a filter on the site since round 12. Kept, with the data, so "When" is easy to bring back.
     case 'when':
       return g.when.map((w) => w._id)
     case 'feelsLike':
@@ -203,6 +207,25 @@ export function facetValues(g: Resolved<GameFacts>, key: FacetKey): string[] {
 
 export type FilterGroup = { key: FacetKey; label: string; options: { value: string; label: string }[] }
 
+/** What is ticked on the Parents page, per group. */
+export type Selection = Partial<Record<FacetKey, string[]>>
+
+/**
+ * Does the game pass the ticked filters? Any ticked option within a group, every group that has one ticked.
+ * `skip` leaves one group out, which is how a group counts its own options.
+ */
+export const matchesSelection = (g: Resolved<GameFacts>, groups: FilterGroup[], sel: Selection, skip?: FacetKey) =>
+  groups.every((gr) => {
+    const chosen = sel[gr.key]
+    if (gr.key === skip || !chosen?.length) return true
+    const values = facetValues(g, gr.key)
+    return chosen.some((v) => values.includes(v))
+  })
+
+/** The number beside a filter option: the games that have it and pass what is ticked in the other groups. */
+export const optionCount = (games: Resolved<GameFacts>[], groups: FilterGroup[], sel: Selection, key: FacetKey, value: string) =>
+  games.filter((g) => facetValues(g, key).includes(value) && matchesSelection(g, groups, sel, key)).length
+
 const opts = (values: readonly string[]) => values.map((v) => ({ value: v, label: v }))
 
 /** Teachers filter groups (all derived, nothing from the CMS). */
@@ -212,11 +235,17 @@ export const TEACHER_GROUPS: FilterGroup[] = [
   { key: 'feel', label: 'Feels like', options: opts(TEACHER_FEELS) },
 ]
 
-/** Parents filter groups. "When" options come from the CMS (whenOption documents). */
-export const parentGroups = (whenOptions: { _id: string; title: string }[]): FilterGroup[] =>
-  [
+/**
+ * Parents filter groups: Age, Thinking skill, Feels like, Also. "Thinking skill" lists the skill documents
+ * in the order given (the CMS `order`), leaving out a skill that none of `games` has. `games` are the
+ * games the Parents page shows, resolved for parents, so a parents-only skills override counts.
+ */
+export const parentGroups = (skills: { _id: string; title: string }[], games: Pick<GameFacts, 'skills'>[]): FilterGroup[] => {
+  const used = new Set(games.flatMap((g) => (g.skills || []).map(skillValue)))
+  return [
     { key: 'age' as const, label: 'Age', options: opts(PARENT_AGE_BANDS.map((b) => b.label)) },
-    { key: 'when' as const, label: 'When', options: whenOptions.map((w) => ({ value: w._id, label: w.title })) },
+    { key: 'skill' as const, label: 'Thinking skill', options: skills.filter((s) => used.has(s._id)).map((s) => ({ value: s._id, label: s.title })) },
     { key: 'feelsLike' as const, label: 'Feels like', options: opts(FEELS) },
     { key: 'also' as const, label: 'Also', options: opts(ALSO_OPTIONS) },
   ].filter((g) => g.options.length > 0)
+}

@@ -1,4 +1,4 @@
-import { badges, builds } from '@/lib/derive'
+import { badges } from '@/lib/derive'
 import { siteName } from '@/lib/site'
 import { urlFor } from '@/sanity/client'
 import type { AudienceGame, SanityImage } from '@/sanity/types'
@@ -65,6 +65,23 @@ export function GameLink({ game, className, label }: { game: { name: string; url
 }
 
 /**
+ * A game's thinking skills, in the game's order, with a round dot between them (drawn in CSS, not typed).
+ * A list, so a screen reader announces "Thinking skills" and then each skill. One component for the
+ * Parents card and the Teachers row. Renders nothing for a game with no skills.
+ */
+export function Skills({ skills }: { skills?: { title: string }[] | null }) {
+  if (!skills?.length) return null
+  return (
+    // role="list": Safari drops list semantics from a list styled with list-style:none.
+    <ul className="skills" role="list" aria-label="Thinking skills">
+      {skills.map((s) => (
+        <li key={s.title}>{s.title}</li>
+      ))}
+    </ul>
+  )
+}
+
+/**
  * A game as the Parents library shows it. The library and the Game block of an Ideas article both render
  * this one component, so the two cannot drift apart. `save` is the library's Save button, when it has one.
  */
@@ -78,7 +95,7 @@ export function ParentGameCard({ game: g, save }: { game: AudienceGame; save?: R
           <h3>{g.name}</h3>
           <GameSite game={g} />
           {g.subtitle && <p className="card-tagline">{g.subtitle}</p>}
-          {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
+          <Skills skills={g.skills} />
         </div>
       </div>
       <div className="card-foot">
@@ -98,12 +115,10 @@ export function ParentGameCard({ game: g, save }: { game: AudienceGame; save?: R
   )
 }
 
-/** The "Builds …" line a Teachers row shows inside a moment. */
-export const buildsMeta = (g: AudienceGame) => (g.skills?.length ? `Builds ${builds(g)}` : undefined)
-
 /**
  * A game as the Teachers page shows it, in a moment and in search results. Also the Game block of an
- * Ideas article for teachers. `save` is the page's Save button, when it has one.
+ * Ideas article for teachers. `meta` is the "Good for …" line of a search result; `save` is the page's Save
+ * button, when it has one.
  */
 export function TeacherGameRow({ game, meta, save }: { game: AudienceGame; meta?: string; save?: React.ReactNode }) {
   const open = <GameLink game={game} className="btn-open" label="Open game" />
@@ -116,6 +131,7 @@ export function TeacherGameRow({ game, meta, save }: { game: AudienceGame; meta?
           <GameSite game={game} />
           {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
           {meta && <span className="meta">{meta}</span>}
+          <Skills skills={game.skills} />
         </div>
       </div>
       <div className="row-foot">

@@ -119,6 +119,10 @@ h1,h2,h3,p{margin:0}
 .row-name{font-size:18px;font-weight:800;line-height:1.2}
 .row-tagline{font-size:15px;line-height:1.35}
 .meta{font-size:13px;line-height:1.4;color:var(--muted)}
+/* A game's thinking skills (round 12): a list, a 4px ink dot after each skill but the last. A name never breaks; the line wraps between skills. */
+.skills{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;row-gap:2px;font-size:13px;line-height:1.4;color:var(--muted)}
+.skills li{white-space:nowrap}
+.skills li:not(:last-child)::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--ink);margin:0 8px;vertical-align:middle}
 .row-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 6px}
 .row-badges{flex:999 1 220px;min-width:0;display:flex;flex-wrap:wrap;gap:6px}
 

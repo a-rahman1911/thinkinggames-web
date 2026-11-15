@@ -3,9 +3,11 @@ import assert from 'node:assert/strict'
 import {
   alsoTags,
   badges,
-  builds,
   facetValues,
   gradesFromAge,
+  matchesSelection,
+  optionCount,
+  PARENT_AGE_BANDS,
   parentAgeBands,
   parentGroups,
   resolve,
@@ -13,7 +15,9 @@ import {
   sortGames,
   teacherFeel,
   TEACHER_GROUPS,
+  type FacetKey,
   type GameFacts,
+  type Selection,
 } from './derive.ts'
 
 const game = (over: Partial<GameFacts> = {}): GameFacts => ({
@@ -175,12 +179,6 @@ test('badges and minutes filter use the resolved minutes', () => {
   assert.deepEqual(facetValues(resolve(g, 'parents'), 'minutes'), ['5'])
 })
 
-test('builds line joins skill titles with a middle dot', () => {
-  assert.equal(builds(game()), 'Logical deduction')
-  assert.equal(builds(game({ skills: [{ title: 'Number sense' }, { title: 'Logical deduction' }] })), 'Number sense · Logical deduction')
-  assert.equal(builds(game({ skills: null })), '')
-})
-
 test('teacher feel is lower case', () => {
   assert.equal(teacherFeel(game({ feelsLike: 'A game' })), 'a game')
   assert.equal(teacherFeel(game({ feelsLike: 'Math' })), 'math')
@@ -227,9 +225,70 @@ test('facet values per filter group, on resolved games', () => {
   assert.deepEqual(facetValues(resolve(game({ feelsLike: 'A game', parents: { show: true, feelsLike: 'Math' } }), 'parents'), 'feelsLike'), ['Math'])
 })
 
-test('parent groups keep Age, When, Feels like, Also order and drop empty When', () => {
-  const groups = parentGroups([{ _id: 'when-a', title: 'Weekend' }])
-  assert.deepEqual(groups.map((g) => g.label), ['Age', 'When', 'Feels like', 'Also'])
-  assert.deepEqual(groups[1].options, [{ value: 'when-a', label: 'Weekend' }])
-  assert.deepEqual(parentGroups([]).map((g) => g.label), ['Age', 'Feels like', 'Also'])
+// ---- Parents "Thinking skill" filter (round 12) ----
+const SKILLS = [
+  { _id: 'skill-logic', title: 'Logical deduction' },
+  { _id: 'skill-number', title: 'Number sense' },
+  { _id: 'skill-memory', title: 'Working memory' },
+  { _id: 'skill-arith', title: 'Arithmetic' },
+]
+const sk = (...ids: string[]) => ids.map((id) => ({ _id: id, title: SKILLS.find((s) => s._id === id)!.title }))
+const forParents = (list: ReturnType<typeof game>[]) => list.filter((g) => shownTo(g, 'parents')).map((g) => resolve(g, 'parents'))
+
+test('parent groups are Age, Thinking skill, Feels like, Also; no When', () => {
+  const games = forParents([game({ skills: sk('skill-number', 'skill-logic') })])
+  const groups = parentGroups(SKILLS, games)
+  assert.deepEqual(groups.map((g) => g.label), ['Age', 'Thinking skill', 'Feels like', 'Also'])
+  assert.deepEqual(groups.map((g) => g.key), ['age', 'skill', 'feelsLike', 'also'])
+  assert.deepEqual(groups[1].options, [
+    { value: 'skill-logic', label: 'Logical deduction' },
+    { value: 'skill-number', label: 'Number sense' },
+  ], 'the skill documents in their own order, by title; not the order on a game')
+  assert.deepEqual(parentGroups(SKILLS, []).map((g) => g.label), ['Age', 'Feels like', 'Also'], 'no skills in use: no group')
+})
+
+test('thinking skill: a skill no game shown to parents has is left out', () => {
+  const games = forParents([
+    game({ name: 'Shown', skills: sk('skill-logic') }),
+    game({ name: 'Teachers only', skills: sk('skill-memory'), parents: { show: false } }),
+    game({ name: 'Hidden', skills: sk('skill-arith'), hidden: true }),
+    // Parents see the parents override, not the shared skills.
+    game({ name: 'Override', skills: sk('skill-memory'), parents: { show: true, skills: sk('skill-number') } }),
+  ])
+  assert.deepEqual(parentGroups(SKILLS, games)[1].options.map((o) => o.label), ['Logical deduction', 'Number sense'])
+})
+
+test('thinking skill: any ticked skill matches; groups combine; counts follow the other groups', () => {
+  const games = forParents([
+    game({ name: 'A', ageFrom: 4, ageTo: 5, feelsLike: 'Math', skills: sk('skill-logic', 'skill-number') }),
+    game({ name: 'B', ageFrom: 6, ageTo: 8, feelsLike: 'A game', skills: sk('skill-number') }),
+    game({ name: 'C', ageFrom: 9, ageTo: 11, feelsLike: 'A game', skills: sk('skill-memory') }),
+    game({ name: 'D', ageFrom: 9, ageTo: 11, feelsLike: 'Math', skills: null }),
+  ])
+  const groups = parentGroups(SKILLS, games)
+  const names = (sel: Selection) => games.filter((g) => matchesSelection(g, groups, sel)).map((g) => g.name)
+  const count = (sel: Selection, key: FacetKey, value: string) => optionCount(games, groups, sel, key, value)
+
+  assert.deepEqual(facetValues(games[0], 'skill'), ['skill-logic', 'skill-number'])
+  assert.deepEqual(facetValues(games[3], 'skill'), [])
+  assert.deepEqual(names({}), ['A', 'B', 'C', 'D'])
+  assert.deepEqual(names({ skill: ['skill-number'] }), ['A', 'B'])
+  assert.deepEqual(names({ skill: ['skill-logic', 'skill-memory'] }), ['A', 'C'], 'any ticked skill')
+  assert.deepEqual(names({ skill: ['skill-number'], feelsLike: ['A game'] }), ['B'], 'every group with a tick')
+  assert.deepEqual(names({ skill: [] }), ['A', 'B', 'C', 'D'], 'an emptied group filters nothing')
+
+  // Nothing ticked: each skill counts its games.
+  assert.deepEqual(['skill-logic', 'skill-number', 'skill-memory'].map((s) => count({}, 'skill', s)), [1, 2, 1])
+  // A tick in the group does not change that group's own counts.
+  assert.equal(count({ skill: ['skill-logic'] }, 'skill', 'skill-memory'), 1)
+  // A ticked skill narrows the counts in the other groups.
+  const sel = { skill: ['skill-number'] }
+  assert.deepEqual(PARENT_AGE_BANDS.map((b) => count(sel, 'age', b.label)), [1, 1, 0])
+  assert.deepEqual([count(sel, 'feelsLike', 'Math'), count(sel, 'feelsLike', 'A game')], [1, 1])
+  // A tick in another group narrows the skill counts; a skill can fall to zero.
+  assert.deepEqual(['skill-logic', 'skill-number', 'skill-memory'].map((s) => count({ age: ['Ages 9-11'] }, 'skill', s)), [0, 0, 1])
+})
+
+test('thinking skill: a skill without an id is matched by its title', () => {
+  assert.deepEqual(facetValues(resolve(game({ skills: [{ title: 'Number sense' }] }), 'parents'), 'skill'), ['Number sense'])
 })
