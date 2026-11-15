@@ -3,18 +3,20 @@
 import { useMemo, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage, GameLink, GameSite } from './GameBits'
+import { TeacherGameRow, buildsMeta } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { SaveButton } from './saved/SaveButton'
 import { SavedList } from './saved/SavedList'
+import { IdeaStrip } from './ideas/IdeaStrip'
+import type { IdeasForPage } from './ideas/load'
 import type { SavedListData } from './saved/load'
-import { TEACHER_GROUPS, badges, builds, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
+import { TEACHER_GROUPS, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
 import type { AudienceGame, TeachersData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string | null>>
 
-export function TeachersView({ data, savedList }: { data: TeachersData; savedList?: SavedListData }) {
+export function TeachersView({ data, savedList, ideas }: { data: TeachersData; savedList?: SavedListData; ideas?: IdeasForPage }) {
   const { page } = data
   // Games inside a moment keep the order of the moment's games list (set by hand in Studio).
   const moments = useMemo(
@@ -48,7 +50,7 @@ export function TeachersView({ data, savedList }: { data: TeachersData; savedLis
 
   return (
     <div style={{ '--accent': 'var(--teacher)', '--accent-light': 'var(--teacher-light)' } as React.CSSProperties}>
-      <Header current="teachers" />
+      <Header current="teachers" ideasLabel={ideas?.navLabel} />
 
       <section className="wrap hero">
         <h1>
@@ -127,10 +129,10 @@ export function TeachersView({ data, savedList }: { data: TeachersData; savedLis
             hits.length ? (
               <div className="rows">
                 {hits.map((g) => (
-                  <GameRow
+                  <TeacherGameRow
                     key={g._id}
                     game={g}
-                    save={!!savedList}
+                    save={savedList ? <SaveButton game={g} /> : undefined}
                     meta={
                       'Good for ' +
                       moments
@@ -176,7 +178,7 @@ export function TeachersView({ data, savedList }: { data: TeachersData; savedLis
                         {shown.length ? (
                           <div className="rows">
                             {shown.map((g) => (
-                              <GameRow key={g._id} game={g} save={!!savedList} meta={g.skills?.length ? `Builds ${builds(g)}` : undefined} />
+                              <TeacherGameRow key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} meta={buildsMeta(g)} />
                             ))}
                           </div>
                         ) : (
@@ -191,37 +193,8 @@ export function TeachersView({ data, savedList }: { data: TeachersData; savedLis
           )}
         </section>
       </main>
+      {ideas && <IdeaStrip heading={ideas.heading} cards={ideas.strip} allLink />}
       {savedList && <SavedList audience="teachers" games={allGames} all={savedList.games} />}
     </div>
-  )
-}
-
-function GameRow({ game, meta, save }: { game: AudienceGame; meta?: string; save?: boolean }) {
-  const open = <GameLink game={game} className="btn-open" label="Open game" />
-  return (
-    <article className="row">
-      <div className="row-top">
-        <GameImage image={game.image} icon={game.icon} w={112} />
-        <div className="row-text">
-          <div className="row-name">{game.name}</div>
-          <GameSite game={game} />
-          {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
-          {meta && <span className="meta">{meta}</span>}
-        </div>
-      </div>
-      <div className="row-foot">
-        <div className="row-badges">
-          <Badges badges={badges(game)} />
-        </div>
-        {save ? (
-          <div className="card-actions">
-            <SaveButton game={game} />
-            {open}
-          </div>
-        ) : (
-          open
-        )}
-      </div>
-    </article>
   )
 }

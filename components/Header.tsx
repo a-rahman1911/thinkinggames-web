@@ -3,8 +3,12 @@
 import Link from 'next/link'
 import { rememberAudience } from '@/lib/audience'
 
-/** Logo and the two audience pills. Clicking a pill also remembers that audience for the next visit to `/`. */
-export function Header({ current }: { current?: 'teachers' | 'parents' }) {
+/**
+ * Logo and the two audience pills. Clicking a pill also remembers that audience for the next visit to `/`.
+ * `ideasLabel` is the Ideas section's name when the section is on (round 11): a plain link before the pills.
+ * Without it the header is exactly as it was.
+ */
+export function Header({ current, ideasLabel }: { current?: 'teachers' | 'parents' | 'ideas'; ideasLabel?: string | null }) {
   return (
     <header className="hdr">
       <div className="wrap">
@@ -12,7 +16,12 @@ export function Header({ current }: { current?: 'teachers' | 'parents' }) {
         <a href="/" className="hdr-logo">
           <img src="/brand/logo-horizontal.svg" alt="Thinking Games Initiative" />
         </a>
-        <nav className="pills" aria-label="Audience">
+        <nav className="pills" aria-label={ideasLabel ? 'Main' : 'Audience'}>
+          {ideasLabel && (
+            <Link href="/ideas" className="hdr-link" aria-current={current === 'ideas' ? 'page' : undefined}>
+              {ideasLabel}
+            </Link>
+          )}
           <Link
             href="/teachers"
             className="pill"

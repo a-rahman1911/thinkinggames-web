@@ -314,3 +314,110 @@ body:has(.saved-backdrop){overflow:hidden}
 .saved-field textarea{width:100%;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff;font:inherit;font-size:16px;line-height:1.4;resize:none}
 .saved-empty{margin:24px 0 0;padding:28px 20px;border-radius:16px;background:var(--soft);font-size:16px;font-weight:700;text-align:center}
 /* ---- end Saved list ---- */
+
+/* ---- Ideas (round 11). Remove this whole block to remove the section's styles. ---- */
+/* The audience's light colour: on the label and behind a cover built from game pictures. */
+.idea-teachers{--idea:var(--teacher-light)}.idea-parents{--idea:var(--parent-light)}.idea-both{--idea:var(--orange-light)}
+
+/* Header: a plain text link before the two pills. Only rendered while the section is on. */
+.hdr-link{display:inline-flex;align-items:center;padding-inline:8px;margin-right:4px;font-size:15px;font-weight:700;text-decoration:none}
+.hdr-link[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--orange);text-decoration-thickness:3px;text-underline-offset:7px}
+
+.idea-card{display:flex;flex-direction:column;gap:12px;padding:12px 12px 16px;border:2px solid var(--line);border-radius:20px;background:#fff;text-decoration:none;color:var(--ink);transition:border-color 150ms}
+.idea-card:hover{border-color:var(--orange);color:var(--ink)}
+.idea-card-text{display:flex;flex-direction:column;gap:8px;padding:0 4px}
+.idea-chip{align-self:flex-start;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--idea)}
+.idea-card h3{margin:0;font-size:20px;font-weight:800;line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.idea-card-sum{font-size:15px;line-height:1.4}
+.idea-meta{font-size:13px;color:var(--muted)}
+.idea-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+
+.idea-index{display:flex;flex-direction:column;gap:clamp(20px,2.5vw,28px);padding-block:clamp(24px,3vw,32px) clamp(64px,8vw,112px)}
+.idea-lead{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(16px,3vw,36px);align-items:center;padding:16px;border:2px solid var(--line);border-radius:24px;text-decoration:none;color:var(--ink);transition:border-color 150ms}
+.idea-lead:hover{border-color:var(--orange);color:var(--ink)}
+.idea-lead-text{display:flex;flex-direction:column;gap:12px;padding:4px;min-width:0}
+.idea-lead h2{margin:0;font-size:clamp(26px,3vw,38px);font-weight:800;line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+.idea-lead-sum{font-size:17px;line-height:1.45}
+.idea-read{align-self:flex-start;font-size:15px;font-weight:700;padding:11px 18px;border-radius:999px;background:var(--ink);color:#fff}
+.idea-lead:hover .idea-read{background:var(--orange);color:var(--ink)}
+
+.idea-filter{align-self:flex-start;display:inline-flex;flex-wrap:wrap;border:2px solid var(--ink);border-radius:22px;overflow:hidden}
+.idea-filter button{border:none;background:#fff;min-height:40px;padding:8px 18px;font-size:14px;font-weight:700;cursor:pointer}
+.idea-filter button[aria-pressed="true"]{background:var(--ink);color:#fff}
+/* The filter clips what is outside it, so the focus ring is drawn inside the button */
+.idea-filter button:focus-visible{outline-offset:-4px}
+
+.idea-cover{position:relative;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:var(--idea)}
+.idea-cover>img{width:100%;height:100%;object-fit:cover}
+.idea-cover .t{position:absolute;width:36%;aspect-ratio:1/1;border-radius:14%;border:3px solid #fff;box-shadow:0 6px 16px rgba(30,30,78,.18);background:#fff;overflow:hidden}
+.idea-cover .t .thumb{width:100%;height:100%;border-radius:0}
+.idea-cover .t:nth-child(1){left:8%;top:22%;transform:rotate(-8deg)}
+.idea-cover .t:nth-child(2){left:32%;top:15%;transform:rotate(3deg);z-index:2}
+.idea-cover .t:nth-child(3){left:56%;top:23%;transform:rotate(9deg)}
+/* One or two games: the same tiles, centred */
+.idea-cover.n1 .t{left:32%;top:21%;transform:rotate(-4deg)}
+.idea-cover.n2 .t:nth-child(1){left:20%}
+.idea-cover.n2 .t:nth-child(2){left:44%;transform:rotate(6deg)}
+/* On the article page */
+.idea-cover.lg{aspect-ratio:16/9;border-radius:20px}
+.idea-cover.lg .t{width:22%}
+.idea-cover.lg .t:nth-child(1){left:17%;top:32%}
+.idea-cover.lg .t:nth-child(2){left:39%;top:26%}
+.idea-cover.lg .t:nth-child(3){left:61%;top:33%}
+.idea-cover.lg.n1 .t{left:39%;top:30%}
+.idea-cover.lg.n2 .t:nth-child(1){left:28%}
+.idea-cover.lg.n2 .t:nth-child(2){left:50%}
+
+.idea-page{padding-block:clamp(24px,4vw,48px) clamp(56px,7vw,96px)}
+.idea-article{max-width:720px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+.idea-back{align-self:flex-start;font-size:14px;font-weight:700;text-decoration:none}
+.idea-article h1{margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.06;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
+.idea-summary{margin:0;font-size:clamp(18px,1.8vw,21px);line-height:1.45;color:var(--muted)}
+.idea-byline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding:12px 0;border-block:1px solid var(--line);font-size:14px;color:var(--muted)}
+.idea-copy{border:2px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);min-height:40px;padding:7px 16px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.idea-copy:hover{background:var(--ink);color:#fff}
+.idea-share{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;margin-top:12px;padding:20px 24px;border-radius:16px;background:var(--soft);font-size:17px;font-weight:700}
+
+/* The body. Its own elements are matched as children, so a library game card inside it keeps the library's styles. */
+.prose{display:flex;flex-direction:column;gap:18px;font-size:18px;line-height:1.65}
+.prose>p{margin:0;text-wrap:pretty}
+.prose>h2{margin:22px 0 0;font-size:clamp(24px,2.6vw,30px);line-height:1.15;font-weight:800;letter-spacing:-.015em}
+.prose>h3{margin:10px 0 0;font-size:20px;line-height:1.2;font-weight:800}
+.prose ul,.prose ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.prose li>ul,.prose li>ol{margin-top:6px}
+.prose>p a,.prose li a{text-decoration:underline;text-underline-offset:3px}
+.prose-tip{display:flex;flex-direction:column;gap:6px;padding:20px 24px;border-radius:16px;background:var(--orange-light)}
+.prose-tip span{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.prose-tip p{font-weight:500;white-space:pre-line}
+.prose blockquote{margin:10px 0;padding:4px 0 4px 22px;border-left:4px solid var(--orange);font-size:clamp(22px,2.4vw,26px);line-height:1.3;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.prose blockquote cite{display:block;margin-top:10px;font-size:15px;line-height:1.4;font-weight:500;font-style:normal;letter-spacing:0;color:var(--muted)}
+.prose figure{margin:6px 0 0;display:flex;flex-direction:column;gap:8px}
+.prose figure img{border-radius:16px;width:100%;height:auto}
+.prose figcaption{font-size:14px;line-height:1.4;color:var(--muted)}
+/* A Game block: the library's card, with the text size and colours it has in the library */
+.prose-game{font-size:1rem;line-height:normal}
+.prose-game.parents{--accent:var(--parent);--accent-light:var(--parent-light)}
+.prose-game.teachers{--accent:var(--teacher);--accent-light:var(--teacher-light)}
+
+.idea-strip{background:var(--soft)}
+.idea-strip>div{display:flex;flex-direction:column;gap:20px;padding-block:clamp(40px,5vw,64px)}
+.idea-strip h2{margin:0;font-size:clamp(24px,2.6vw,32px);line-height:1.15;font-weight:800;letter-spacing:-.015em}
+.idea-strip-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px}
+.idea-all{font-size:15px;font-weight:700;white-space:nowrap}
+
+/* Private preview: a small bar above the page, only in a browser that came through /api/preview */
+.idea-preview{flex-shrink:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 14px;padding:8px 16px;background:var(--ink);color:#fff;font-size:14px;line-height:1.4}
+.idea-preview strong{font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}
+.idea-preview a{color:#fff;font-weight:700}.idea-preview a:hover{color:var(--orange)}
+
+@media (max-width:640px){
+  /* Header: the nav may wrap under the logo */
+  .hdr-link{min-height:44px;font-size:14px;padding-inline:6px}
+  .idea-filter button,.idea-copy{min-height:44px}
+  .idea-back,.idea-all,.idea-preview a{display:inline-flex;align-items:center;min-height:44px}
+  .idea-lead{padding:12px}
+  .idea-share{padding:18px 20px}
+  .prose{font-size:17px}
+  .prose-tip{padding:18px 20px}
+}
+/* ---- end Ideas ---- */

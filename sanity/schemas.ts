@@ -6,6 +6,7 @@ export const SINGLETONS = [
   { type: 'homePage', title: 'Welcome pop-up' },
   { type: 'teachersPage', title: 'Teachers page' },
   { type: 'parentsPage', title: 'Parents page' },
+  { type: 'ideasPage', title: 'Ideas section' },
 ]
 
 const seo = defineType({
@@ -583,4 +584,212 @@ const brand = defineType({
   },
 })
 
-export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand]
+// ---- Ideas (round 11): an editorial section, switched off by default. See "Ideas" in docs/STATUS.md. ----
+
+// The one switch. No document, or `enabled` not true, means the section does not exist on the site.
+const ideasPage = defineType({
+  name: 'ideasPage',
+  title: 'Ideas section',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'enabled',
+      title: 'Show the Ideas section',
+      type: 'boolean',
+      description:
+        'Off: no header link, no strips on Teachers and Parents, and /ideas and every article answer "not found". Articles can be written and published while this is off.',
+    }),
+    defineField({
+      name: 'navLabel',
+      title: 'Name in the header',
+      type: 'string',
+      description: 'The link in the header, and the heading of the strips ("Ideas for teachers"). Empty shows "Ideas". The address is always /ideas.',
+    }),
+    defineField({
+      name: 'headline',
+      type: 'string',
+      description: 'The large heading at the top of /ideas. Empty shows "Ideas for getting more out of thinking games."',
+    }),
+    defineField({
+      name: 'highlight',
+      type: 'string',
+      description: 'Words from the headline to highlight on /ideas. Must match the headline text exactly.',
+    }),
+    defineField({ name: 'intro', type: 'text', rows: 3, description: 'The paragraph under the heading on /ideas.' }),
+    defineField({ name: 'seo', type: 'seo', description: 'The browser tab title and search description of /ideas.' }),
+  ],
+  preview: { prepare: () => ({ title: 'Ideas section' }) },
+})
+
+const IDEA_AUDIENCES = [
+  { title: 'Teachers', value: 'teachers' },
+  { title: 'Parents', value: 'parents' },
+  { title: 'Both', value: 'both' },
+]
+
+const today = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// The body of an article. This list is the whole menu: writers cannot style anything else.
+const articleBody = defineField({
+  name: 'body',
+  type: 'array',
+  description: 'Text, headings and lists, and from the "+" menu: Game, Tip, Quote, Picture.',
+  of: [
+    defineArrayMember({
+      type: 'block',
+      styles: [
+        { title: 'Text', value: 'normal' },
+        { title: 'Heading', value: 'h2' },
+        { title: 'Small heading', value: 'h3' },
+      ],
+      lists: [
+        { title: 'Bulleted', value: 'bullet' },
+        { title: 'Numbered', value: 'number' },
+      ],
+      marks: {
+        decorators: [
+          { title: 'Bold', value: 'strong' },
+          { title: 'Italic', value: 'em' },
+        ],
+        annotations: [
+          {
+            name: 'link',
+            title: 'Link',
+            type: 'object',
+            fields: [
+              defineField({
+                name: 'href',
+                title: 'URL',
+                type: 'url',
+                validation: (r) => r.required().uri({ allowRelative: true, scheme: ['http', 'https', 'mailto'] }),
+              }),
+            ],
+          },
+        ],
+      },
+    }),
+    defineArrayMember({
+      name: 'gameCard',
+      title: 'Game',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'game',
+          type: 'reference',
+          to: [{ type: 'game' }],
+          // Weak, so a game that an article mentions can still be deleted. The article then leaves it out.
+          weak: true,
+          description: 'Shown as the same card the library uses. A hidden or deleted game is left out of the article.',
+          validation: (r) => r.required(),
+        }),
+      ],
+      preview: {
+        select: { title: 'game.name', media: 'game.icon', image: 'game.image' },
+        prepare: ({ title, media, image }) => ({ title: title || 'Choose a game', subtitle: 'Game', media: media || image }),
+      },
+    }),
+    defineArrayMember({
+      name: 'tip',
+      title: 'Tip',
+      type: 'object',
+      fields: [
+        defineField({ name: 'label', type: 'string', initialValue: 'Tip', description: 'The small capital line above the text.' }),
+        defineField({ name: 'text', type: 'text', rows: 3, validation: (r) => r.required() }),
+      ],
+      preview: { select: { title: 'text', subtitle: 'label' }, prepare: ({ title, subtitle }) => ({ title, subtitle: subtitle || 'Tip' }) },
+    }),
+    defineArrayMember({
+      name: 'quote',
+      title: 'Quote',
+      type: 'object',
+      fields: [
+        defineField({ name: 'text', type: 'text', rows: 3, validation: (r) => r.required() }),
+        defineField({ name: 'source', type: 'string', description: 'Who said it. Optional.' }),
+      ],
+      preview: { select: { title: 'text', source: 'source' }, prepare: ({ title, source }) => ({ title, subtitle: source ? `Quote, ${source}` : 'Quote' }) },
+    }),
+    defineArrayMember({
+      name: 'picture',
+      title: 'Picture',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt text',
+          type: 'string',
+          description: 'What the picture shows, for people who cannot see it.',
+          validation: (r) => r.required(),
+        }),
+        defineField({ name: 'caption', type: 'string', description: 'A small line under the picture. Optional.' }),
+      ],
+      preview: { select: { title: 'alt', subtitle: 'caption', media: 'asset' }, prepare: ({ title, subtitle, media }) => ({ title: title || 'Picture', subtitle: subtitle || 'Picture', media }) },
+    }),
+  ],
+})
+
+const article = defineType({
+  name: 'article',
+  title: 'Article',
+  type: 'document',
+  fields: [
+    defineField({ name: 'title', type: 'string', validation: (r) => r.required() }),
+    defineField({
+      name: 'slug',
+      type: 'slug',
+      options: { source: 'title', maxLength: 80 },
+      description: 'The address of the article: /ideas/{slug}. Press Generate to make it from the title.',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'audience',
+      type: 'string',
+      options: { list: IDEA_AUDIENCES, layout: 'radio' },
+      description: 'Decides the label, the colour, and where the article is listed. Both: listed for teachers and for parents.',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'summary',
+      type: 'text',
+      rows: 3,
+      description: 'On cards, under the title on the article, and as the search description. 160 characters at most.',
+      validation: (r) => r.required().max(160),
+    }),
+    defineField({
+      name: 'cover',
+      type: 'image',
+      options: { hotspot: true },
+      description: "Optional. With none, the cover is built from the pictures of the first three games in the article.",
+      fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string', description: 'What the picture shows.' })],
+    }),
+    defineField({ name: 'author', type: 'string', description: 'Shown as "By …". Left out when empty.' }),
+    defineField({
+      name: 'publishedAt',
+      title: 'Date',
+      type: 'date',
+      initialValue: today,
+      description: 'Shown on the article and used for ordering, newest first. It does not schedule anything.',
+      validation: (r) => r.required(),
+    }),
+    articleBody,
+    defineField({ name: 'seo', type: 'seo' }),
+  ],
+  orderings: [
+    { title: 'Newest first', name: 'dateDesc', by: [{ field: 'publishedAt', direction: 'desc' }] },
+    { title: 'Title', name: 'titleAsc', by: [{ field: 'title', direction: 'asc' }] },
+  ],
+  preview: {
+    select: { title: 'title', audience: 'audience', date: 'publishedAt', media: 'cover' },
+    prepare: ({ title, audience, date, media }) => ({
+      title,
+      subtitle: [IDEA_AUDIENCES.find((a) => a.value === audience)?.title, date].filter(Boolean).join(' · '),
+      media,
+    }),
+  },
+})
+// ---- end Ideas ----
+
+export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand, ideasPage, article]

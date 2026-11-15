@@ -5,6 +5,7 @@ import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { schemaTypes, SINGLETONS } from './sanity/schemas'
 import { structure } from './sanity/structure'
+import { PreviewAction } from './sanity/previewAction'
 import { apiVersion, dataset, projectId } from './sanity/env'
 
 const singletonTypes = new Set(SINGLETONS.map((s) => s.type))
@@ -23,7 +24,10 @@ export default defineConfig({
     actions: (input, ctx) =>
       singletonTypes.has(ctx.schemaType)
         ? input.filter(({ action }) => action && ['publish', 'discardChanges', 'restore'].includes(action))
-        : input,
+        : // Ideas (round 11): articles get a "Preview" action, in the menu beside Publish.
+          ctx.schemaType === 'article'
+          ? [...input, PreviewAction]
+          : input,
   },
   plugins: [structureTool({ structure }), visionTool({ defaultApiVersion: apiVersion })],
 })

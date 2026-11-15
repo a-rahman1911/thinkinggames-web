@@ -3,20 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
-import { Badges, GameImage, GameLink, GameSite } from './GameBits'
+import { ParentGameCard } from './GameBits'
 import { Header } from './Header'
 import { Highlight } from './Highlight'
 import { SaveButton } from './saved/SaveButton'
 import { SavedList } from './saved/SavedList'
+import { IdeaStrip } from './ideas/IdeaStrip'
+import type { IdeasForPage } from './ideas/load'
 import type { SavedListData } from './saved/load'
-import { badges, builds, facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
+import { facetValues, parentGroups, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
 import type { AudienceGame, ParentsData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string[]>>
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export function ParentsView({ data, savedList }: { data: ParentsData; savedList?: SavedListData }) {
+export function ParentsView({ data, savedList, ideas }: { data: ParentsData; savedList?: SavedListData; ideas?: IdeasForPage }) {
   const { page } = data
   // Featured (for parents) first, then A to Z, with the parents overrides folded in.
   const games = useMemo(
@@ -106,7 +108,7 @@ export function ParentsView({ data, savedList }: { data: ParentsData; savedList?
 
   return (
     <div style={{ '--accent': 'var(--parent)', '--accent-light': 'var(--parent-light)' } as React.CSSProperties}>
-      <Header current="parents" />
+      <Header current="parents" ideasLabel={ideas?.navLabel} />
 
       <section className="wrap hero">
         <h1>
@@ -208,30 +210,7 @@ export function ParentsView({ data, savedList }: { data: ParentsData; savedList?
           {results.length ? (
             <div className="cards">
               {results.map((g) => (
-                <article key={g._id} className="card">
-                  <div className="card-top">
-                    <GameImage image={g.image} icon={g.icon} w={120} />
-                    <div className="card-text">
-                      <h3>{g.name}</h3>
-                      <GameSite game={g} />
-                      {g.subtitle && <p className="card-tagline">{g.subtitle}</p>}
-                      {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
-                    </div>
-                  </div>
-                  <div className="card-foot">
-                    <div className="tags">
-                      <Badges badges={badges(g)} />
-                    </div>
-                    {savedList ? (
-                      <div className="card-actions">
-                        <SaveButton game={g} />
-                        <GameLink game={g} className="btn-play" label="Play" />
-                      </div>
-                    ) : (
-                      <GameLink game={g} className="btn-play" label="Play" />
-                    )}
-                  </div>
-                </article>
+                <ParentGameCard key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} />
               ))}
             </div>
           ) : (
@@ -245,6 +224,7 @@ export function ParentsView({ data, savedList }: { data: ParentsData; savedList?
           )}
         </div>
       </main>
+      {ideas && <IdeaStrip heading={ideas.heading} cards={ideas.strip} allLink />}
       {savedList && <SavedList audience="parents" games={games} all={savedList.games} />}
     </div>
   )

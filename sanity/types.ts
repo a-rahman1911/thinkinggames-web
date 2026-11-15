@@ -1,5 +1,7 @@
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { PortableTextBlock } from 'next-sanity'
 import type { GameFacts, Resolved } from '@/lib/derive'
+import type { IdeaAudience } from '@/lib/ideas'
 
 export type Link = { label: string; url: string }
 export type Seo = { title?: string; description?: string }
@@ -53,3 +55,29 @@ export type Brand = { _id: string; name: string; url: string; logo?: SanityImage
 
 export type TeachersData = { page: TeachersPage; moments: Moment[] | null; brands: Brand[] | null }
 export type ParentsData = { page: ParentsPage; games: Game[] | null; whenOptions: Titled[] | null; brands: Brand[] | null }
+
+// ---- Ideas (round 11) ----
+/** The "Ideas section" document: the switch and the texts of /ideas. */
+export type IdeasPage = { enabled?: boolean; navLabel?: string; headline?: string; highlight?: string; intro?: string; seo?: Seo } | null
+
+export type GameCardBlock = { _type: 'gameCard'; _key: string; game?: Game | null }
+export type TipBlock = { _type: 'tip'; _key: string; label?: string; text?: string }
+export type QuoteBlock = { _type: 'quote'; _key: string; text?: string; source?: string }
+export type PictureBlock = SanityImage & { _type: 'picture'; _key: string; caption?: string }
+export type ArticleBlock = PortableTextBlock | GameCardBlock | TipBlock | QuoteBlock | PictureBlock
+
+/** An article as articlesQuery returns it. */
+export type Article = {
+  _id: string
+  _createdAt: string
+  _updatedAt: string
+  title: string
+  slug: string
+  audience: IdeaAudience
+  summary?: string
+  cover?: SanityImage | null
+  author?: string
+  publishedAt?: string
+  seo?: Seo
+  body?: ArticleBlock[] | null
+}

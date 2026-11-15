@@ -44,3 +44,14 @@ export const parentsQuery = groq`{
   "whenOptions": *[_type == "whenOption"] | order(order asc, title asc){ _id, title },
   ${brands('Parents')}
 }`
+
+// ---- Ideas (round 11) ----
+// The switch and the section's texts. Fetched first: when the section is off, nothing else is fetched.
+export const ideasPageQuery = groq`*[_type == "ideasPage"][0]{ enabled, navLabel, headline, highlight, intro, seo }`
+
+// Every article, newest first. A Game block carries its game with the same fields the library pages use,
+// or null when the game no longer exists; lib/ideas.ts leaves out missing and hidden games.
+export const articlesQuery = groq`*[_type == "article" && defined(slug.current)] | order(publishedAt desc, _createdAt desc){
+  _id, _createdAt, _updatedAt, title, "slug": slug.current, audience, summary, cover, author, publishedAt, seo,
+  body[]{ ..., _type == "gameCard" => { "game": game->{${gameFields}} } }
+}`
