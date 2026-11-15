@@ -1,6 +1,7 @@
+import { badges, builds } from '@/lib/derive'
 import { siteName } from '@/lib/site'
 import { urlFor } from '@/sanity/client'
-import type { SanityImage } from '@/sanity/types'
+import type { AudienceGame, SanityImage } from '@/sanity/types'
 
 const hasAsset = (img?: SanityImage | null): img is SanityImage => !!(img as { asset?: unknown } | null | undefined)?.asset
 
@@ -60,5 +61,76 @@ export function GameLink({ game, className, label }: { game: { name: string; url
         {site ? ` on ${site}` : ''} (opens in new tab)
       </span>
     </a>
+  )
+}
+
+/**
+ * A game as the Parents library shows it. The library and the Game block of an Ideas article both render
+ * this one component, so the two cannot drift apart. `save` is the library's Save button, when it has one.
+ */
+export function ParentGameCard({ game: g, save }: { game: AudienceGame; save?: React.ReactNode }) {
+  const play = <GameLink game={g} className="btn-play" label="Play" />
+  return (
+    <article className="card">
+      <div className="card-top">
+        <GameImage image={g.image} icon={g.icon} w={120} />
+        <div className="card-text">
+          <h3>{g.name}</h3>
+          <GameSite game={g} />
+          {g.subtitle && <p className="card-tagline">{g.subtitle}</p>}
+          {g.skills?.length ? <span className="meta">Builds {builds(g)}</span> : null}
+        </div>
+      </div>
+      <div className="card-foot">
+        <div className="tags">
+          <Badges badges={badges(g)} />
+        </div>
+        {save ? (
+          <div className="card-actions">
+            {save}
+            {play}
+          </div>
+        ) : (
+          play
+        )}
+      </div>
+    </article>
+  )
+}
+
+/** The "Builds …" line a Teachers row shows inside a moment. */
+export const buildsMeta = (g: AudienceGame) => (g.skills?.length ? `Builds ${builds(g)}` : undefined)
+
+/**
+ * A game as the Teachers page shows it, in a moment and in search results. Also the Game block of an
+ * Ideas article for teachers. `save` is the page's Save button, when it has one.
+ */
+export function TeacherGameRow({ game, meta, save }: { game: AudienceGame; meta?: string; save?: React.ReactNode }) {
+  const open = <GameLink game={game} className="btn-open" label="Open game" />
+  return (
+    <article className="row">
+      <div className="row-top">
+        <GameImage image={game.image} icon={game.icon} w={112} />
+        <div className="row-text">
+          <div className="row-name">{game.name}</div>
+          <GameSite game={game} />
+          {game.subtitle && <div className="row-tagline">{game.subtitle}</div>}
+          {meta && <span className="meta">{meta}</span>}
+        </div>
+      </div>
+      <div className="row-foot">
+        <div className="row-badges">
+          <Badges badges={badges(game)} />
+        </div>
+        {save ? (
+          <div className="card-actions">
+            {save}
+            {open}
+          </div>
+        ) : (
+          open
+        )}
+      </div>
+    </article>
   )
 }

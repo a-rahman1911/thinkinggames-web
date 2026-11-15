@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { TeachersView } from '@/components/TeachersView'
+import { loadIdeasFor } from '@/components/ideas/load'
 import { loadSavedList } from '@/components/saved/load'
 import { sanityFetch } from '@/sanity/client'
 import { teachersQuery } from '@/sanity/queries'
@@ -13,6 +14,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TeachersPage() {
-  const [data, savedList] = await Promise.all([load(), loadSavedList()])
-  return <TeachersView data={data} savedList={savedList} />
+  const [data, savedList, ideas] = await Promise.all([load(), loadSavedList(), loadIdeasFor('teachers')])
+  return <TeachersView data={data} savedList={savedList} ideas={ideas} />
 }

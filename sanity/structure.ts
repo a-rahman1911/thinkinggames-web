@@ -14,4 +14,11 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('moment').title('Teacher moments'),
       S.documentTypeListItem('skill').title('Skills'),
       S.documentTypeListItem('whenOption').title('When options (parents)'),
+      S.divider(),
+      // Ideas (round 11): newest first.
+      S.listItem()
+        .title('Articles')
+        .id('article')
+        .schemaType('article')
+        .child(S.documentTypeList('article').title('Articles').defaultOrdering([{ field: 'publishedAt', direction: 'desc' }])),
     ])
