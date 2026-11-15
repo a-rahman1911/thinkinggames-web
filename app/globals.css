@@ -267,3 +267,50 @@ body:has(> .ftr){display:flex;flex-direction:column;min-height:100vh;min-height:
   .hdr .wrap{column-gap:8px}
   .hdr-logo img{height:24px}
 }
+
+/* ---- Saved list (test, round 8). Remove this whole block to remove the feature's styles. ---- */
+.card-actions{display:flex;gap:6px;flex:1 0 auto}
+.btn-save{flex:0 0 auto;min-width:96px;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 14px;border-radius:999px;border:2px solid var(--ink);background:#fff;color:var(--ink);font-size:14px;font-weight:700;white-space:nowrap;cursor:pointer}
+.btn-save[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-light)}
+
+/* The tray is not shown over the welcome pop-up. While it shows, the footer bar grows by its height so it never covers the footer links. */
+.saved-tray{position:fixed;left:0;right:0;bottom:16px;z-index:20;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+.saved-tray>div{pointer-events:auto;display:flex;align-items:center;gap:14px;background:var(--ink);color:#fff;border-radius:999px;padding:8px 8px 8px 22px;box-shadow:0 8px 24px rgba(30,30,78,.28),0 0 0 1px var(--line-dark);font-size:15px;font-weight:700;white-space:nowrap}
+.saved-tray button{border:none;border-radius:999px;background:var(--accent);color:var(--ink);min-height:44px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer}
+.saved-tray button:hover{background:#fff}
+body:has(.welcome-backdrop) .saved-tray{display:none}
+body:has(.saved-tray) .ftr-bar{padding-bottom:76px}
+
+/* The drawer: a panel from the right over a dimmed page. The page behind does not scroll while it is open. */
+body:has(.saved-backdrop){overflow:hidden}
+.saved-backdrop{position:fixed;inset:0;z-index:25;background:rgba(30,30,78,.5);display:flex;justify-content:flex-end}
+.saved-drawer{width:100%;max-width:460px;height:100%;background:#fff;display:flex;flex-direction:column}
+.saved-drawer:focus{outline:none}
+.saved-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+.saved-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.saved-head h2{margin:0;font-size:26px;font-weight:800;line-height:1.15;letter-spacing:-.015em}
+.saved-close,.saved-remove{flex-shrink:0;width:44px;height:44px;padding:0;border-radius:999px;border:none;background:var(--soft);font-size:22px;font-weight:700;line-height:1;cursor:pointer}
+.saved-close:hover,.saved-remove:hover{background:var(--line)}
+.saved-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px 20px 12px}
+.saved-list ul{list-style:none;margin:0;padding:0}
+.saved-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.saved-row .thumb{aspect-ratio:1/1;border-radius:10px}
+.saved-row-name{font-size:16px;font-weight:800;line-height:1.2}
+.saved-row-sub{font-size:14px;line-height:1.35}
+.saved-row-actions{display:flex;align-items:center;gap:6px}
+.saved-row a{display:flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+.saved-row a:hover{background:var(--orange);color:var(--ink)}
+.saved-foot{padding:16px 20px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.saved-primary{border:none;border-radius:999px;background:var(--accent);color:var(--ink);min-height:48px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer}
+.saved-primary:hover{background:var(--ink);color:#fff}
+.saved-primary:disabled{background:var(--accent-light);color:var(--ink);cursor:default}
+.saved-secondary{border:2px solid var(--ink);border-radius:999px;background:#fff;min-height:48px;padding:10px 18px;font-size:16px;font-weight:700;cursor:pointer}
+.saved-secondary:hover{background:var(--soft)}
+.saved-note{margin:0;font-size:13px;line-height:1.4;color:var(--muted)}
+.saved-foot-line{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.saved-foot-line .link-btn{color:var(--ink)}
+/* Shown only when the browser blocks copying: the link or text, ready to select */
+.saved-field{display:flex;flex-direction:column;gap:6px}
+.saved-field textarea{width:100%;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff;font:inherit;font-size:16px;line-height:1.4;resize:none}
+.saved-empty{margin:24px 0 0;padding:28px 20px;border-radius:16px;background:var(--soft);font-size:16px;font-weight:700;text-align:center}
+/* ---- end Saved list ---- */
