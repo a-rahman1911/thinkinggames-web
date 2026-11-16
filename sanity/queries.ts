@@ -55,3 +55,6 @@ export const articlesQuery = groq`*[_type == "article" && defined(slug.current)]
   _id, _createdAt, _updatedAt, title, "slug": slug.current, audience, summary, cover, author, publishedAt, seo,
   body[]{ ..., _type == "gameCard" => { "game": game->{${gameFields}} } }
 }`
+
+// ---- Privacy policy (round 13) ----
+export const privacyPageQuery = groq`*[_type == "privacyPage"][0]{ _updatedAt, title, updated, body, seo }`

@@ -319,6 +319,18 @@ body:has(.saved-backdrop){overflow:hidden}
 .saved-empty{margin:24px 0 0;padding:28px 20px;border-radius:16px;background:var(--soft);font-size:16px;font-weight:700;text-align:center}
 /* ---- end Saved list ---- */
 
+/* ---- Privacy policy (round 13). Its own block: it does not use the Ideas styles below. ---- */
+.privacy{padding-block:clamp(24px,4vw,48px) clamp(56px,7vw,96px)}
+.privacy>article{max-width:720px;margin-inline:auto;display:flex;flex-direction:column;gap:18px;font-size:18px;line-height:1.65;overflow-wrap:break-word}
+.privacy h1{margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.06;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
+.privacy-date{margin:0;font-size:14px;line-height:1.4;color:var(--muted)}
+.privacy p{margin:0;text-wrap:pretty}
+.privacy h2{margin:22px 0 0;font-size:clamp(24px,2.6vw,30px);line-height:1.15;font-weight:800;letter-spacing:-.015em}
+.privacy h3{margin:10px 0 0;font-size:20px;line-height:1.2;font-weight:800}
+.privacy ul{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.privacy li>ul{margin-top:6px}
+.privacy p a,.privacy li a{text-decoration:underline;text-underline-offset:3px}
+
 /* ---- Ideas (round 11). Remove this whole block to remove the section's styles. ---- */
 /* The audience's light colour: on the label and behind a cover built from game pictures. */
 .idea-teachers{--idea:var(--teacher-light)}.idea-parents{--idea:var(--parent-light)}.idea-both{--idea:var(--orange-light)}

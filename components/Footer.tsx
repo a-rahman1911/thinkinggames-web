@@ -1,11 +1,8 @@
 import { Highlight } from './Highlight'
 import type { Settings } from '@/sanity/types'
 
-const FALLBACK_LINKS = [
-  { label: 'Privacy', url: '/privacy' },
-  { label: 'Terms', url: '/terms' },
-  { label: 'Contact', url: 'mailto:hello@thinkinggames.com' },
-]
+// Shown only while Studio has no footer links. The real links are set in Studio (Site settings → Footer links).
+const FALLBACK_LINKS = [{ label: 'Privacy', url: '/privacy' }]
 
 export function Footer({ settings }: { settings: Settings }) {
   const links = settings?.footerLinks?.length ? settings.footerLinks : FALLBACK_LINKS

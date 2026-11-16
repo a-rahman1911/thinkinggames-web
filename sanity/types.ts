@@ -81,3 +81,7 @@ export type Article = {
   seo?: Seo
   body?: ArticleBlock[] | null
 }
+
+// ---- Privacy policy (round 13) ----
+/** The "Privacy policy" document: the text of /privacy. */
+export type PrivacyPage = { _updatedAt?: string; title?: string; updated?: string; body?: PortableTextBlock[] | null; seo?: Seo } | null
