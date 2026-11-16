@@ -7,6 +7,7 @@ export const SINGLETONS = [
   { type: 'teachersPage', title: 'Teachers page' },
   { type: 'parentsPage', title: 'Parents page' },
   { type: 'ideasPage', title: 'Ideas section' },
+  { type: 'privacyPage', title: 'Privacy policy' },
 ]
 
 const seo = defineType({
@@ -792,4 +793,59 @@ const article = defineType({
 })
 // ---- end Ideas ----
 
-export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand, ideasPage, article]
+// ---- Privacy policy (round 13): the text of /privacy. No document, or an empty body, means /privacy answers "not found". ----
+const privacyPage = defineType({
+  name: 'privacyPage',
+  title: 'Privacy policy',
+  type: 'document',
+  fields: [
+    defineField({ name: 'title', type: 'string', description: 'The page heading. Shows "Privacy policy" when empty.' }),
+    defineField({
+      name: 'updated',
+      title: 'Last updated',
+      type: 'date',
+      description: 'Shown under the heading as "Last updated 16 November 2026". Left out when empty.',
+    }),
+    defineField({
+      name: 'body',
+      type: 'array',
+      description: 'Text, headings, bulleted lists, bold, italic and links. While this is empty, /privacy answers "not found".',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          styles: [
+            { title: 'Text', value: 'normal' },
+            { title: 'Heading', value: 'h2' },
+            { title: 'Small heading', value: 'h3' },
+          ],
+          lists: [{ title: 'Bulleted', value: 'bullet' }],
+          marks: {
+            decorators: [
+              { title: 'Bold', value: 'strong' },
+              { title: 'Italic', value: 'em' },
+            ],
+            annotations: [
+              {
+                name: 'link',
+                title: 'Link',
+                type: 'object',
+                fields: [
+                  defineField({
+                    name: 'href',
+                    title: 'URL',
+                    type: 'url',
+                    validation: (r) => r.required().uri({ allowRelative: true, scheme: ['http', 'https', 'mailto'] }),
+                  }),
+                ],
+              },
+            ],
+          },
+        }),
+      ],
+    }),
+    defineField({ name: 'seo', type: 'seo', description: 'The browser tab title and search description of /privacy.' }),
+  ],
+  preview: { prepare: () => ({ title: 'Privacy policy' }) },
+})
+
+export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand, ideasPage, article, privacyPage]

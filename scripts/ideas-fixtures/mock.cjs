@@ -6,6 +6,7 @@
 //
 //   IDEAS_FIXTURES=on    NODE_OPTIONS="--require ./scripts/ideas-fixtures/mock.cjs" npx next build && … npx next start
 //   IDEAS_FIXTURES=empty the switch on, no articles
+//   EXTRA_FIXTURES=<file.json>  documents merged over the dataset by _id (works with or without IDEAS_FIXTURES)
 //   IDEAS_FIXTURES=off   the switch off, with published articles and drafts (for the private preview;
 //                        also set SANITY_READ_TOKEN to any value; the preview secret is "fixture-secret")
 
@@ -16,6 +17,7 @@ const { fixtures } = require('./fixtures.cjs')
 
 const mode = process.env.IDEAS_FIXTURES
 const realFetch = globalThis.fetch
+const extra = process.env.EXTRA_FIXTURES ? JSON.parse(fs.readFileSync(process.env.EXTRA_FIXTURES, 'utf8')) : []
 const cacheFile = process.env.IDEAS_FIXTURES_CACHE || path.join(__dirname, '../../node_modules/.cache/ideas-fixtures-snapshot.json')
 
 let snapshot
@@ -30,9 +32,12 @@ async function dataset(projectId, name) {
       fs.writeFileSync(cacheFile, JSON.stringify(snapshot))
     }
   }
-  const made = fixtures(mode)
+  const made = mode ? fixtures(mode) : []
   const ids = new Set(made.map((d) => d._id))
-  return [...snapshot.filter((d) => !ids.has(d._id)), ...made]
+  // EXTRA_FIXTURES (round 13): a JSON file of documents merged over the dataset by _id, e.g. the privacy policy.
+  const over = new Map(extra.map((d) => [d._id, d]))
+  const base = snapshot.filter((d) => !ids.has(d._id)).map((d) => (over.has(d._id) ? { ...d, ...over.get(d._id) } : d))
+  return [...base, ...extra.filter((d) => d._type && !snapshot.some((s) => s._id === d._id)), ...made]
 }
 
 const isDraft = (d) => d._id.startsWith('drafts.')
@@ -54,7 +59,7 @@ globalThis.fetch = async function mockedFetch(input, init) {
   const url = new URL(href)
   const m = /^([a-z0-9]+)\.api(?:cdn)?\.sanity\.io$/.exec(url.hostname)
   const q = /\/data\/query\/([^/?]+)/.exec(url.pathname)
-  if (!mode || !m || !q) return realFetch(input, init)
+  if ((!mode && !process.env.EXTRA_FIXTURES) || !m || !q) return realFetch(input, init)
 
   let query = url.searchParams.get('query')
   const params = {}
