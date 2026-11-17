@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
 import { TeacherGameRow } from './GameBits'
@@ -11,7 +11,8 @@ import { SavedList } from './saved/SavedList'
 import { IdeaStrip } from './ideas/IdeaStrip'
 import type { IdeasForPage } from './ideas/load'
 import type { SavedListData } from './saved/load'
-import { TEACHER_GROUPS, facetValues, resolve, shownTo, sortGames, type FacetKey } from '@/lib/derive'
+import { searchQuery, track } from '@/lib/analytics'
+import { TEACHER_GROUPS, facetValues, resolve, shownTo, sortGames, type FacetKey, type FilterGroup } from '@/lib/derive'
 import type { AudienceGame, TeachersData } from '@/sanity/types'
 
 type Sel = Partial<Record<FacetKey, string | null>>
@@ -41,12 +42,42 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
   const groups = TEACHER_GROUPS
   const hasFilters = Object.values(sel).some(Boolean)
   // One choice per group; a game passes when it matches every chosen option.
-  const pass = (g: AudienceGame) =>
-    (Object.entries(sel) as [FacetKey, string | null][]).every(([key, v]) => !v || facetValues(g, key).includes(v))
+  const passes = (s: Sel) => (g: AudienceGame) =>
+    (Object.entries(s) as [FacetKey, string | null][]).every(([key, v]) => !v || facetValues(g, key).includes(v))
+  const pass = passes(sel)
 
   const q = query.trim().toLowerCase()
   const named = q ? allGames.filter((g) => g.name.toLowerCase().includes(q)) : []
   const hits = named.filter(pass)
+
+  // `filter_applied` (round 14). `results_count` is the games shown after the change: the search results while
+  // searching, otherwise every game that is in a moment.
+  const choose = (group: FilterGroup, option: { value: string; label: string }) => {
+    const selected = sel[group.key] !== option.value
+    const next = { ...sel, [group.key]: selected ? option.value : null }
+    setSel(next)
+    track('filter_applied', {
+      page: 'teachers',
+      group: group.label,
+      value: option.label,
+      selected,
+      results_count: (q ? named : allGames).filter(passes(next)).length,
+    })
+  }
+
+  // `search_performed`: once per query, when typing has paused for a second and the query has 2 or more characters.
+  const searched = useRef(new Set<string>())
+  const hitCount = useRef(0)
+  hitCount.current = hits.length
+  useEffect(() => {
+    const term = searchQuery(query)
+    if (!term || searched.current.has(term)) return
+    const t = setTimeout(() => {
+      searched.current.add(term)
+      track('search_performed', { query: term, results_count: hitCount.current })
+    }, 1000)
+    return () => clearTimeout(t)
+  }, [query])
 
   return (
     <div style={{ '--accent': 'var(--teacher)', '--accent-light': 'var(--teacher-light)' } as React.CSSProperties}>
@@ -64,8 +95,8 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
         style={{ display: 'flex', flexDirection: 'column', gap: 32, paddingBlock: 'clamp(24px,3vw,32px) clamp(64px,8vw,112px)' }}
       >
         <div className="challenge-stack">
-          <ChallengeBanner data={page?.challenge} />
-          <BrandsPanel brands={data.brands} />
+          <ChallengeBanner data={page?.challenge} audience="teachers" />
+          <BrandsPanel brands={data.brands} page="teachers" />
         </div>
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: q ? 20 : 32 }}>
@@ -110,7 +141,7 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
                   {g.options.map((o) => {
                     const on = sel[g.key] === o.value
                     return (
-                      <button key={o.value} aria-pressed={on} onClick={() => setSel((s) => ({ ...s, [g.key]: on ? null : o.value }))}>
+                      <button key={o.value} aria-pressed={on} onClick={() => choose(g, o)}>
                         {o.label}
                       </button>
                     )
@@ -128,11 +159,12 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
           {q ? (
             hits.length ? (
               <div className="rows">
-                {hits.map((g) => (
+                {hits.map((g, i) => (
                   <TeacherGameRow
                     key={g._id}
                     game={g}
-                    save={savedList ? <SaveButton game={g} /> : undefined}
+                    where={{ audience: 'teachers', surface: 'search', position: i + 1 }}
+                    save={savedList ? <SaveButton game={g} where={{ audience: 'teachers', surface: 'search' }} /> : undefined}
                     meta={
                       'Good for ' +
                       moments
@@ -159,7 +191,11 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
                         className="moment-head"
                         aria-expanded={isOpen}
                         aria-controls={panelId}
-                        onClick={() => setOpen(isOpen ? -1 : i)}
+                        onClick={() => {
+                          setOpen(isOpen ? -1 : i)
+                          // `moment_opened`: only when a visitor opens one, so not for the one open on arrival.
+                          if (!isOpen) track('moment_opened', { moment: m.title, position: i + 1 })
+                        }}
                       >
                         <span style={{ minWidth: 0 }}>
                           <span className="moment-title">{m.title}</span>
@@ -177,8 +213,13 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
                       <div id={panelId} className="moment-body">
                         {shown.length ? (
                           <div className="rows">
-                            {shown.map((g) => (
-                              <TeacherGameRow key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} />
+                            {shown.map((g, j) => (
+                              <TeacherGameRow
+                                key={g._id}
+                                game={g}
+                                where={{ audience: 'teachers', surface: 'moment', moment: m.title, position: j + 1 }}
+                                save={savedList ? <SaveButton game={g} where={{ audience: 'teachers', surface: 'moment' }} /> : undefined}
+                              />
                             ))}
                           </div>
                         ) : (

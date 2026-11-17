@@ -8,6 +8,7 @@ export const SINGLETONS = [
   { type: 'parentsPage', title: 'Parents page' },
   { type: 'ideasPage', title: 'Ideas section' },
   { type: 'privacyPage', title: 'Privacy policy' },
+  { type: 'tracking', title: 'Tracking and cookie banner' },
 ]
 
 const seo = defineType({
@@ -848,4 +849,40 @@ const privacyPage = defineType({
   preview: { prepare: () => ({ title: 'Privacy policy' }) },
 })
 
-export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand, ideasPage, article, privacyPage]
+// Tracking and the cookie banner (round 14). The one switch. No document, or `enabled` not true, means off:
+// no banner, no "Cookie settings" link, no PostHog. The banner cannot be off while tracking is on: they are one switch.
+const tracking = defineType({
+  name: 'tracking',
+  title: 'Tracking and cookie banner',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'enabled',
+      title: 'Turn on tracking and the cookie banner',
+      type: 'boolean',
+      description:
+        'Off: no cookie banner, no "Cookie settings" link in the footer and no analytics. On: visitors are asked once, and analytics runs only for those who accept.',
+    }),
+    defineField({
+      name: 'text',
+      title: 'Banner text',
+      type: 'text',
+      rows: 3,
+      description:
+        'A "Privacy policy" link is added after it. Empty shows "We use cookies to see how this site is used and to measure our advertising. You can change your choice at any time."',
+    }),
+    defineField({ name: 'acceptLabel', title: 'Accept button', type: 'string', description: 'Empty shows "Accept".' }),
+    defineField({ name: 'declineLabel', title: 'Decline button', type: 'string', description: 'Empty shows "Decline".' }),
+    defineField({
+      name: 'gpcText',
+      title: 'Text for browsers that ask not to be tracked',
+      type: 'text',
+      rows: 3,
+      description:
+        'Shown in "Cookie settings" when the browser sends Global Privacy Control. Empty shows "Your browser asks websites not to track you (Global Privacy Control), so tracking is off."',
+    }),
+  ],
+  preview: { prepare: () => ({ title: 'Tracking and cookie banner' }) },
+})
+
+export const schemaTypes = [seo, link, challenge, siteSettings, homePage, teachersPage, parentsPage, teacherSettings, parentSettings, game, moment, skill, whenOption, brand, ideasPage, article, privacyPage, tracking]

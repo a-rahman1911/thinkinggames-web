@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { track } from '@/lib/analytics'
 
 /** Copies the article's address. The label becomes "Link copied ✓" for 1.6 seconds. */
-export function CopyLink({ path }: { path: string }) {
+export function CopyLink({ path, slug }: { path: string; slug: string }) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
   const copy = async () => {
     const url = window.location.origin + path
+    // Counted whether the browser copies it or shows it to be copied by hand.
+    track('article_link_copied', { article: slug })
     try {
       await navigator.clipboard.writeText(url)
     } catch {

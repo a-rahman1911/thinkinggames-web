@@ -98,13 +98,13 @@ export default async function ArticlePage({ params }: Props) {
               )}
               {readMinutes(article.body as BodyBlock[] | null)} min read
             </span>
-            <CopyLink path={path} />
+            <CopyLink path={path} slug={article.slug} />
           </div>
           <IdeaCover card={card} size="article" alt={article.cover?.alt} />
-          <ArticleBody body={article.body || []} audience={cardAudience(article.audience)} />
+          <ArticleBody body={article.body || []} audience={cardAudience(article.audience)} slug={article.slug} />
           <div className="idea-share">
             <p>Know someone who would use this?</p>
-            <CopyLink path={path} />
+            <CopyLink path={path} slug={article.slug} />
           </div>
         </article>
       </main>

@@ -58,3 +58,6 @@ export const articlesQuery = groq`*[_type == "article" && defined(slug.current)]
 
 // ---- Privacy policy (round 13) ----
 export const privacyPageQuery = groq`*[_type == "privacyPage"][0]{ _updatedAt, title, updated, body, seo }`
+
+// ---- Tracking and cookie banner (round 14) ----
+export const trackingQuery = groq`*[_type == "tracking"][0]{ enabled, text, acceptLabel, declineLabel, gpcText }`

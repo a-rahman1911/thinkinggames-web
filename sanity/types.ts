@@ -85,3 +85,7 @@ export type Article = {
 // ---- Privacy policy (round 13) ----
 /** The "Privacy policy" document: the text of /privacy. */
 export type PrivacyPage = { _updatedAt?: string; title?: string; updated?: string; body?: PortableTextBlock[] | null; seo?: Seo } | null
+
+// ---- Tracking and cookie banner (round 14) ----
+/** The "Tracking and cookie banner" document: the one switch and the banner's texts. */
+export type Tracking = { enabled?: boolean; text?: string; acceptLabel?: string; declineLabel?: string; gpcText?: string } | null

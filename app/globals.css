@@ -437,3 +437,28 @@ body:has(.saved-backdrop){overflow:hidden}
   .prose-tip{padding:18px 20px}
 }
 /* ---- end Ideas ---- */
+
+/* ---- Cookie banner (round 14). Remove this whole block to remove the banner's styles. ---- */
+.consent{position:fixed;left:16px;bottom:16px;z-index:40;width:min(420px,calc(100% - 32px));display:flex;flex-direction:column;gap:14px;padding:18px 20px 20px;border:2px solid var(--ink);border-radius:20px;background:#fff;box-shadow:0 8px 24px rgba(30,30,78,.18)}
+.consent:focus{outline:none}
+.consent p{margin:0;font-size:15px;line-height:1.45}
+.consent p a{font-weight:700;text-underline-offset:3px}
+.consent-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.consent-actions button{min-height:44px;border-radius:999px;border:2px solid var(--ink);background:#fff;color:var(--ink);font-size:15px;font-weight:700;cursor:pointer}
+/* Only in "Cookie settings", on the current choice */
+.consent-actions button[aria-pressed="true"]{background:var(--ink);color:#fff}
+/* Global Privacy Control: one button, the full width */
+.consent-actions .consent-close{grid-column:1/-1}
+.consent-now{margin:0;font-size:13px;line-height:1.4;color:var(--muted)}
+/* "Cookie settings" in the footer: a button that looks exactly like the links beside it */
+.ftr-bar nav button{background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer}
+.ftr-bar nav button:hover{color:var(--orange)}
+/* Over the welcome pop-up: above its backdrop, and the pop-up is pushed (or can be scrolled) clear of the banner */
+body:has(.welcome-backdrop) .consent{z-index:101}
+body:has(.consent) .welcome-backdrop{padding-bottom:200px}
+/* The saved-list bar would sit on top of it */
+body:has(.consent) .saved-tray{display:none}
+@media (max-width:640px){
+  .ftr-bar nav button{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+}
+/* ---- end cookie banner ---- */

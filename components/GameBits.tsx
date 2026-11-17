@@ -1,3 +1,5 @@
+import { GameLink } from './GameLink'
+import type { CardWhere } from '@/lib/analytics'
 import { badges } from '@/lib/derive'
 import { siteName } from '@/lib/site'
 import { urlFor } from '@/sanity/client'
@@ -45,26 +47,6 @@ export function GameSite({ game }: { game: { url?: string | null; site?: string 
 }
 
 /**
- * The button that opens a game, in a new tab. The label is the same for every game ("Play ↗", "Open game ↗").
- * The accessible name is the visible label, then the game and the site it lives on:
- * "Play ↗ Down the Tubes on PBS KIDS (opens in new tab)". With no site name known, "on …" is left out.
- */
-export function GameLink({ game, className, label }: { game: { name: string; url?: string | null; site?: string | null }; className: string; label: string }) {
-  if (!game.url) return null
-  const site = siteName(game)
-  return (
-    <a className={className} href={game.url} target="_blank" rel="noopener">
-      {label} ↗
-      <span className="sr-only">
-        {' '}
-        {game.name}
-        {site ? ` on ${site}` : ''} (opens in new tab)
-      </span>
-    </a>
-  )
-}
-
-/**
  * A game's thinking skills, in the game's order, with a round dot between them (drawn in CSS, not typed).
  * A list, so a screen reader announces "Thinking skills" and then each skill. One component for the
  * Parents card and the Teachers row. Renders nothing for a game with no skills.
@@ -84,9 +66,10 @@ export function Skills({ skills }: { skills?: { title: string }[] | null }) {
 /**
  * A game as the Parents library shows it. The library and the Game block of an Ideas article both render
  * this one component, so the two cannot drift apart. `save` is the library's Save button, when it has one.
+ * `where` is the card's place, for the `card_clicked` event.
  */
-export function ParentGameCard({ game: g, save }: { game: AudienceGame; save?: React.ReactNode }) {
-  const play = <GameLink game={g} className="btn-play" label="Play" />
+export function ParentGameCard({ game: g, save, where }: { game: AudienceGame; save?: React.ReactNode; where: CardWhere }) {
+  const play = <GameLink game={g} className="btn-play" label="Play" where={where} />
   return (
     <article className="card">
       <div className="card-top">
@@ -120,8 +103,8 @@ export function ParentGameCard({ game: g, save }: { game: AudienceGame; save?: R
  * Ideas article for teachers. `meta` is the "Good for …" line of a search result; `save` is the page's Save
  * button, when it has one.
  */
-export function TeacherGameRow({ game, meta, save }: { game: AudienceGame; meta?: string; save?: React.ReactNode }) {
-  const open = <GameLink game={game} className="btn-open" label="Open game" />
+export function TeacherGameRow({ game, meta, save, where }: { game: AudienceGame; meta?: string; save?: React.ReactNode; where: CardWhere }) {
+  const open = <GameLink game={game} className="btn-open" label="Open game" where={where} />
   return (
     <article className="row">
       <div className="row-top">
