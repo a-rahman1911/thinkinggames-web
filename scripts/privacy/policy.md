@@ -38,7 +38,7 @@ We use PostHog for product analytics to understand how visitors navigate our web
 
 All three tools listed above use cookies or similar tracking technologies. Cookies fall into two categories:
 
-- Necessary. When you choose Teachers or Parents, we set a cookie named tg_audience, kept for up to one year, so that we can show you the right page on your next visit. It holds only that choice and does not identify you. If you save games to a list, the list is kept in your browser on your device and is not sent to us.
+- Necessary. When you choose Teachers or Parents, we set a cookie named tg_audience, kept for up to one year, so that we can show you the right page on your next visit. It holds only that choice and does not identify you. If you save games to a list, the list is kept in your browser on your device and is not sent to us. We also keep your cookie choice in a cookie named tg_consent.
 - Analytics and advertising. These are set by the tools above. They are used only if you accept them in our cookie banner, and you can change your choice at any time.
 
 ## How we use the information
