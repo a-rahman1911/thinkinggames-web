@@ -1,10 +1,12 @@
+import { CookieSettings } from './consent/CookieSettings'
 import { Highlight } from './Highlight'
 import type { Settings } from '@/sanity/types'
 
 // Shown only while Studio has no footer links. The real links are set in Studio (Site settings → Footer links).
 const FALLBACK_LINKS = [{ label: 'Privacy', url: '/privacy' }]
 
-export function Footer({ settings }: { settings: Settings }) {
+/** `cookieSettings`: tracking is switched on (round 14), so the links end with "Cookie settings". Without it the footer is as it was. */
+export function Footer({ settings, cookieSettings }: { settings: Settings; cookieSettings?: boolean }) {
   const links = settings?.footerLinks?.length ? settings.footerLinks : FALLBACK_LINKS
   return (
     <div className="ftr">
@@ -27,6 +29,7 @@ export function Footer({ settings }: { settings: Settings }) {
                 {l.label}
               </a>
             ))}
+            {cookieSettings && <CookieSettings />}
           </nav>
         </div>
       </footer>

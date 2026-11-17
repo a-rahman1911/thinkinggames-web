@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Highlight } from './Highlight'
+import { toPersona, track, whenTracking } from '@/lib/analytics'
 import { rememberAudience } from '@/lib/audience'
 import type { WelcomePopup } from '@/sanity/types'
 
@@ -13,17 +14,32 @@ const MASCOT = { teachers: 'mascot-teacher.svg', parents: 'mascot-parent.svg' } 
  * "I'm a teacher" goes to /teachers; "I'm a parent" closes it and stays, with the URL changed to /parents.
  * Both remember the choice. Closing it any other way remembers nothing, so it is back on the next visit to `/`.
  * While it is open the page behind is inert and does not scroll (the scroll lock is CSS: body:has(.welcome-backdrop)).
+ * The cookie banner (round 14) stays usable over it: it is not inert, and the Tab key goes round the pop-up and the banner together.
  */
 export function WelcomeDialog({ popup, children }: { popup: NonNullable<WelcomePopup>; children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
   const dialogRef = useRef<HTMLDivElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
 
-  const close = () => {
+  // `method` is how it was closed without a choice (×, Esc or the backdrop): the `welcome_popup_dismissed` event.
+  const close = (method?: 'close' | 'escape' | 'backdrop') => {
+    if (method) track('welcome_popup_dismissed', { method })
     setOpen(false)
     // The page is still inert until the next render, so wait for it before moving focus there.
     requestAnimationFrame(() => pageRef.current?.focus({ preventScroll: true }))
   }
+
+  // `welcome_popup_shown`: once per page load, while it is open and tracking is on. For a visitor who has not
+  // chosen about cookies yet, that is the moment they accept, if the pop-up is still open then.
+  const shownSent = useRef(false)
+  useEffect(() => {
+    if (!open) return
+    return whenTracking(() => {
+      if (shownSent.current) return
+      shownSent.current = true
+      track('welcome_popup_shown')
+    })
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -36,20 +52,18 @@ export function WelcomeDialog({ popup, children }: { popup: NonNullable<WelcomeP
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
-        close()
+        close('escape')
         return
       }
       if (e.key !== 'Tab') return
-      const list = [...dialog.querySelectorAll<HTMLElement>('a[href], button')]
+      // The loop: the pop-up's own links and buttons, then the cookie banner's while it is showing. The banner
+      // sits elsewhere in the page, so every step is made here instead of being left to the browser.
+      const list = [...dialog.querySelectorAll<HTMLElement>('a[href], button'), ...document.querySelectorAll<HTMLElement>('.consent a[href], .consent button')]
       if (!list.length) return
+      e.preventDefault()
       const i = list.indexOf(document.activeElement as HTMLElement)
-      if (e.shiftKey && i <= 0) {
-        e.preventDefault()
-        list[list.length - 1].focus()
-      } else if (!e.shiftKey && (i === -1 || i === list.length - 1)) {
-        e.preventDefault()
-        list[0].focus()
-      }
+      const next = e.shiftKey ? (i <= 0 ? list.length - 1 : i - 1) : i === list.length - 1 ? 0 : i + 1
+      list[next].focus()
     }
     document.addEventListener('keydown', onKey)
     return () => {
@@ -64,9 +78,9 @@ export function WelcomeDialog({ popup, children }: { popup: NonNullable<WelcomeP
         {children}
       </div>
       {open && (
-        <div className="welcome-backdrop" onClick={(e) => e.target === e.currentTarget && close()}>
+        <div className="welcome-backdrop" onClick={(e) => e.target === e.currentTarget && close('backdrop')}>
           <div ref={dialogRef} className="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" tabIndex={-1}>
-            <button type="button" className="welcome-close" aria-label="Close" onClick={close}>
+            <button type="button" className="welcome-close" aria-label="Close" onClick={() => close('close')}>
               <span aria-hidden="true">×</span>
             </button>
             <img className="welcome-logo" src="/brand/logo-horizontal.svg" alt="Thinking Games Initiative" />
@@ -84,6 +98,7 @@ export function WelcomeDialog({ popup, children }: { popup: NonNullable<WelcomeP
                     className={`choice ${p.persona}`}
                     onClick={(e) => {
                       rememberAudience(p.persona)
+                      track('persona_selected', { persona: toPersona(p.persona), method: 'popup' })
                       if (p.persona !== 'parents') return
                       // Already on the Parents page: stay, and only change the address.
                       e.preventDefault()

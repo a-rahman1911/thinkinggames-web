@@ -21,8 +21,11 @@ function pictureSize(p: PictureBlock): { width: number; height: number } | null 
  * An article's body. The blocks are the whole menu: text, two heading levels, lists, Game, Tip, Quote, Picture.
  * A Game block is the library's own card: the Teachers row in an article for teachers (with the game's teacher
  * values), the Parents card otherwise (with its parent values). No Save button in articles.
+ * `slug` is the article's, for the `card_clicked` event of its game cards.
  */
-export function ArticleBody({ body, audience }: { body: ArticleBlock[]; audience: PageAudience }) {
+export function ArticleBody({ body, audience, slug }: { body: ArticleBlock[]; audience: PageAudience; slug: string }) {
+  // A game card's place among the article's game cards, counted from 1.
+  const places = new Map(body.filter((b) => b._type === 'gameCard' && (b as GameCardBlock).game).map((b, i) => [b._key, i + 1]))
   const components: PortableTextComponents = {
     block: {
       normal: ({ children }) => <p>{children}</p>,
@@ -52,9 +55,10 @@ export function ArticleBody({ body, audience }: { body: ArticleBlock[]; audience
         // Hidden and missing games were already left out (lib/ideas visibleBody); this is a second guard.
         if (!value.game) return null
         const game = resolve(value.game, audience)
+        const where = { audience, surface: 'article' as const, article: slug, position: places.get(value._key) }
         return (
           <div className={`prose-game ${audience}`}>
-            {audience === 'teachers' ? <TeacherGameRow game={game} /> : <ParentGameCard game={game} />}
+            {audience === 'teachers' ? <TeacherGameRow game={game} where={where} /> : <ParentGameCard game={game} where={where} />}
           </div>
         )
       },

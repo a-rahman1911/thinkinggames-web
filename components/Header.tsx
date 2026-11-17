@@ -1,7 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { rememberAudience } from '@/lib/audience'
+import { toPersona, track } from '@/lib/analytics'
+import { rememberAudience, type Audience } from '@/lib/audience'
+
+// A pill remembers the audience, then counts the choice (`persona_selected`, round 14).
+const choose = (audience: Audience) => {
+  rememberAudience(audience)
+  track('persona_selected', { persona: toPersona(audience), method: 'header' })
+}
 
 /**
  * Logo and the two audience pills. Clicking a pill also remembers that audience for the next visit to `/`.
@@ -27,7 +34,7 @@ export function Header({ current, ideasLabel }: { current?: 'teachers' | 'parent
             className="pill"
             style={{ '--c': 'var(--teacher)' } as React.CSSProperties}
             aria-current={current === 'teachers' ? 'page' : undefined}
-            onClick={() => rememberAudience('teachers')}
+            onClick={() => choose('teachers')}
           >
             Teachers
           </Link>
@@ -36,7 +43,7 @@ export function Header({ current, ideasLabel }: { current?: 'teachers' | 'parent
             className="pill"
             style={{ '--c': 'var(--parent)' } as React.CSSProperties}
             aria-current={current === 'parents' ? 'page' : undefined}
-            onClick={() => rememberAudience('parents')}
+            onClick={() => choose('parents')}
           >
             Parents
           </Link>

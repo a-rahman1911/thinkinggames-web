@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { track } from '@/lib/analytics'
+import type { Audience } from '@/lib/audience'
 import { urlFor } from '@/sanity/client'
 import type { Brand } from '@/sanity/types'
 
@@ -39,7 +41,7 @@ const logoUrl = (logo: NonNullable<Brand['logo']>) =>
  * and a half on phones). It moves only when the visitor moves it: the two arrows (one screenful each), a swipe,
  * or tabbing to a chip. A brand without a logo shows its name as text. Hidden when the page has no brands.
  */
-export function BrandsPanel({ brands }: { brands?: Brand[] | null }) {
+export function BrandsPanel({ brands, page }: { brands?: Brand[] | null; page: Audience }) {
   const trackRef = useRef<HTMLDivElement>(null)
   // More than five brands never fit, at any width, so the arrows are in the server-rendered HTML then.
   // With five or fewer they appear after measuring, only if the track really scrolls (it does on phones).
@@ -98,7 +100,15 @@ export function BrandsPanel({ brands }: { brands?: Brand[] | null }) {
       </div>
       <div ref={trackRef} className="brands-grid">
         {brands.map((b) => (
-          <a key={b._id} className="brand" href={b.url} target="_blank" rel="noopener" aria-label={`${b.name} (opens in new tab)`}>
+          <a
+            key={b._id}
+            className="brand"
+            href={b.url}
+            target="_blank"
+            rel="noopener"
+            aria-label={`${b.name} (opens in new tab)`}
+            onClick={() => track('brand_clicked', { brand: b.name, external_url: b.url, page })}
+          >
             {hasAsset(b.logo) ? (
               <img src={logoUrl(b.logo)} alt={b.name} {...logoSize(b.logo)} loading="lazy" />
             ) : (

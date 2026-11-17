@@ -11,6 +11,7 @@ import { SavedList } from './saved/SavedList'
 import { IdeaStrip } from './ideas/IdeaStrip'
 import type { IdeasForPage } from './ideas/load'
 import type { SavedListData } from './saved/load'
+import { track } from '@/lib/analytics'
 import { matchesSelection, optionCount, parentGroups, resolve, shownTo, sortGames, type FacetKey, type Selection } from '@/lib/derive'
 import type { AudienceGame, ParentsData } from '@/sanity/types'
 
@@ -76,11 +77,22 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
   // The search box narrows everything, counts included. Within the filters: OR within a group, AND across groups.
   const named = q ? games.filter((g: AudienceGame) => g.name.toLowerCase().includes(q)) : games
 
-  const toggle = (group: FacetKey, value: string) =>
-    setSel((s) => {
-      const cur = s[group] || []
-      return { ...s, [group]: cur.includes(value) ? cur.filter((x) => x !== value) : [...cur, value] }
+  // Ticking or unticking an option (in the panel, or the × of its chip) is the `filter_applied` event (round 14).
+  // `results_count` is the games shown after the change.
+  const toggle = (group: FacetKey, value: string) => {
+    const cur = sel[group] || []
+    const selected = !cur.includes(value)
+    const next = { ...sel, [group]: selected ? [...cur, value] : cur.filter((x) => x !== value) }
+    setSel(next)
+    const gr = groups.find((g) => g.key === group)
+    track('filter_applied', {
+      page: 'parents',
+      group: gr?.label,
+      value: gr?.options.find((o) => o.value === value)?.label,
+      selected,
+      results_count: named.filter((g) => matchesSelection(g, groups, next)).length,
     })
+  }
 
   const results = named.filter((g) => matchesSelection(g, groups, sel))
   const active = groups.flatMap((gr) =>
@@ -108,8 +120,8 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
       </section>
 
       <div className="wrap challenge-stack" style={{ paddingTop: 'clamp(24px,3vw,32px)' }}>
-        <ChallengeBanner data={page?.challenge} />
-        <BrandsPanel brands={data.brands} />
+        <ChallengeBanner data={page?.challenge} audience="parents" />
+        <BrandsPanel brands={data.brands} page="parents" />
       </div>
 
       <main className="wrap lib" style={{ paddingBlock: 'clamp(24px,3vw,32px) clamp(64px,8vw,112px)' }}>
@@ -199,8 +211,13 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
 
           {results.length ? (
             <div className="cards">
-              {results.map((g) => (
-                <ParentGameCard key={g._id} game={g} save={savedList ? <SaveButton game={g} /> : undefined} />
+              {results.map((g, i) => (
+                <ParentGameCard
+                  key={g._id}
+                  game={g}
+                  where={{ audience: 'parents', surface: 'library', position: i + 1 }}
+                  save={savedList ? <SaveButton game={g} where={{ audience: 'parents', surface: 'library' }} /> : undefined}
+                />
               ))}
             </div>
           ) : (

@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { GameImage, GameLink } from '../GameBits'
+import { GameImage } from '../GameBits'
+import { GameLink } from '../GameLink'
 import type { SavedGame } from './load'
 import { readSaved, useSaved, writeSaved } from './store'
+import { track, whenTracking } from '@/lib/analytics'
 import { LIST_PARAM, MAX_LINK, countLabel, knownIds, listText, listUrl, mergeIds, parseListParam, type SavedAudience } from '@/lib/saved'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])'
@@ -68,6 +70,18 @@ export function SavedList({ audience, games, all }: { audience: SavedAudience; g
       setMode('shared')
     } else dropParam()
   }, [available, audience, byId])
+
+  // `saved_list_shared_opened` (round 14): once, while the shared view shows. A visitor who has not chosen about
+  // cookies yet is counted at the moment they accept, if the shared view is still showing.
+  const sharedSent = useRef(false)
+  useEffect(() => {
+    if (mode !== 'shared') return
+    return whenTracking(() => {
+      if (sharedSent.current) return
+      sharedSent.current = true
+      track('saved_list_shared_opened', { count: shared.length })
+    })
+  }, [mode, shared.length])
 
   // While the drawer is open: focus moves in and is trapped, Esc closes it, and the page behind is inert.
   // (That it does not scroll is CSS: body:has(.saved-backdrop).) Same approach as WelcomeDialog.
@@ -142,12 +156,15 @@ export function SavedList({ audience, games, all }: { audience: SavedAudience; g
     if (kind === 'link' && typeof navigator.share === 'function' && window.matchMedia('(pointer: coarse)').matches) {
       try {
         await navigator.share({ title: 'Thinking Games list', url })
+        track('saved_list_link_copied', { count: mine.length, method: 'share' })
         return
       } catch (e) {
         if ((e as { name?: string } | null)?.name === 'AbortError') return
       }
     }
     const value = kind === 'link' ? url : listText(rows, url)
+    // Counted whether the browser copies it or shows it in the field below to be copied by hand.
+    track('saved_list_link_copied', { count: mine.length, method: kind })
     try {
       await navigator.clipboard.writeText(value)
       setBlocked(null)
@@ -188,7 +205,15 @@ export function SavedList({ audience, games, all }: { audience: SavedAudience; g
         <div className="saved-tray">
           <div>
             <span>{countLabel(count)} saved</span>
-            <button ref={trayRef} type="button" aria-haspopup="dialog" onClick={() => setMode('mine')}>
+            <button
+              ref={trayRef}
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => {
+                setMode('mine')
+                track('saved_list_opened', { count })
+              }}
+            >
               View list
             </button>
           </div>
@@ -212,7 +237,7 @@ export function SavedList({ audience, games, all }: { audience: SavedAudience; g
               <div className="saved-list">
                 {rows.length ? (
                   <ul>
-                    {rows.map((g) => (
+                    {rows.map((g, i) => (
                       <li key={g._id} className="saved-row">
                         <GameImage image={g.image} icon={g.icon} w={56} />
                         <div className="saved-row-text">
@@ -220,7 +245,12 @@ export function SavedList({ audience, games, all }: { audience: SavedAudience; g
                           {g.subtitle && <div className="saved-row-sub">{g.subtitle}</div>}
                         </div>
                         <div className="saved-row-actions">
-                          <GameLink game={g} className="saved-row-open" label={audience === 'teachers' ? 'Open' : 'Play'} />
+                          <GameLink
+                            game={g}
+                            className="saved-row-open"
+                            label={audience === 'teachers' ? 'Open' : 'Play'}
+                            where={{ audience, surface: 'saved_list', position: i + 1 }}
+                          />
                           {mode === 'mine' && (
                             <button type="button" className="saved-remove" aria-label={`Remove ${g.name}`} onClick={() => remove(g._id)}>
                               <span aria-hidden="true">×</span>
