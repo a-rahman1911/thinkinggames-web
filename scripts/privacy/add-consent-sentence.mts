@@ -2,7 +2,9 @@
 // A dry run unless --write is given. It changes one piece of text in the `privacyPage` document and nothing else;
 // everything edited in Studio since round 13 is kept.
 //
-//   node --env-file-if-exists=.env.local scripts/privacy/add-consent-sentence.mts [--write]
+//   node --env-file-if-exists=.env.local scripts/privacy/add-consent-sentence.mts [--updated=2026-11-17] [--write]
+//
+// --updated also sets the "Last updated" date shown under the heading.
 //
 // Needs NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET and (to write) SANITY_WRITE_TOKEN.
 
@@ -15,8 +17,9 @@ const fail = (msg: string): never => {
   process.exit(1)
 }
 const flags = process.argv.slice(2)
-for (const f of flags) if (f !== '--write') fail(`Unknown flag ${f}`)
+for (const f of flags) if (f !== '--write' && !/^--updated=\d{4}-\d{2}-\d{2}$/.test(f)) fail(`Unknown flag ${f}`)
 const write = flags.includes('--write')
+const updated = flags.find((f) => f.startsWith('--updated='))?.slice(10)
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
@@ -29,7 +32,7 @@ console.log(`Project ${projectId}, dataset ${dataset}${write ? '' : ' (dry run: 
 
 type Span = { _key: string; _type: string; text?: string }
 type Block = { _key: string; _type: string; listItem?: string; children?: Span[] }
-const page = await client.fetch<{ _rev: string; body?: Block[] } | null>(`*[_id == "privacyPage"][0]{ _rev, body }`)
+const page = await client.fetch<{ _rev: string; updated?: string; body?: Block[] } | null>(`*[_id == "privacyPage"][0]{ _rev, updated, body }`)
 if (!page) fail('There is no privacyPage document. Nothing to change in the dataset; change scripts/privacy/policy.md only.')
 const draft = await client.fetch<string | null>(`*[_id == "drafts.privacyPage"][0]._id`, {}, { perspective: 'raw' })
 
@@ -47,7 +50,8 @@ if (text(block).includes('tg_consent')) {
 }
 const next = `${(last.text || '').trimEnd()} ${SENTENCE}`
 console.log(`\n  then:\n  - ${text(block).slice(0, text(block).length - (last.text || '').length)}${next}`)
-console.log(`\n  One field changes: body[_key=="${block._key}"].children[_key=="${last._key}"].text. The other ${page!.body!.length - 1} blocks, the title and the "Last updated" date are not touched.`)
+console.log(`\n  One field changes: body[_key=="${block._key}"].children[_key=="${last._key}"].text. The other ${page!.body!.length - 1} blocks and the title are not touched.`)
+console.log(updated ? `  "Last updated": ${page!.updated || 'not set'} → ${updated}` : `  "Last updated" stays ${page!.updated || 'not set'}.`)
 if (draft) console.log('\n  Note: there is an unpublished draft of the policy in Studio. It does not get this sentence; publishing that draft later would remove it.')
 
 if (!write) {
@@ -58,6 +62,6 @@ if (!write) {
 await client
   .patch('privacyPage')
   .ifRevisionId(page!._rev)
-  .set({ [`body[_key=="${block._key}"].children[_key=="${last._key}"].text`]: next })
+  .set({ [`body[_key=="${block._key}"].children[_key=="${last._key}"].text`]: next, ...(updated ? { updated } : {}) })
   .commit()
 console.log('\nWritten.')
