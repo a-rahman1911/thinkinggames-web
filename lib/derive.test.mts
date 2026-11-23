@@ -28,7 +28,7 @@ const game = (over: Partial<GameFacts> = {}): GameFacts => ({
   icon: { alt: 'shared icon' },
   ageFrom: 6,
   ageTo: 11,
-  minutes: '5',
+  minutes: '10',
   players: ['Solo'],
   cost: 'Free',
   offline: false,
@@ -47,7 +47,7 @@ test('resolve: shared values when the audience sets no overrides', () => {
   assert.equal(t.url, 'https://example.com/shared')
   assert.deepEqual(t.image, { alt: 'shared image' })
   assert.deepEqual(t.icon, { alt: 'shared icon' })
-  assert.equal(t.minutes, '5')
+  assert.equal(t.minutes, '10')
   assert.deepEqual(t.skills, [{ title: 'Logical deduction' }])
   assert.equal(t.feelsLike, 'A game')
   assert.equal(t.featured, false)
@@ -85,7 +85,7 @@ test('resolve: each override replaces the shared value for that audience only', 
   const p = resolve(g, 'parents')
   assert.equal(p.url, 'https://example.com/shared')
   assert.equal(p.subtitle, 'Shared subtitle')
-  assert.equal(p.minutes, '5')
+  assert.equal(p.minutes, '10')
   assert.deepEqual(p.skills, [{ title: 'Logical deduction' }])
   assert.equal(p.feelsLike, 'A game')
   assert.equal(p.badgeKinds, null)
@@ -95,7 +95,7 @@ test('resolve: each override replaces the shared value for that audience only', 
 test('resolve: null, empty skills and empty badges fall back to the shared value / all badges', () => {
   const r = resolve(game({ parents: { show: true, subtitle: null, minutes: null, skills: [], badges: [], featured: null } }), 'parents')
   assert.equal(r.subtitle, 'Shared subtitle')
-  assert.equal(r.minutes, '5')
+  assert.equal(r.minutes, '10')
   assert.deepEqual(r.skills, [{ title: 'Logical deduction' }])
   assert.equal(r.badgeKinds, null)
   assert.equal(r.featured, false)
@@ -138,10 +138,13 @@ test('grades from age (migration and seed only): K-1 is 5 to 7, 2-3 is 7 to 9, 4
   assert.deepEqual(gradesFromAge(game({ ageFrom: 3, ageTo: 4 })), [])
 })
 
-test('minutes filter: options 5 / 10 / 20 / 30+, and each game matches its own value only', () => {
-  assert.deepEqual(TEACHER_GROUPS.find((g) => g.key === 'minutes')!.options.map((o) => o.value), ['5', '10', '20', '30+'])
-  for (const m of ['5', '10', '20', '30+']) assert.deepEqual(facetValues(resolve(game({ minutes: m }), 'teachers'), 'minutes'), [m])
+test('minutes filter: options 10 / 20 / 30+, and each game matches its own value only', () => {
+  assert.deepEqual(TEACHER_GROUPS.find((g) => g.key === 'minutes')!.options.map((o) => o.value), ['10', '20', '30+'])
+  for (const m of ['10', '20', '30+']) assert.deepEqual(facetValues(resolve(game({ minutes: m }), 'teachers'), 'minutes'), [m])
   assert.deepEqual(badges(game({ minutes: '30+' })), ['Free', 'Solo', '30+ min'])
+  // No fallback: a stored value outside the list (the old "5", removed in round 15) stays visible as its own badge and matches no option.
+  assert.deepEqual(facetValues(resolve(game({ minutes: '5' }), 'teachers'), 'minutes'), ['5'])
+  assert.deepEqual(badges(game({ minutes: '5' })), ['Free', 'Solo', '5 min'])
 })
 
 test('also tags: No reading needed from the flag, Together when anyone but Solo plays', () => {
@@ -153,12 +156,12 @@ test('also tags: No reading needed from the flag, Together when anyone but Solo 
 })
 
 test('badges: cost, players, minutes, Offline, No reading needed, in that order', () => {
-  assert.deepEqual(badges(game()), ['Free', 'Solo', '5 min'])
+  assert.deepEqual(badges(game()), ['Free', 'Solo', '10 min'])
   assert.deepEqual(
     badges(game({ cost: 'Free with account', players: ['Solo', 'Whole class'], minutes: '20', offline: true, noReading: true })),
     ['Free with account', 'Solo / Whole class', '20 min', 'Offline', 'No reading needed'],
   )
-  assert.deepEqual(badges(game({ cost: null, players: [] })), ['5 min'])
+  assert.deepEqual(badges(game({ cost: null, players: [] })), ['10 min'])
 })
 
 test('badges: the audience badges list keeps only those kinds, in the fixed order; empty means all', () => {
@@ -172,11 +175,11 @@ test('badges: the audience badges list keeps only those kinds, in the fixed orde
 })
 
 test('badges and minutes filter use the resolved minutes', () => {
-  const g = game({ minutes: '5', teachers: { show: true, minutes: '20' } })
+  const g = game({ minutes: '10', teachers: { show: true, minutes: '20' } })
   assert.deepEqual(badges(resolve(g, 'teachers')), ['Free', 'Solo', '20 min'])
   assert.deepEqual(facetValues(resolve(g, 'teachers'), 'minutes'), ['20'])
-  assert.deepEqual(badges(resolve(g, 'parents')), ['Free', 'Solo', '5 min'])
-  assert.deepEqual(facetValues(resolve(g, 'parents'), 'minutes'), ['5'])
+  assert.deepEqual(badges(resolve(g, 'parents')), ['Free', 'Solo', '10 min'])
+  assert.deepEqual(facetValues(resolve(g, 'parents'), 'minutes'), ['10'])
 })
 
 test('teacher feel is lower case', () => {

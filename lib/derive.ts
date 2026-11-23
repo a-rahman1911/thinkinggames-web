@@ -10,7 +10,7 @@
 
 export const PLAYERS = ['Solo', 'Pairs', 'Small group', 'Whole class'] as const
 /** Minutes per round. Stored as these strings; each is also a Minutes filter option. */
-export const MINUTES = ['5', '10', '20', '30+'] as const
+export const MINUTES = ['10', '20', '30+'] as const
 export const COSTS = ['Free', 'Free with account', 'Paid'] as const
 export const PLATFORMS = ['Web', 'iOS', 'Android', 'Print', 'Physical game'] as const
 export const FEELS = ['A game', 'Math'] as const

@@ -1,10 +1,11 @@
-// One-off migration: minutes become one of the options "5", "10", "20", "30+" (stored as strings).
+// One-off migration (already run): minutes become one of the options "10", "20", "30+" (stored as strings).
 //
 //   node --env-file-if-exists=.env.local scripts/migrate-minutes.mts [--dry-run]
 //
 // Converts the shared `minutes` and the `teachers.minutes` / `parents.minutes` overrides of every game
-// (drafts included) from a number to the option string: 5 → "5", 10 → "10", 20 → "20", 30 or more → "30+".
+// (drafts included) from a number to the option string: 10 or less → "10", 20 → "20", 30 or more → "30+".
 // Any other number goes to the nearest option at or above it (7 → "10", 25 → "30+"); each conversion is listed.
+// There is no "5" option since round 15 (2026-11-23), so a 5 now goes to "10" like any other number up to 10.
 // Values that are already strings are left alone. Safe to run more than once.
 //
 // Needs NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET and (to write) SANITY_WRITE_TOKEN.
@@ -40,7 +41,7 @@ const games = await client.fetch<Game[]>(
   `*[_type == "game"] | order(name asc){ _id, name, minutes, "tMinutes": teachers.minutes, "pMinutes": parents.minutes }`,
 )
 
-const option = (n: number): (typeof MINUTES)[number] => (n <= 5 ? '5' : n <= 10 ? '10' : n <= 20 ? '20' : '30+')
+const option = (n: number): (typeof MINUTES)[number] => (n <= 10 ? '10' : n <= 20 ? '20' : '30+')
 const FIELDS = [
   ['minutes', 'minutes'],
   ['tMinutes', 'teachers.minutes'],
