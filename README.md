@@ -50,7 +50,7 @@ Games carry **facts only**. Everything shown is derived from them in `lib/derive
 |---|---|
 | Teachers "Grade" (K-1, 2-3, 4-5) | `teachers.grades`, set by hand |
 | Parents "Age" (4-5, 6-8, 9-11) | `ageFrom`–`ageTo`; a game matches every band its range overlaps |
-| "Minutes" filter (5 / 10 / 20 / 30+) and the "N min" badge | resolved `minutes`, one of "5", "10", "20", "30+"; each game matches its own value only; the badge reads e.g. "30+ min" |
+| "Minutes" filter (10 / 20 / 30+) and the "N min" badge | resolved `minutes`, one of "10", "20", "30+"; each game matches its own value only; the badge reads e.g. "30+ min" |
 | Parents "Also": No reading needed, Together | `noReading`; `players` has anything other than Solo |
 | Badges (first one highlighted) | cost, players joined with " / ", "N min", Offline, No reading needed, in that order; the audience's badges list keeps only those kinds (empty = all) |
 | Skills line | resolved skill titles, as a list with a dot between them |
@@ -76,7 +76,7 @@ npm run import:games -- scripts/games-final.xlsx scripts/images --sheet=Sheet2 -
 - "Teacher moments": the game is added to the **end** of each listed moment's games list if it is not already there. Existing entries are never reordered or removed; reorder in Studio. Sheet row order sets the order of the games added in one run.
 - An override image reuses the shared image description as its alt text.
 - A "hidden" flag set in Studio survives re-imports.
-- Minutes must be 5, 10, 20 or 30+ (the sheet's dropdown). Anything else is a row error.
+- Minutes must be 10, 20 or 30+ (the sheet's dropdown). Anything else, 5 included, is a row error.
 - A subtitle over 50 characters is listed in the report and imported as written.
 - `--allow-missing-images` (testing only) replaces an image file that cannot be found with a grey placeholder instead of failing the row. Off by default.
 
@@ -106,7 +106,7 @@ node --env-file-if-exists=.env.local scripts/set-icons.mts
 
 ### One-off migration of minutes to options
 
-Minutes used to be a whole number. `scripts/migrate-minutes.mts` turns the shared and override values into the option strings (5 → "5", 10 → "10", 20 → "20", 30 or more → "30+"; anything else goes up to the next option and is listed). Run it once the code that reads strings is deployed. Safe to re-run.
+Minutes used to be a whole number. `scripts/migrate-minutes.mts` turns the shared and override values into the option strings (10 or less → "10", 20 → "20", 30 or more → "30+"; anything else goes up to the next option and is listed). The 5-minute option was dropped on 2026-11-23 (round 15); the migration has already run and is kept only as a record. Run it once the code that reads strings is deployed. Safe to re-run.
 
 ```bash
 node --env-file-if-exists=.env.local scripts/migrate-minutes.mts --dry-run
@@ -131,7 +131,7 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 - `lib/derive.ts`: resolve per audience, then facts → filters, badges, sort order (unit tests: `npm test`)
 - `scripts/import-games.mts`: spreadsheet import
 - `scripts/migrate-audience.mts`: one-off migration to the per-audience shape
-- `scripts/migrate-minutes.mts`: one-off migration of minutes to the 5 / 10 / 20 / 30+ options
+- `scripts/migrate-minutes.mts`: one-off migration of minutes to the 10 / 20 / 30+ options (already run)
 - `app/api/revalidate/route.ts`: webhook target that refreshes pages after a publish
 
 ## Not yet done (Phase 6)

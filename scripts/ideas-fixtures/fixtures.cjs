@@ -151,7 +151,7 @@ exports.fixtures = function fixtures(mode) {
   return [
     page,
     ...list,
-    { _id: 'fixture-hidden-game', _type: 'game', name: 'A hidden game', url: 'https://example.com', ageFrom: 5, ageTo: 8, minutes: '5', hidden: true, teachers: { show: true }, parents: { show: true } },
+    { _id: 'fixture-hidden-game', _type: 'game', name: 'A hidden game', url: 'https://example.com', ageFrom: 5, ageTo: 8, minutes: '10', hidden: true, teachers: { show: true }, parents: { show: true } },
     // Drafts, seen only in the private preview: an unpublished article, and an unpublished change to a published one.
     { ...article('not-published-yet', 'parents', '2026-11-14', 'Not published yet', 'A draft that only the preview shows.', [p(filler), game('game-all-ten')]), _id: 'drafts.fixture-article-not-published-yet' },
     { ...list[3], _id: `drafts.${list[3]._id}`, title: 'One game for the car (edited draft)' },
