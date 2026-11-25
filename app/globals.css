@@ -144,6 +144,18 @@ h1,h2,h3,p{margin:0}
 .fcount{font-size:13px;color:var(--muted)}
 .filters-bar,.filters-foot{display:none}
 .results{flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:20px}
+/* Round 17: above 640px the search box and the count with its chips are one bar that stays at the top of the
+   screen while the cards scroll under it, as wide as the results column. The line under it is always there.
+   On phones it makes no box (see the ≤640px block). */
+.results-bar{position:sticky;top:0;z-index:5;margin-top:-12px;padding:12px 0;background:#fff;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+/* A card's "+ Save" or "Play" reached with the keyboard comes to rest below the bar with the card's top in view
+   (the buttons sit at the card's foot, up to about 190px below its top), never under the bar. */
+.results .cards :is(a,button){scroll-margin-top:360px}
+/* The results column is at least a screen tall, so the page is always long enough for the bar to stay at the top
+   when a search or a filter leaves only a few games (components/ParentsView.tsx shows them from their start, under
+   it). It shows only where the sidebar is not beside the list and keeps the page tall already: 641 to about 827px
+   wide, and screens taller than about 1100px. */
+.results{min-height:100vh}
 .search.lg{flex:none;max-width:none;padding-left:22px;gap:12px}.search.lg input{font-size:17px;padding:12px 0}
 .search-icon{width:16px;height:16px;border:2.5px solid var(--ink);border-radius:999px;position:relative;flex-shrink:0}
 .search-icon span{position:absolute;width:8px;height:2.5px;background:var(--ink);right:-7px;bottom:-4px;transform:rotate(45deg)}
@@ -262,6 +274,11 @@ body:has(> .ftr){display:flex;flex-direction:column;min-height:100vh;min-height:
   .filters-bar{display:block;position:sticky;top:0;z-index:5;margin:-8px calc(-1 * var(--pad-x));padding:8px var(--pad-x);background:#fff}
   .filters-toggle{display:inline-flex;align-items:center;min-height:44px;padding:8px 20px;border:2px solid var(--ink);border-radius:999px;background:#fff;font-size:16px;font-weight:700;cursor:pointer}
   .filters-toggle.on{background:var(--parent)}
+  /* Round 17: no sticky search bar on phones. Its wrapper makes no box, so the search box, "Filters" and the chips
+     sit in the results column as before, and "Filters" still sticks against it. */
+  .results-bar{display:contents}
+  .results .cards :is(a,button){scroll-margin-top:0}
+  .results{min-height:auto}
   .search.lg input{min-height:44px}
   .chip{min-height:44px}
   .cards{grid-template-columns:minmax(0,1fr)}
@@ -468,3 +485,28 @@ body:has(.consent) .saved-tray{display:none}
   .ftr-bar nav button{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
 }
 /* ---- end cookie banner ---- */
+
+/* ---- Back to top (round 17, components/BackToTop.tsx). Remove this whole block to remove the button's styles. ---- */
+/* The track runs from about 600px into the part of the page that holds the list (`.to-top-area`: the Parents results
+   column, the Teachers moments section) to its end, with its right edge 8px in from the right edge of the page
+   (the 1280px wrapper, or the screen when narrower). The button sticks to the bottom of the screen inside it, so
+   it is not there at the top of the page, comes up with the content, and leaves with the end of the list instead of
+   sitting over the footer. The track starts a screen lower, less the button and its gap, so that the button is in
+   place just as the top of the screen passes 600px into the list. */
+.to-top-area{position:relative}
+.to-top-track{--to-top-gap:16px;position:absolute;z-index:10;top:calc(600px + 100vh - 52px - var(--to-top-gap));bottom:0;right:calc(8px - var(--pad-x));width:52px;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;container-type:size}
+.to-top{position:sticky;bottom:var(--to-top-gap);pointer-events:auto;display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:999px;border:2px solid #fff;background:var(--ink);color:#fff;box-shadow:0 8px 24px rgba(30,30,78,.28);text-decoration:none;font-size:24px;font-weight:700;line-height:1}
+.to-top:hover{background:var(--accent);color:var(--ink)}
+/* The site's ring (3px orange, 2px out), with the gap inside it filled white so it reads over a card as on the page */
+.to-top:focus-visible{box-shadow:0 0 0 2px #fff,0 8px 24px rgba(30,30,78,.28)}
+/* A list too short to hold the whole button: no button, rather than part of one */
+@container (height < 52px){.to-top{display:none}}
+/* Above the saved-list bar while it shows: 16px + the bar's 60px + 8px. (The bar itself is hidden while the cookie banner shows.) */
+body:has(.saved-tray):not(:has(.consent)) .to-top-track{--to-top-gap:84px}
+/* Not while the welcome pop-up or the saved-list drawer is open */
+body:has(.welcome-backdrop) .to-top-track,body:has(.saved-backdrop) .to-top-track{display:none}
+/* Phones: the cookie banner spans the bottom of the screen, so the button waits for it, as the saved-list bar does */
+@media (max-width:640px){
+  body:has(.consent) .to-top-track{display:none}
+}
+/* ---- end back to top ---- */

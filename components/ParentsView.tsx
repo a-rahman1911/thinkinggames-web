@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { BackToTop } from './BackToTop'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
 import { ParentGameCard } from './GameBits'
@@ -32,6 +33,32 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
   const [panelOpen, setPanelOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
+
+  // Round 17, above 640px: a search typed or a filter changed leaves the bar (the search box, the count and the chips)
+  // where it is on the screen. While the bar is stuck at the top, that shows the new results from their start, right
+  // under it. Without this the page would jump as the list changes (the browser keeps some card in place, or the page
+  // runs out), or leave the new results out of sight above the bar. (The results column is at least a screen tall
+  // there, so the page is always long enough for this.) Phones, and a change made while the bar is off the screen,
+  // are as before.
+  const keepBarAt = useRef<number | null>(null)
+  const beforeChange = () => {
+    const box = barRef.current?.getBoundingClientRect()
+    const onScreen = !!box && box.bottom > 0 && box.top < window.innerHeight
+    keepBarAt.current = onScreen && window.matchMedia('(min-width: 641px)').matches ? Math.max(0, box.top) : null
+  }
+  useLayoutEffect(() => {
+    const at = keepBarAt.current
+    if (at === null) return
+    keepBarAt.current = null
+    const results = resultsRef.current
+    const bar = barRef.current
+    if (!results || !bar) return
+    // The bar's own place in the page, as if it did not stick: the results column's top, less the bar's negative margin.
+    const natural = window.scrollY + results.getBoundingClientRect().top + parseFloat(getComputedStyle(bar).marginTop)
+    window.scrollTo({ top: natural - at, behavior: 'instant' })
+  })
 
   // While the panel is open: focus moves into it and is trapped there, Esc closes it, the page behind
   // does not scroll, and it closes if the window grows past the mobile breakpoint. Focus returns to the toggle.
@@ -80,6 +107,7 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
   // Ticking or unticking an option (in the panel, or the × of its chip) is the `filter_applied` event (round 14).
   // `results_count` is the games shown after the change.
   const toggle = (group: FacetKey, value: string) => {
+    beforeChange()
     const cur = sel[group] || []
     const selected = !cur.includes(value)
     const next = { ...sel, [group]: selected ? [...cur, value] : cur.filter((x) => x !== value) }
@@ -104,6 +132,7 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
   )
   const hasFilters = active.length > 0 || !!q
   const clearAll = () => {
+    beforeChange()
     setSel({})
     setQuery('')
   }
@@ -172,41 +201,48 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
           </div>
         </aside>
 
-        <div className="results">
-          <label className="search lg">
-            <span className="search-icon" aria-hidden="true">
-              <span />
-            </span>
-            <span className="sr-only">Search games by name</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={page?.searchPlaceholder || 'Search games by name'}
-            />
-          </label>
+        <div ref={resultsRef} className="results to-top-area">
+          {/* Above 640px the search box and the count with its chips stay at the top of the screen, as one bar
+              (round 17). On phones the bar is `display: contents`, so the page is as before: only "Filters" sticks. */}
+          <div ref={barRef} className="results-bar">
+            <label className="search lg">
+              <span className="search-icon" aria-hidden="true">
+                <span />
+              </span>
+              <span className="sr-only">Search games by name</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => {
+                  beforeChange()
+                  setQuery(e.target.value)
+                }}
+                placeholder={page?.searchPlaceholder || 'Search games by name'}
+              />
+            </label>
 
-          <div className="filters-bar">
-            <button
-              ref={toggleRef}
-              type="button"
-              className={`filters-toggle${active.length ? ' on' : ''}`}
-              aria-haspopup="dialog"
-              aria-expanded={panelOpen}
-              aria-controls="filters-panel"
-              onClick={() => setPanelOpen(true)}
-            >
-              Filters{active.length ? ` · ${active.length}` : ''}
-            </button>
-          </div>
-
-          <div className="chips" aria-live="polite">
-            <strong>{results.length === 1 ? '1 game' : `${results.length} games`}</strong>
-            {active.map((c) => (
-              <button key={c.value} className="chip" onClick={() => toggle(c.group, c.value)} aria-label={`Remove ${c.label}`}>
-                {c.label} <span aria-hidden="true">×</span>
+            <div className="filters-bar">
+              <button
+                ref={toggleRef}
+                type="button"
+                className={`filters-toggle${active.length ? ' on' : ''}`}
+                aria-haspopup="dialog"
+                aria-expanded={panelOpen}
+                aria-controls="filters-panel"
+                onClick={() => setPanelOpen(true)}
+              >
+                Filters{active.length ? ` · ${active.length}` : ''}
               </button>
-            ))}
+            </div>
+
+            <div className="chips" aria-live="polite">
+              <strong>{results.length === 1 ? '1 game' : `${results.length} games`}</strong>
+              {active.map((c) => (
+                <button key={c.value} className="chip" onClick={() => toggle(c.group, c.value)} aria-label={`Remove ${c.label}`}>
+                  {c.label} <span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {results.length ? (
@@ -229,6 +265,7 @@ export function ParentsView({ data, savedList, ideas }: { data: ParentsData; sav
               </button>
             </div>
           )}
+          <BackToTop />
         </div>
       </main>
       {ideas && <IdeaStrip heading={ideas.heading} cards={ideas.strip} allLink />}
