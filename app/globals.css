@@ -205,6 +205,12 @@ body:has(> .ftr){display:flex;flex-direction:column;min-height:100vh;min-height:
 .ftr-bar img{height:100px;width:auto}
 .ftr-bar nav{display:flex;flex-wrap:wrap;gap:24px}
 .ftr a{color:#fff;text-decoration:none}.ftr a:hover{color:var(--orange)}
+/* Round 16: the logo is a link to the top of the page (components/FooterLogo.tsx). A block the size of the image,
+   so the row measures as before; its ring is the one the footer links have. */
+.ftr-logo{display:block}
+/* The `#top` marker at the start of the page (the link's target, and where focus goes so that the next Tab starts
+   from the top): nothing to see, so no ring. */
+#top:focus{outline:none}
 
 /* ---------- Mobile (≤640px) ---------- */
 @media (max-width:640px){
