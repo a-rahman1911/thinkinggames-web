@@ -235,6 +235,25 @@ export const TEACHER_GROUPS: FilterGroup[] = [
   { key: 'feel', label: 'Feels like', options: opts(TEACHER_FEELS) },
 ]
 
+/** In the Parents sidebar (round 18), a group with more options than this starts collapsed, with a "Show all" button. */
+export const COLLAPSE_OVER = 5
+
+/** How many options a collapsed group shows first. The "Show all" button comes right after them. */
+export const COLLAPSED_COUNT = 4
+
+/** Does the group start collapsed in the sidebar? */
+export const collapsible = (options: readonly unknown[]) => options.length > COLLAPSE_OVER
+
+/**
+ * The options a collapsed group shows: its first four, plus any ticked option beyond them, in the group's own order.
+ * A ticked option is never hidden. A group that is not collapsible shows them all.
+ */
+export const collapsedOptions = <T extends { value: string }>(options: readonly T[], ticked: readonly string[] = []): T[] =>
+  collapsible(options) ? options.filter((o, i) => i < COLLAPSED_COUNT || ticked.includes(o.value)) : [...options]
+
+/** What a group's options are called, for the "Show all" button's screen-reader name ("Show all 9 thinking skills"). */
+export const optionsNoun = (g: Pick<FilterGroup, 'key' | 'label'>) => (g.key === 'skill' ? 'thinking skills' : `${g.label.toLowerCase()} options`)
+
 /**
  * Parents filter groups: Age, Thinking skill, Feels like, Also. "Thinking skill" lists the skill documents
  * in the order given (the CMS `order`), leaving out a skill that none of `games` has. `games` are the

@@ -142,20 +142,70 @@ h1,h2,h3,p{margin:0}
 .fopt[aria-pressed="true"] .fbox span{opacity:1}
 .fname{flex:1;font-size:16px}.fopt[aria-pressed="true"] .fname{font-weight:700}
 .fcount{font-size:13px;color:var(--muted)}
+/* Round 18: "Show all 9" / "Show fewer" after the first four options of a long group, sidebar only (hidden in the panel) */
+.fmore{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;min-width:44px}
 .filters-bar,.filters-foot{display:none}
 .results{flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:20px}
-/* Round 17: above 640px the search box and the count with its chips are one bar that stays at the top of the
-   screen while the cards scroll under it, as wide as the results column. The line under it is always there.
-   On phones it makes no box (see the ≤640px block). */
+/* Round 17, from 861px since round 18: the search box and the count with its chips are one bar that stays at the top
+   of the screen while the cards scroll under it, as wide as the results column. The line under it is always there.
+   Up to 860px it makes no box (see the filters panel block). */
 .results-bar{position:sticky;top:0;z-index:5;margin-top:-12px;padding:12px 0;background:#fff;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-/* A card's "+ Save" or "Play" reached with the keyboard comes to rest below the bar with the card's top in view
-   (the buttons sit at the card's foot, up to about 190px below its top), never under the bar. */
+/* A card's "+ Save" or "Play" reached with the keyboard comes to rest below the bar that sticks (the search bar from
+   861px, the "Filters" bar from 641 to 860px) with the card's top in view (the buttons sit at the card's foot, up to
+   about 190px below its top), never under the bar. Not on phones (the ≤640px block). */
 .results .cards :is(a,button){scroll-margin-top:360px}
-/* The results column is at least a screen tall, so the page is always long enough for the bar to stay at the top
-   when a search or a filter leaves only a few games (components/ParentsView.tsx shows them from their start, under
-   it). It shows only where the sidebar is not beside the list and keeps the page tall already: 641 to about 827px
-   wide, and screens taller than about 1100px. */
+/* The results column is at least a screen tall above 640px, so the page is always long enough for the bar that
+   sticks (the search bar from 861px, the "Filters" bar from 641 to 860px) to stay at the top when a search or a
+   filter leaves only a few games (components/ParentsView.tsx shows them from their start, under it). It shows as
+   white space under a short list, before the footer. (Since round 18 the sidebar is never taller than the screen, so
+   it no longer keeps the page tall at any width.) */
 .results{min-height:100vh}
+
+/* Round 18: from 861px the filters are the sidebar beside the list. It sticks 24px from the top and is never taller
+   than the screen: when its content is longer it scrolls inside itself, and at either end the page carries on.
+   The scroll box would clip what reaches outside the sidebar (the options' hover backgrounds, 10px out on the left;
+   focus rings, 5px out), so it has inline padding with a matching negative margin: the text stays where it was.
+   --filters-sb is the width of a classic scroll bar, set by components/ParentsView.tsx (0 for overlay scroll
+   bars); the sidebar grows by it into the gap on its right, so the text does not move when one appears. */
+@media (min-width:861px){
+  .filters{flex-basis:calc(264px + var(--filters-sb,0px));max-width:calc(324px + var(--filters-sb,0px));padding-inline:16px 8px;margin-inline:-16px calc(-8px - var(--filters-sb,0px));max-height:calc(100vh - 48px);overflow-y:auto;scrollbar-width:thin;scroll-padding-block:48px 40px}
+  .filters>*{flex-shrink:0}
+  /* "Filters" and "Clear all" stay at the top while the groups scroll under them, on white across the whole width */
+  .filters-head{position:sticky;top:0;z-index:1;margin:0 -8px -12px -16px;padding:0 8px 12px 16px;background:#fff}
+  /* A soft white fade over the foot while there is more below (`data-more`, set by components/ParentsView.tsx on
+     each scroll, so it goes in the same frame as the scroll reaches the end: no transition, which would leave it
+     over the last option for a moment). It takes no room (the margin cancels its height and the 28px gap): at the
+     end of the scroll it sits over the last group, hidden, and lets clicks through. */
+  .filters::after{content:"";position:sticky;bottom:0;z-index:1;flex-shrink:0;height:32px;margin:-60px -8px 0 -16px;background:linear-gradient(rgba(255,255,255,0),#fff);pointer-events:none;opacity:0}
+  .filters[data-more]::after{opacity:1}
+  /* A long group, collapsed: the options after the first four are hidden unless ticked */
+  .fgroup.collapsed .fopt-more{display:none}
+}
+
+/* Round 18: up to 860px the filters are behind the "Filters" button, in a full-screen panel, as on phones */
+@media (max-width:860px){
+  .filters{display:none}
+  .filters.open{display:flex;position:fixed;inset:0;z-index:50;max-width:none;gap:24px;padding:20px var(--pad-x) 0;background:#fff;overflow-y:auto;overscroll-behavior:contain}
+  .filters.open .filters-head{align-items:center}
+  .filters.open .fgroup:last-of-type{border-bottom:none}
+  .filters-foot{display:block;position:sticky;bottom:0;margin:auto calc(-1 * var(--pad-x)) 0;padding:12px var(--pad-x) 16px;background:#fff;border-top:1px solid var(--line)}
+  .filters-show{width:100%;min-height:52px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  .filters-bar{display:block;position:sticky;top:0;z-index:5;margin:-8px calc(-1 * var(--pad-x));padding:8px var(--pad-x);background:#fff}
+  .filters-toggle{display:inline-flex;align-items:center;min-height:44px;padding:8px 20px;border:2px solid var(--ink);border-radius:999px;background:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  .filters-toggle.on{background:var(--parent)}
+  /* The panel lists every option (`.filters` first: the ≤640px block makes every .link-btn inline-flex) */
+  .filters .fmore{display:none}
+  /* No sticky search bar: its wrapper makes no box, so the search box, "Filters" and the chips sit in the results
+     column, and "Filters" sticks against it */
+  .results-bar{display:contents}
+}
+/* Tablets: the panel's content (heading, groups, the button) is one column of at most 480px, centred; "Clear all"
+   is a 44px tap target, as on phones */
+@media (min-width:641px) and (max-width:860px){
+  .filters.open>:not(.filters-foot),.filters.open .filters-show{width:100%;max-width:480px;margin-inline:auto}
+  .filters.open .filters-show{display:block}
+  .filters.open .filters-head .link-btn{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+}
 .search.lg{flex:none;max-width:none;padding-left:22px;gap:12px}.search.lg input{font-size:17px;padding:12px 0}
 .search-icon{width:16px;height:16px;border:2.5px solid var(--ink);border-radius:999px;position:relative;flex-shrink:0}
 .search-icon span{position:absolute;width:8px;height:2.5px;background:var(--ink);right:-7px;bottom:-4px;transform:rotate(45deg)}
@@ -264,19 +314,8 @@ body:has(> .ftr){display:flex;flex-direction:column;min-height:100vh;min-height:
   .seg-opts::-webkit-scrollbar{display:none}
   .seg-opts button{flex-shrink:0;min-width:44px;min-height:44px;white-space:nowrap}
 
-  /* Parents: the sidebar becomes a full-screen panel opened from a sticky "Filters" button */
-  .filters{display:none}
-  .filters.open{display:flex;position:fixed;inset:0;z-index:50;max-width:none;gap:24px;padding:20px var(--pad-x) 0;background:#fff;overflow-y:auto;overscroll-behavior:contain}
-  .filters.open .filters-head{align-items:center}
-  .filters.open .fgroup:last-of-type{border-bottom:none}
-  .filters-foot{display:block;position:sticky;bottom:0;margin:auto calc(-1 * var(--pad-x)) 0;padding:12px var(--pad-x) 16px;background:#fff;border-top:1px solid var(--line)}
-  .filters-show{width:100%;min-height:52px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
-  .filters-bar{display:block;position:sticky;top:0;z-index:5;margin:-8px calc(-1 * var(--pad-x));padding:8px var(--pad-x);background:#fff}
-  .filters-toggle{display:inline-flex;align-items:center;min-height:44px;padding:8px 20px;border:2px solid var(--ink);border-radius:999px;background:#fff;font-size:16px;font-weight:700;cursor:pointer}
-  .filters-toggle.on{background:var(--parent)}
-  /* Round 17: no sticky search bar on phones. Its wrapper makes no box, so the search box, "Filters" and the chips
-     sit in the results column as before, and "Filters" still sticks against it. */
-  .results-bar{display:contents}
+  /* Parents: the filters panel and the "Filters" bar are in their own block (up to 860px, above). On phones nothing
+     keeps the bar in place and the cards' buttons have no scroll margin, as before round 17. */
   .results .cards :is(a,button){scroll-margin-top:0}
   .results{min-height:auto}
   .search.lg input{min-height:44px}
