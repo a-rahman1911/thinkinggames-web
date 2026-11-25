@@ -125,12 +125,13 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 ## Code map
 - `app/(site)/`: pages (server components that fetch from Sanity)
 - `components/TeachersView.tsx`: search, one-open-at-a-time accordion, in-moment filters
-- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; on mobile (≤640px) the filters open as a full-screen panel from a sticky "Filters" button; above 640px the search box, count and chips stay at the top as one bar
+- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; up to 860px (phones and tablets) the filters open as a full-screen panel from a sticky "Filters" button; from 861px they are a sidebar beside the list that scrolls inside itself, with "Thinking skill" showing four options until "Show all 9", and the search box, count and chips stay at the top as one bar
+- `lib/breakpoints.ts`: the widths the stylesheet and the scripts share (640px phones, 860px the filters panel); `lib/breakpoints.test.mts` fails if `app/globals.css` uses others
 - `components/BackToTop.tsx`: the back-to-top button on Teachers and Parents (when it shows is CSS, in `app/globals.css`)
 - `components/TopLink.tsx`: the link to the top of the page behind the footer logo and the back-to-top button
 - `components/ChallengeBanner.tsx`: shared banner with "Copy link"
 - `sanity/schemas.ts`: the CMS content model
-- `lib/derive.ts`: resolve per audience, then facts → filters, badges, sort order (unit tests: `npm test`)
+- `lib/derive.ts`: resolve per audience, then facts → filters, badges, sort order, which options a collapsed filter group shows (unit tests: `npm test`)
 - `scripts/import-games.mts`: spreadsheet import
 - `scripts/migrate-audience.mts`: one-off migration to the per-audience shape
 - `scripts/migrate-minutes.mts`: one-off migration of minutes to the 10 / 20 / 30+ options (already run)

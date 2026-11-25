@@ -3,10 +3,15 @@ import assert from 'node:assert/strict'
 import {
   alsoTags,
   badges,
+  COLLAPSE_OVER,
+  COLLAPSED_COUNT,
+  collapsedOptions,
+  collapsible,
   facetValues,
   gradesFromAge,
   matchesSelection,
   optionCount,
+  optionsNoun,
   PARENT_AGE_BANDS,
   parentAgeBands,
   parentGroups,
@@ -294,4 +299,62 @@ test('thinking skill: any ticked skill matches; groups combine; counts follow th
 
 test('thinking skill: a skill without an id is matched by its title', () => {
   assert.deepEqual(facetValues(resolve(game({ skills: [{ title: 'Number sense' }] }), 'parents'), 'skill'), ['Number sense'])
+})
+
+// Round 18: "Show all 9" in the Parents sidebar.
+const nine = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].map((v) => ({ value: v, label: `Skill ${v}` }))
+const values = (list: { value: string }[]) => list.map((o) => o.value)
+
+test('collapse: a group with more than five options starts collapsed; five or fewer never do', () => {
+  assert.equal(COLLAPSE_OVER, 5)
+  assert.equal(COLLAPSED_COUNT, 4)
+  assert.equal(collapsible(nine), true)
+  assert.equal(collapsible(nine.slice(0, 6)), true)
+  assert.equal(collapsible(nine.slice(0, 5)), false)
+  assert.equal(collapsible([]), false)
+})
+
+test('collapse: shows the first four, in their order', () => {
+  assert.deepEqual(values(collapsedOptions(nine)), ['A', 'B', 'C', 'D'])
+  assert.deepEqual(values(collapsedOptions(nine, [])), ['A', 'B', 'C', 'D'])
+  assert.deepEqual(values(collapsedOptions(nine.slice(0, 6))), ['A', 'B', 'C', 'D'])
+})
+
+test('collapse: a ticked option beyond the four is never hidden, and keeps its place in the order', () => {
+  assert.deepEqual(values(collapsedOptions(nine, ['I'])), ['A', 'B', 'C', 'D', 'I'], 'the ninth')
+  assert.deepEqual(values(collapsedOptions(nine, ['G', 'E'])), ['A', 'B', 'C', 'D', 'E', 'G'], 'the group order, not the order ticked')
+  assert.deepEqual(values(collapsedOptions(nine, ['B', 'F'])), ['A', 'B', 'C', 'D', 'F'], 'one inside the four, one beyond')
+  assert.deepEqual(values(collapsedOptions(nine, ['B'])), ['A', 'B', 'C', 'D'], 'ticked inside the four: nothing added')
+  assert.deepEqual(values(collapsedOptions(nine, nine.map((o) => o.value))), values(nine), 'all ticked: all shown')
+  assert.deepEqual(values(collapsedOptions(nine, ['skill-gone'])), ['A', 'B', 'C', 'D'], 'a ticked value the group does not have')
+})
+
+test('collapse: a group that is not collapsible shows every option, ticked or not', () => {
+  assert.deepEqual(values(collapsedOptions(nine.slice(0, 5))), ['A', 'B', 'C', 'D', 'E'])
+  assert.deepEqual(values(collapsedOptions(nine.slice(0, 3), ['C'])), ['A', 'B', 'C'])
+})
+
+test('collapse: on the real groups only Thinking skill is long enough', () => {
+  const skills = [
+    'Logical deduction', 'Number sense', 'Pattern recognition', 'Spatial reasoning', 'Sequencing',
+    'Strategic planning', 'Systems thinking', 'Creative thinking', 'Arithmetic',
+  ].map((title, i) => ({ _id: `skill-${i}`, title }))
+  const games = forParents([game({ skills: skills.map((s) => ({ _id: s._id, title: s.title })) })])
+  const groups = parentGroups(skills, games)
+  assert.deepEqual(groups.map((g) => [g.label, g.options.length, collapsible(g.options)]), [
+    ['Age', 3, false],
+    ['Thinking skill', 9, true],
+    ['Feels like', 2, false],
+    ['Also', 2, false],
+  ])
+  const thinking = groups[1]
+  assert.deepEqual(collapsedOptions(thinking.options, ['skill-8']).map((o) => o.label), [
+    'Logical deduction', 'Number sense', 'Pattern recognition', 'Spatial reasoning', 'Arithmetic',
+  ])
+})
+
+test('collapse: the button names its group for screen readers', () => {
+  const groups = parentGroups(SKILLS, forParents([game({ skills: sk('skill-logic') })]))
+  assert.equal(optionsNoun(groups.find((g) => g.key === 'skill')!), 'thinking skills')
+  assert.equal(optionsNoun(groups.find((g) => g.key === 'age')!), 'age options')
 })
