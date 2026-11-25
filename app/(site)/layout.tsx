@@ -14,6 +14,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const [settings, preview, tracking] = await Promise.all([sanityFetch<Settings>(settingsQuery), isPreview(), loadTracking()])
   return (
     <>
+      {/* The footer logo's target (round 16): first in the page, so the next Tab after it starts from the top. */}
+      <div id="top" tabIndex={-1} />
       {tracking && <ConsentBanner texts={tracking} />}
       {preview && <PreviewBar />}
       <div className="page">{children}</div>

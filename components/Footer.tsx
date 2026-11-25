@@ -1,4 +1,5 @@
 import { CookieSettings } from './consent/CookieSettings'
+import { FooterLogo } from './FooterLogo'
 import { Highlight } from './Highlight'
 import type { Settings } from '@/sanity/types'
 
@@ -22,7 +23,7 @@ export function Footer({ settings, cookieSettings }: { settings: Settings; cooki
       )}
       <footer className="ftr-bar">
         <div className="wrap">
-          <img src="/brand/logo-footer.svg" alt="Thinking Games Initiative" />
+          <FooterLogo />
           <nav aria-label="Footer">
             {links.map((l) => (
               <a key={l.url + l.label} href={l.url}>

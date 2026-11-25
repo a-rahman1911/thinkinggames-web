@@ -14,6 +14,8 @@ export default async function NotFound() {
   const [settings, ideasLabel, tracking] = await Promise.all([sanityFetch<Settings>(settingsQuery), loadIdeasLabel(), loadTracking()])
   return (
     <>
+      {/* The footer logo's target (round 16): first in the page, so the next Tab after it starts from the top. */}
+      <div id="top" tabIndex={-1} />
       {tracking && <ConsentBanner texts={tracking} />}
       <div className="page">
         <Header ideasLabel={ideasLabel} />
