@@ -125,7 +125,9 @@ node --env-file-if-exists=.env.local scripts/migrate-audience.mts
 ## Code map
 - `app/(site)/`: pages (server components that fetch from Sanity)
 - `components/TeachersView.tsx`: search, one-open-at-a-time accordion, in-moment filters
-- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; on mobile (≤640px) the filters open as a full-screen panel from a sticky "Filters" button
+- `components/ParentsView.tsx`: library filters (OR within a group, AND across groups) and live counts; on mobile (≤640px) the filters open as a full-screen panel from a sticky "Filters" button; above 640px the search box, count and chips stay at the top as one bar
+- `components/BackToTop.tsx`: the back-to-top button on Teachers and Parents (when it shows is CSS, in `app/globals.css`)
+- `components/TopLink.tsx`: the link to the top of the page behind the footer logo and the back-to-top button
 - `components/ChallengeBanner.tsx`: shared banner with "Copy link"
 - `sanity/schemas.ts`: the CMS content model
 - `lib/derive.ts`: resolve per audience, then facts → filters, badges, sort order (unit tests: `npm test`)

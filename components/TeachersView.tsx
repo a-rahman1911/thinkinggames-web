@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { BackToTop } from './BackToTop'
 import { BrandsPanel } from './BrandsPanel'
 import { ChallengeBanner } from './ChallengeBanner'
 import { TeacherGameRow } from './GameBits'
@@ -99,7 +100,7 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
           <BrandsPanel brands={data.brands} page="teachers" />
         </div>
 
-        <section style={{ display: 'flex', flexDirection: 'column', gap: q ? 20 : 32 }}>
+        <section className="to-top-area" style={{ display: 'flex', flexDirection: 'column', gap: q ? 20 : 32 }}>
           {q ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }} aria-live="polite">
               <h2 style={{ fontSize: 'clamp(26px,3vw,36px)', fontWeight: 800, letterSpacing: '-.02em' }}>
@@ -232,6 +233,7 @@ export function TeachersView({ data, savedList, ideas }: { data: TeachersData; s
               })}
             </div>
           )}
+          <BackToTop />
         </section>
       </main>
       {ideas && <IdeaStrip heading={ideas.heading} cards={ideas.strip} allLink />}
